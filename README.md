@@ -38,18 +38,18 @@ Requirement analysis software doesn't have to be that complicated... right?
 
 # Planned release schedule
 ### 0.5
-![y](https://www.iconfinder.com/icons/1930264/download/png/16) Markdown export on export all \
-![y](https://www.iconfinder.com/icons/1930264/download/png/16) Auto export all on change to support document level diff \
-![y](https://www.iconfinder.com/icons/1930264/download/png/16) Tracing reports \
-![y](https://www.iconfinder.com/icons/1930264/download/png/16) Option to include tracing information in primary documents \
-![y](https://www.iconfinder.com/icons/1930264/download/png/16) Option to highlight missing traces \
-![n](https://www.iconfinder.com/icons/1891023/download/png/16) Some instructions \
-![y](https://www.iconfinder.com/icons/1930264/download/png/16) Convert multi-line fields to external file references (easier for diff/merge)
+![y](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/complete_icon.png?raw=true) Markdown export on export all \
+![y](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/complete_icon.png?raw=true) Auto export all on change to support document level diff \
+![y](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/complete_icon.png?raw=true) Tracing reports \
+![y](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/complete_icon.png?raw=true) Option to include tracing information in primary documents \
+![y](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/complete_icon.png?raw=true) Option to highlight missing traces \
+![n](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/incomplete_icon.png?raw=true) Some instructions \
+![y](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/complete_icon.png?raw=true) Convert multi-line fields to external file references (easier for diff/merge)
 
 ### 0.6 
-![n](https://www.iconfinder.com/icons/1891023/download/png/16) Document cover page \
-![n](https://www.iconfinder.com/icons/1891023/download/png/16) Document table of contents \
-![n](https://www.iconfinder.com/icons/1891023/download/png/16) All templates fleshed out
+![n](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/complete_icon.png?raw=true) Document cover page \
+![n](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/complete_icon.png?raw=true) Document table of contents \
+![n](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/complete_icon.png?raw=true) All templates fleshed out
 
 ### Future
 - Risk management
