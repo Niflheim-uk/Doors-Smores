@@ -6,7 +6,6 @@ import { getCoverStylePaths } from "../resources";
 import { SmoresDocument } from "../../model/smoresDocument";
 import { Disposable, Uri, ViewColumn, WebviewPanel, commands, window } from "vscode";
 import { VersionController } from "../../versionControl/versionController";
-import { existsSync } from "fs";
 
 export class IssueView {
   public static currentPanel: IssueView | undefined;
