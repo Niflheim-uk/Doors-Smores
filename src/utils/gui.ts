@@ -111,7 +111,7 @@ export function getTracingStylePaths():string[] {
     getExtensionBasedPath(['resources', 'tracing.css']),
     getExtensionBasedPath(['resources', 'displayStyle.css']),
     getExtensionBasedPath(['resources', 'pagination.css']),
-    getExtensionBasedPath(['node_modules', '@vscode/codicons', 'dist', 'codicon.css'])
+    getExtensionBasedPath(['resources', 'vendor', 'vscode', 'codicon.css'])
   ];
   return stylesPaths;
 }
