@@ -3,7 +3,7 @@
 All notable changes to the "doors-smores" extension will be documented in this file.
 
 ## 0.4.6
-- Changed data storage of multi-line fields to use separate fields instead of JSON. This allows for easier diff between versions.
+- Changed data storage of multi-line fields to use separate files instead of JSON. This allows for easier diff between versions.
 
 ## 0.4.0
 - Restructured codebase
