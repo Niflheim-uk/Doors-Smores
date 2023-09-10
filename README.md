@@ -25,7 +25,7 @@ Requirement analysis software doesn't have to be that complicated... right?
 ### 0.5
 ![y](https://www.iconfinder.com/icons/1930264/download/png/16) Markdown export on export all \
 ![y](https://www.iconfinder.com/icons/1930264/download/png/16) Auto export all on change to support document level diff \
-![n](https://www.iconfinder.com/icons/1891023/download/png/16) Tracing reports \
+![n](https://www.iconfinder.com/icons/1891023/download/png/16) Tracing reports (partly implemented) \
 ![y](https://www.iconfinder.com/icons/1930264/download/png/16) Option to include tracing information in primary documents \
 ![n](https://www.iconfinder.com/icons/1891023/download/png/16) Option to highlight missing traces \
 ![n](https://www.iconfinder.com/icons/1891023/download/png/16) Some instructions \
