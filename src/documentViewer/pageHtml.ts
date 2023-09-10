@@ -65,12 +65,10 @@ function getScriptBlock(exporting:boolean):string {
   if(webview === undefined || scriptPath === undefined) {
     return "";
   }
-  var scriptUri:string;
-  if(exporting) {
-    scriptUri = scriptPath;
-  } else {
-    scriptUri = webview.asWebviewUri(vscode.Uri.file(scriptPath)).toString();
+  if(exporting === true) {
+    return "";
   }
+  const scriptUri = webview.asWebviewUri(vscode.Uri.file(scriptPath)).toString();
   return `
   <script nonce="${nonce}" src="${scriptUri}"></script>
   `;
