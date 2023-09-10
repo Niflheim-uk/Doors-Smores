@@ -1,0 +1,9 @@
+
+:root {
+  --webview-foreground:var(--vscode-editor-foreground);
+  --webview-background:var(--vscode-editor-background);
+  --tooltip-foreground:var(--vscode-editor-foreground);
+  --tooltip-background:var(--vscode-editor-selectionBackground);
+  --pageBreak-foreground:var(--vscode-editorWarning-foreground);
+  --pageBreak-background:var(--vscode-editor-background);
+}

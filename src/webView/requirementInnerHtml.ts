@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import {NodeDataModel} from '../model/smoresDataSchema';
 import { Converter } from 'showdown';
 import { SmoresNode } from '../model/smoresNode';
+import { insertHtmlClass } from '../utils';
 
 var _imagesUri:vscode.Uri;
 export function setImagesUri(imagesUri:vscode.Uri) {
@@ -10,25 +11,23 @@ export function setImagesUri(imagesUri:vscode.Uri) {
 export function getInnerHtmlForRequirement(node:SmoresNode) {
   const data:NodeDataModel = node.data;
   const converter = new Converter();
-  const requirementHtml = converter.makeHtml(data.text);
+  let requirementHtml = converter.makeHtml(data.text);
+  requirementHtml = insertHtmlClass(requirementHtml, "tableText");
   let translationRationaleHtml = "-";
   if(data.requirementData) {
     translationRationaleHtml = converter.makeHtml(data.requirementData.translationRationale);
   }
+  translationRationaleHtml = insertHtmlClass(translationRationaleHtml, "tableText");
   return `
-  <table>
-    <colgroup>
-      <col class="requirementsC1">
-      <col class="requirementsC2">
-    </colgroup>
+  <table class="requirements">
     <tbody>
       <tr>
-        <td class="tableText7pt">Id: ${node.data.id}</td>
-        <td class="tableText">${requirementHtml}</td>
+        <td class="tableSmall tableText">Id: ${node.data.id}</td>
+        <td>${requirementHtml}</td>
       </tr>
       <tr>
-        <td class="tableText7pt">Translation\nRationale</td>
-        <td class="tableText">${translationRationaleHtml}</td>
+        <td class="tableSmall tableText">Translation<br/>Rationale</td>
+        <td>${translationRationaleHtml}</td>
       </tr>
     </tbody>
   </table>`;

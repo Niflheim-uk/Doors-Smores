@@ -1,0 +1,108 @@
+/* Heading number scheme */
+body {
+  counter-reset: heading1;
+  color: var(--webview-foreground);
+  background: var(--webview-background)
+}
+h1.label::before {
+  counter-reset: heading2;
+  counter-increment: heading1;
+  content: counter(heading1) " ";
+}
+h2.label::before {
+  counter-reset: heading3;
+  counter-increment: heading2;
+  content: counter(heading1) "." counter(heading2) " ";
+}
+h3.label::before {
+  counter-reset: heading4;
+  counter-increment: heading3;
+  content: counter(heading1) "." counter(heading2) "." counter(heading3) " ";
+}
+h4.label::before {
+  counter-reset: heading5;
+  counter-increment: heading4;
+  content: counter(heading1) "." counter(heading2) "." counter(heading3) "." counter(heading4) " ";
+}
+h5.label::before {
+  counter-reset: heading6;
+  counter-increment: heading5;
+  content: counter(heading1) "." counter(heading2) "." counter(heading3) "." counter(heading4) "." counter(heading5) " ";
+}
+h6.label::before {
+  counter-increment: heading6;
+  content: counter(heading1) "." counter(heading2) "." counter(heading3) "." counter(heading4) "." counter(heading5) "." counter(heading6) " ";
+}
+
+div.section {
+  margin-left: 2.5cm;
+  margin-right: 2.5cm;
+}
+
+
+/* Fonts */
+
+/* Normal */
+body, p, h1, h2, h3, h4, code, table, td, th{
+  font-family: Arial;
+  font-size: 10pt;
+  position: relative;
+  margin: 0;
+  padding: 0;
+  margin-bottom: 12pt;
+}
+.indented {
+  margin-left: 1.5cm;
+}
+h1 {
+  font-size: 12pt;
+}
+h2 {
+  font-size: 11pt;
+}
+h4 {
+  font-style: italic;
+}
+code {
+  font-family: 'Courier New', Courier, monospace;
+}
+.tableText {
+  margin-top: 3pt;
+  margin-bottom: 3pt;
+}
+.tableSmall {
+  font-size: 7pt;
+}
+.tableTitle {
+  font-weight: bold;
+}
+
+/* Table formatting */
+table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+}
+table, td, th {
+  border: 1px solid;
+  padding-left: 0.2cm;
+  padding-right: 0.2cm;
+}
+
+table.heading, td.heading {
+  border:none;
+  padding-left: 0;
+  padding-right: 0;
+}
+table.heading tr>td:first-child {
+  width: 1.5cm;
+}
+table.requirements {
+  margin-left: 1.5cm;
+}
+table.requirements tr>td:first-child {
+  width: 20%;
+}
+.noCellWall {
+  border: none;
+}

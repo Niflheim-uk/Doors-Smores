@@ -1,0 +1,46 @@
+.hr-text {
+  line-height: 1em;
+  position: relative;
+  outline: 0;
+  border: 0;
+  text-align: center;
+  height: 1.5em;
+  opacity: .5;
+}
+.hr-text::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 100%;
+  height: 1px;
+  background:var(--pageBreak-foreground);
+}
+.hr-text::after {
+  content: attr(data-content);
+  position: relative;
+  display: inline-block;
+  color:var(--pageBreak-foreground);
+  background: var(--pageBreak-background);
+  padding: 0 .5em;
+  line-height: 1.5em;
+}
+
+
+@media print {
+  body {
+    color: black; 
+  }
+  .pageBreak {
+    visibility: hidden;
+    break-after: page;
+  }
+}
+@media screen {
+  .pageBreak {
+    visibility: visible;
+  }
+  hr:first-of-type {
+    visibility: hidden;
+  }
+}

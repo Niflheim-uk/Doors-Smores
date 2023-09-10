@@ -7,8 +7,8 @@
 /* Tooltip text */
 .tooltip .toolTipText {
   visibility: hidden;
-  background-color: var(--vscode-editor-selectionBackground);
-  color: var(--vscode-editor-foreground);
+  color: var(--tooltip-foreground);
+  background-color: var(--tooltip-background);
   text-align: center;
   padding: 5px 5px;
   border-radius: 6px;

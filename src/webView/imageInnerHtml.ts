@@ -5,12 +5,16 @@ var _imagesUri:vscode.Uri;
 export function setImagesUri(imagesUri:vscode.Uri) {
   _imagesUri = imagesUri;
 }
-export function getInnerHtmlForImage(node:SmoresNode, webview:vscode.Webview) {
-  if(_imagesUri === undefined) {
+var _webview:vscode.Webview|undefined;
+export function setWebview(webview:vscode.Webview|undefined) {
+  _webview = webview;
+}
+export function getInnerHtmlForImage(node:SmoresNode) {
+  if(_imagesUri === undefined || _webview === undefined) {
     return "";
   }
   const imageFileUri = vscode.Uri.joinPath(_imagesUri, `${node.data.text}`);
-  const imageWebUri = webview.asWebviewUri(imageFileUri);
+  const imageWebUri = _webview.asWebviewUri(imageFileUri);
   return `<div Id='image-${node.data.id}' class='imageHolder'>
     <img src=${imageWebUri}>
   </div>`;

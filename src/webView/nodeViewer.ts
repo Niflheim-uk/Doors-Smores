@@ -1,8 +1,11 @@
 import * as vscode from "vscode";
 import * as path from "path";
+import * as fs from 'fs';
 import { TreeNode } from "../treeView/treeNode";
 import { SmoresNode } from "../model/smoresNode";
 import { getPageHtml } from './pageHtml';
+import { getWorkspaceRoot } from '../utils';
+import { setWebview } from "./imageInnerHtml";
 
 export class NodeViewer {
   private _extensionUri!:vscode.Uri;
@@ -26,7 +29,13 @@ export class NodeViewer {
         "doors-smores.Edit-Section",(context:any) => {
           this._editNode(context);
         }
-      )
+      ),
+      vscode.commands.registerCommand(
+        'doors-smores.Export-Document', 
+        (node: TreeNode) => {
+        this._exportDocument(node.smoresNode);
+      })
+
     );
     context.subscriptions.push(registrations);
   }
@@ -53,9 +62,29 @@ export class NodeViewer {
     if (this._viewPanel === undefined) {
       this._createPanel(node);
     } else {
+      this._referenceNode = node;
       this._viewPanel.reveal();
     }
     this._updatePanel();
+  }
+  private async _exportDocument(node:SmoresNode) {
+    const workspaceRoot = getWorkspaceRoot();
+    let documentNode:SmoresNode|null = node;
+    while(documentNode!== null && documentNode.getParentNode() !== null) {
+      documentNode = documentNode.getParentNode();
+    }
+    if(documentNode !== null) {
+      const filename = await vscode.window.showInputBox(
+        { value: `${documentNode.data.text}.html` });
+      if(workspaceRoot && filename) {
+        const filePath = path.join(workspaceRoot, filename);
+        this._showNode(documentNode);
+        const html = this._updatePanel();
+        if(html !== undefined) {
+          fs.writeFileSync(filePath,html);
+        }
+      }
+    }
   }
   private _handleMessageFromPanel(message:any) {
     switch (message.command) {
@@ -93,7 +122,7 @@ export class NodeViewer {
       }
     );
     console.log(path.dirname(node.filePath.toString()));
-    
+    setWebview(this._viewPanel.webview);
     // Assign event handlers
     this._viewPanel.webview.onDidReceiveMessage((message) => {
       this._handleMessageFromPanel(message);
@@ -102,6 +131,7 @@ export class NodeViewer {
     this._viewPanel.onDidDispose((e) => {
       console.log("closed panel");
       this._viewPanel = undefined;
+      setWebview(undefined);
     });
 
   }
@@ -135,7 +165,8 @@ export class NodeViewer {
     if(this._viewPanel === undefined || this._referenceNode === undefined) {
       return;
     }
-    this._viewPanel.webview.html= getPageHtml(this._extensionUri, 
-      this._viewPanel.webview, this._referenceNode, this._nodeToEdit);
+    const html = getPageHtml(this._referenceNode, this._nodeToEdit);
+    this._viewPanel.webview.html = html;
+    return html;
   }
 }

@@ -69,6 +69,12 @@
         "icon": "$(extensions-refresh)"
       },
       {
+        "command": "doors-smores.Export-Document",
+        "category": "Smores",
+        "title": "Export the current Document",
+        "icon": "$(output)"
+      },
+      {
         "command": "doors-smores.View-TreeNode",
         "category": "Smores",
         "title": "View document item, and sub-items",
@@ -171,9 +177,14 @@
           "group": "inline@5"
         },
         {
-          "command": "doors-smores.Delete-TreeNode",
+          "command": "doors-smores.Export-Document",
           "when": "view == smoresTreeView",
           "group": "inline@6"
+        },
+        {
+          "command": "doors-smores.Delete-TreeNode",
+          "when": "view == smoresTreeView",
+          "group": "inline@7"
         },
         {
           "command": "doors-smores.New-Heading",

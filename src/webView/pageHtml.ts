@@ -1,28 +1,34 @@
 import * as vscode from "vscode";
+import * as fs from 'fs';
+import * as path from 'path';
 import { SmoresNode } from "../model/smoresNode";
 import {getBodyHtml} from './bodyHtml';
 
+const _extension = vscode.extensions.getExtension("Niflheim.doors-smores");
+let _extensionPath:string|undefined = undefined;
+let _stylesCss:Buffer[]=[];
+let _scriptJs:Buffer;
 
-export function getPageHtml(extensionUri:vscode.Uri,
-  webview:vscode.Webview, node:SmoresNode, editNode?:SmoresNode):string {
-  
+if(_extension) {
+  _extensionPath = _extension.extensionPath;
   // Local path to css styles
-  const stylesPaths:vscode.Uri[] = [
-    vscode.Uri.joinPath(extensionUri, 'resources', 'smores.css'),
-    vscode.Uri.joinPath(extensionUri, 'resources', 'fonts.css'),
-    vscode.Uri.joinPath(extensionUri, 'resources', 'headings.css'),
-    vscode.Uri.joinPath(extensionUri, 'resources', 'tables.css')
+  const stylesPaths:string[] = [
+    path.join(_extensionPath, 'resources', 'theme.css'),
+    path.join(_extensionPath, 'resources', 'smores.css'),
+    path.join(_extensionPath, 'resources', 'displayStyle.css'),
+    path.join(_extensionPath, 'resources', 'pagination.css')
   ];
-  const scriptPath = vscode.Uri.joinPath(extensionUri, 'resources', 'smoresScript.js');
-  // Convert to webviewUri
-  const stylesUris = [
-    webview.asWebviewUri(stylesPaths[0]),
-    webview.asWebviewUri(stylesPaths[1]),
-    webview.asWebviewUri(stylesPaths[2]),
-    webview.asWebviewUri(stylesPaths[3]),
-  ];
-  const scriptUri = webview.asWebviewUri(scriptPath);
-  const bodyHtml = getBodyHtml(node, webview, editNode);
+  const scriptPath = path.join(_extensionPath, 'resources', 'smoresScript.js');
+  _stylesCss[0] = fs.readFileSync(stylesPaths[0]);
+  _stylesCss[1] = fs.readFileSync(stylesPaths[1]);
+  _stylesCss[2] = fs.readFileSync(stylesPaths[2]);
+  _stylesCss[3] = fs.readFileSync(stylesPaths[3]);
+  _scriptJs = fs.readFileSync(scriptPath);
+}
+
+export function getPageHtml(node:SmoresNode, editNode?:SmoresNode):string {
+
+  const bodyHtml = getBodyHtml(node, editNode);
   
   return `
   <!DOCTYPE html>
@@ -30,11 +36,11 @@ export function getPageHtml(extensionUri:vscode.Uri,
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <link href="${stylesUris[0]}" rel="stylesheet">
-      <link href="${stylesUris[1]}" rel="stylesheet">
-      <link href="${stylesUris[2]}" rel="stylesheet">
-      <link href="${stylesUris[3]}" rel="stylesheet">
-      <script src="${scriptUri}"></script>
+      <style>${_stylesCss[0]}</style>
+      <style>${_stylesCss[1]}</style>
+      <style>${_stylesCss[2]}</style>
+      <style>${_stylesCss[3]}</style>
+      <script>${_scriptJs}</script>
       <title>Smores Preview</title>
     </head>
     <body>${bodyHtml}</body>
