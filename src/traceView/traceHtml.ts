@@ -99,8 +99,20 @@ function getTraceTable(originId:number, traceArray:number[]|undefined, title:str
 }
 export function getDownstreamReqTraceHtml(node:SmoresNode):string {
   let html = "";
-  const documentType = node.getDocumentType();
-  const downstream = node.data.traces?.downstream;
+  const originCategory = node.data.category;
+  const originCategoryLabel = schema.getLabelPrefix(originCategory);
+  const traces = node.data.traces.traceIds;
+  const traceCategoryLabels = getTraceCategoryLabels(traces);
+  const suspects = node.data.traces.suspectIds;
+
+  const decomposedFrom = getDecomposedFromTraceType(originCategoryLabel, traces, traceCategoryLabels);
+  const decomposesTo = getDecomposesToTraceType(originCategoryLabel, traces, traceCategoryLabels);
+  const satisfies = getSatisfiesTraceType(originCategoryLabel, traces, traceCategoryLabels);
+  const satisfiedBy = getSatisfiedByTraceType(originCategoryLabel, traces, traceCategoryLabels);
+  const details = getDetailsTraceType(originCategoryLabel, traces, traceCategoryLabels);
+  const detailedBy = getDetailedByTraceType(originCategoryLabel, traces, traceCategoryLabels);
+  const verifies = getVerifiesTraceType(originCategoryLabel, traces, traceCategoryLabels);
+  const verifiedBy = getVerifiedByTraceType(originCategoryLabel, traces, traceCategoryLabels);
   switch(documentType) {
   case schema.ursDocType:
     html = html.concat(getTraceTable(node.data.id, downstream?.decompose, "Decomposes To"));
@@ -160,6 +172,7 @@ export function getUpstreamTestTraceHtml(node:SmoresNode):string {
 }
 export function getTraceTargetHtml(node:SmoresNode):string {
   const title = `<br/><div class='traceTitle'><h3 class='tracing'>Tracing: ${node.data.id}</h3></div>`;
+  const addButton = "<div><br/><button id='NewTrace'>Add Trace</button></div>";
   switch(node.data.category) {
   case schema.userFRType:
   case schema.userNFRType:
@@ -169,17 +182,17 @@ export function getTraceTargetHtml(node:SmoresNode):string {
   case schema.archNFRType:
   case schema.desFRType:
   case schema.desNFRType:
-    return `<div class='tracing'>${title}${getInnerHtmlForRequirement(node)}</div>`;
+    return `<div class='tracing'>${title}${getInnerHtmlForRequirement(node)}${addButton}</div>`;
   case schema.userDCType:
   case schema.softDCType:
   case schema.archDCType:
   case schema.desDCType:
-    return `<div class='tracing'>${title}${getInnerHtmlForConstraint(node)}</div>`;
+    return `<div class='tracing'>${title}${getInnerHtmlForConstraint(node)}${addButton}</div>`;
   case schema.userTestType:
   case schema.softTestType:
   case schema.archTestType:
   case schema.desTestType:
-    return `<div class='tracing'>${title}${getInnerHtmlForTest(node)}</div>`;
+    return `<div class='tracing'>${title}${getInnerHtmlForTest(node)}${addButton}</div>`;
   default:
     return "<H1>ERROR - Invalid Category</H1>";
   }

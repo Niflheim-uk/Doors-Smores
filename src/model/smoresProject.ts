@@ -109,6 +109,7 @@ export class SmoresProject extends SmoresDataFile {
       category:schema.documentType,
       text:title,
       parent:0,
+      traces:{traceIds:[],suspectIds:[]},
       documentData:{documentType:docType}
     };
     newDocument.data = newDocumentData;

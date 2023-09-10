@@ -1,10 +1,9 @@
 import * as vscode from "vscode";
 import * as schema from "./smoresDataSchema";
 import * as fs from "fs";
-import { SmoresProject, getProject } from "./smoresProject";
+import { getProject } from "./smoresProject";
 import { SmoresDataFile } from "./smoresDataFile";
 import { VersionController } from "../versionControl/versionController";
-import { verifyTraceLink } from "../traceView/traceVerification";
 
 export function getNodeFromId(nodeId:number) {
   const filePath = SmoresDataFile.getNodeFilepath(nodeId);
@@ -131,7 +130,8 @@ export class SmoresNode extends SmoresDataFile {
       id:0,
       category:`${category}`,
       text:`${defaultText}`,
-      parent:this.data.id
+      parent:this.data.id,
+      traces:{traceIds:[],suspectIds:[]}
     };
     const node = this.newChild(newData, insertPos);
     VersionController.commitChanges(`New ${category} added`);
@@ -198,145 +198,80 @@ export class SmoresNode extends SmoresDataFile {
     }
     this.write();
   }
-  public addUpstreamTrace(traceType:string, traceId:number) {
-    const tracedNode = getNodeFromId(traceId);
-    if(tracedNode === undefined) {
-      /* did nothing */
+  public addTrace(traceId:number, reciprocate:boolean=true) {
+    if(this.data.traces.traceIds.includes(traceId)) {
       return;
     }
-    this.addUpstreamTraceEntry(traceType, traceId);
-    tracedNode.addDownstreamTraceEntry(traceType, this.data.id);
-    VersionController.commitChanges(`Added trace (${traceType}) from ${this.data.id} to upstream node ${traceId}`);
-  }
-  public addDownstreamTrace(traceType:string, traceId:number) {
     const tracedNode = getNodeFromId(traceId);
     if(tracedNode === undefined) {
-      /* did nothing */
       return;
     }
-    this.addDownstreamTraceEntry(traceType, traceId);
-    tracedNode.addUpstreamTraceEntry(traceType, this.data.id);
-    VersionController.commitChanges(`Added trace (${traceType}) from ${this.data.id} to upstream node ${traceId}`);
-  }
-  public removeUpstreamTrace(traceType:string, traceId:number) {
-    this.removeUpstreamTraceEntry(traceType, traceId);
-    const tracedNode = getNodeFromId(traceId);
-    if(tracedNode) {
-      tracedNode.removeDownstreamTraceEntry(traceType, this.data.id);
-    }
-    VersionController.commitChanges(`Removed trace (${traceType}) from ${this.data.id} to upstream node ${traceId}`);
-  }
-  public removeDownstreamTrace(traceType:string, traceId:number) {
-    this.removeDownstreamTraceEntry(traceType, traceId);
-    const tracedNode = getNodeFromId(traceId);
-    if(tracedNode) {
-      tracedNode.removeUpstreamTraceEntry(traceType, this.data.id);
-    }
-    VersionController.commitChanges(`Removed trace (${traceType}) from ${this.data.id} to downstream node ${traceId}`);
-  }
-  public addUpstreamTraceEntry(traceType:string, traceId:number) {
-    if(this.data.traces === undefined || this.data.traces.upstream === undefined) {
-      this.data.traces = {downstream:{},upstream:{}};
-    }    
-    let traceData = this.data.traces.upstream;
-    traceData = this.addTraceEntry(traceData, traceType, traceId);
-    this.data.traces!.upstream = traceData;
+    const thisLabel = schema.getLabelPrefix(this.data.category);
+    const traceLabel = schema.getLabelPrefix(tracedNode.data.category);
+    this.data.traces.traceIds.push(traceId);
     this.write();
-  }
-  public addDownstreamTraceEntry(traceType:string, traceId:number) {
-    if(this.data.traces === undefined || this.data.traces.downstream === undefined) {
-      this.data.traces = {downstream:{},upstream:{}};
-    }    
-    let traceData = this.data.traces.downstream;
-    traceData = this.addTraceEntry(traceData, traceType, traceId);
-    this.data.traces.downstream = traceData;
-    this.write();
-  }
-  public removeUpstreamTraceEntry(traceType:string, traceId:number) {
-    if(this.data.traces) {
-      let traceData = this.data.traces.upstream;
-      traceData = this.removeTraceEntry(traceData, traceType, traceId);
-      this.data.traces.upstream = traceData;
-      this.write();
-    }
-  }
-  public removeDownstreamTraceEntry(traceType:string, traceId:number) {
-    if(this.data.traces) {
-      let traceData = this.data.traces.downstream;
-      traceData = this.removeTraceEntry(traceData, traceType, traceId);
-      this.data.traces.downstream = traceData;
-      this.write();
-    }
-  }
-  public isTraceSuspect(nodeId:number):boolean {
-    if(this.data.traces === undefined) {
-      this.data.traces = {downstream:{},upstream:{}};
-    }
-    if(this.data.traces.suspectTrace) {
-      return this.data.traces.suspectTrace.includes(nodeId);
-    }
-    return false;
-  }
-  public addSuspectTrace(nodeId:number) {
-    if(!this.isTraceSuspect(nodeId)) {
-      if(Array.isArray(this.data.traces!.suspectTrace)) {
-        this.data.traces!.suspectTrace.push(nodeId);
-      } else {
-        this.data.traces!.suspectTrace = [nodeId];
-      }
-      this.write();
-    }
-  }
-  public verifyTrace(nodeId:number, reciprocate:boolean=true) {
-    if(this.isTraceSuspect(nodeId)) {
-      this.removeSuspectTrace(nodeId);
-    }
+    VersionController.commitChanges(`Added trace from ${thisLabel}${this.data.id} to ${traceLabel}${traceId}`);
     if(reciprocate) {
-      const traceNode = getNodeFromId(nodeId);
+      tracedNode.addTrace(this.data.id, false);
+    }
+  }
+  public removeTrace(traceId:number, reciprocate:boolean=true) {
+    if(this.data.traces.traceIds.includes(traceId)) {
+      return;
+    }
+    const tracedNode = getNodeFromId(traceId);
+    if(tracedNode === undefined) {
+      return;
+    }
+    const thisLabel = schema.getLabelPrefix(this.data.category);
+    const traceLabel = schema.getLabelPrefix(tracedNode.data.category);
+    this.data.traces.traceIds.push(traceId);
+    this.write();
+    VersionController.commitChanges(`Added trace from ${thisLabel}${this.data.id} to ${traceLabel}${traceId}`);
+    if(reciprocate) {
+      tracedNode.addTrace(this.data.id, false);
+    }
+  }
+  public isTraceSuspect(traceId:number):boolean {
+    return this.data.traces.suspectIds.includes(traceId);
+  }
+  public addSuspectTrace(traceId:number) {
+    if(!this.isTraceSuspect(traceId)) {
+      this.data.traces!.suspectIds.push(traceId);
+      this.write();
+    }
+  }
+  public verifyTrace(traceId:number, reciprocate:boolean=true) {
+    if(this.isTraceSuspect(traceId)) {
+      this.removeSuspectTrace(traceId);
+    }
+    const tracedNode = getNodeFromId(traceId);
+    if(tracedNode === undefined) {
+      return;
+    }
+    const thisLabel = schema.getLabelPrefix(this.data.category);
+    const traceLabel = schema.getLabelPrefix(tracedNode.data.category);
+    if(reciprocate) {
+      const traceNode = getNodeFromId(traceId);
       if(traceNode) {
         traceNode.verifyTrace(this.data.id, false);
       }
-      VersionController.commitChanges(`Verified trace from ${this.data.id} to ${nodeId}`);
+      VersionController.commitChanges(`Verified trace from ${thisLabel}${this.data.id} to ${traceLabel}${traceId}`);
     }    
   }
   ///////////////////////////////////////////
   // Private methods
   ///////////////////////////////////////////
   private removeSuspectTrace(nodeId:number) {
-    if(this.data.traces && this.data.traces.suspectTrace) {
-      const suspects = this.data.traces.suspectTrace;
-      const idPos = suspects.findIndex(id => nodeId === id);
-      suspects.splice(idPos,1);
-      this.data.traces.suspectTrace = suspects;
-      this.write();
-    }
+    const suspects = this.data.traces.suspectIds;
+    const idPos = suspects.findIndex(id => nodeId === id);
+    suspects.splice(idPos,1);
+    this.data.traces.suspectIds = suspects;
+    this.write();
   }
   private markTracesSuspect() {
-    if(this.data.traces) {
-      this.markTraceDataSuspect(this.data.traces.upstream);
-      this.markTraceDataSuspect(this.data.traces.downstream);
-    }
-  }
-  private markTraceDataSuspect(traceData:schema.TraceData) {
-    if(traceData.decompose) {
-      this.markTraceArraySuspect(traceData.decompose);
-    }
-    if(traceData.detail) {
-      this.markTraceArraySuspect(traceData.detail);
-    }
-    if(traceData.implement) {
-      this.markTraceArraySuspect(traceData.implement);
-    }
-    if(traceData.satisfy) {
-      this.markTraceArraySuspect(traceData.satisfy);
-    }
-    if(traceData.verify) {
-      this.markTraceArraySuspect(traceData.verify);
-    }
-  }
-  private markTraceArraySuspect(traceArray:number[]) {
-    for(let i = 0; i < traceArray.length; i++) {
-      const trace = traceArray[i];
+    for(let i = 0; i < this.data.traces.traceIds.length; i++) {
+      const trace = this.data.traces.traceIds[i];
       this.addSuspectTrace(trace);
       const traceNode = getNodeFromId(trace);
       if(traceNode) {
@@ -344,67 +279,7 @@ export class SmoresNode extends SmoresDataFile {
       }
     }
   }
-  private addTraceEntry(traceData:schema.TraceData, traceType:string, traceId:number) {
-    switch(traceType) {
-      case "decompose":
-        traceData.decompose = this.addTrace(traceData?.decompose, traceId);
-        break;
-      case "detail":
-        traceData.detail = this.addTrace(traceData?.detail, traceId);
-        break;
-      case "implement":
-        traceData.implement = this.addTrace(traceData?.implement, traceId);
-        break;
-      case "satisfy":
-        traceData.satisfy = this.addTrace(traceData?.satisfy, traceId);
-        break;
-      case "verify":
-        traceData.verify = this.addTrace(traceData?.verify, traceId);
-        break;
-      default:
-        vscode.window.showErrorMessage("Unknown trace type");
-    }
-    return traceData;
-  }
-  private removeTraceEntry(traceData:schema.TraceData, traceType:string, traceId:number) {
-    switch(traceType) {
-      case "decompose":
-        traceData.decompose = this.removeTrace(traceData?.decompose, traceId);
-        break;
-      case "detail":
-        traceData.detail = this.removeTrace(traceData?.detail, traceId);
-        break;
-      case "implement":
-        traceData.implement = this.removeTrace(traceData?.implement, traceId);
-        break;
-      case "satisfy":
-        traceData.satisfy = this.removeTrace(traceData?.satisfy, traceId);
-        break;
-      case "verify":
-        traceData.verify = this.removeTrace(traceData?.verify, traceId);
-        break;
-      default:
-        vscode.window.showErrorMessage("Unknown trace type");
-    }
-    return traceData;
-  }
-  private addTrace(traceArray:number[]|undefined, traceId:number) {
-    if(traceArray) {
-      traceArray.push(traceId);
-    } else {
-      traceArray = [traceId];
-    }
-    return traceArray;
-  }
-  private removeTrace(traceArray:number[]|undefined, traceId:number) {
-    if(traceArray) {
-      const tracePos = traceArray.findIndex(id => traceId === id);
-      if(tracePos >= 0) {
-        traceArray.splice(tracePos, 1);
-      }
-    }
-    return traceArray;
-  }
+
   private canPromoteHeading():boolean {
     const parent = this.getParentNode();
     if(parent !== null && parent.data.category === schema.headingType) {

@@ -22,15 +22,14 @@ export class TreeNode extends vscode.TreeItem {
     this.description = node.data.text;
     this.tooltip = this.description;
     this.iconPath = guiStyle.getNodeIcon(node);
-//    this.iconPath = `$(eye)`;
     this.setContextString();
   }
   setContextString() {
-    let context = "";
+    let context = schema.getLabelPrefix(this.smoresNode.data.category);
     context = this.setContextAddOrderStatus(context);
     context = this.setContextAddPromoteStatus(context);
     context = this.setContextAddDocumentType(context);
-    this.contextValue = `${this.smoresNode.data.category}${context}`;
+    this.contextValue = context;
   }
   private setContextAddOrderStatus(context:string) :string {
     const parent = this.smoresNode.getParentNode();

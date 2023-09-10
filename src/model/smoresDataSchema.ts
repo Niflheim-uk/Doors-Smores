@@ -43,28 +43,20 @@ interface TestData {
   expectedResults: string;
 }
 export interface TraceData {
-  decompose?:number[];
-  detail?:number[];
-  implement?:number[];
-  satisfy?:number[];
-  verify?:number[];
-}
-interface TraceDataSet {
-  upstream:TraceData;
-  downstream:TraceData;
-  suspectTrace?:number[];
+  traceIds:number[];
+  suspectIds:number[];
 }
 export interface NodeDataModel {
   id: number;
   parent: number;
   category: string;
   text: string;
+  traces:TraceData;
   children?: number[];
   documentData?:DocumentData;
   requirementData?:RequirementData;
   testData?:TestData;
   childData?:NodeDataModel[];
-  traces?:TraceDataSet;
 }
 export function getDocumentTypeAcronym(documentType:string):string {
   switch (documentType) {

@@ -1,8 +1,18 @@
 import { SmoresNode, getNodeFromId } from "../model/smoresNode";
-import { DetailedTraceNode, TraceNode, isRequirementTrace, isTestTrace } from "./traceVerification";
-import * as schmea from '../model/smoresDataSchema';
+import * as schema from '../model/smoresDataSchema';
 import { getProject } from "../model/smoresProject";
 import { window } from "vscode";
+
+export type TraceNode = {
+  category:string;
+  documentType:string;
+};
+export type DetailedTraceNode = {
+  category:string;
+  documentType:string;
+  nodeId:number;
+  documentId:number;
+};
 
 export async function getTraceSelection(originId:number):Promise<number|undefined> {
   const originTraceNode = getOriginNode(originId);
@@ -38,6 +48,29 @@ export async function getTraceSelection(originId:number):Promise<number|undefine
     return undefined;
   }
 }
+function isCategoryTraceable(category:string):boolean {
+  switch(category) {
+  case schema.userFRType:
+  case schema.softFRType:
+  case schema.archFRType:
+  case schema.desFRType:
+  case schema.userNFRType:
+  case schema.softNFRType:
+  case schema.archNFRType:
+  case schema.desNFRType:
+  case schema.userDCType:
+  case schema.softDCType:
+  case schema.archDCType:
+  case schema.desDCType:
+  case schema.userTestType:
+  case schema.softTestType:
+  case schema.archTestType:
+  case schema.desTestType:
+    return true;    
+  default:
+    return false;
+  }
+}
 function getOriginNode(originId:number):DetailedTraceNode|undefined {
   const originNode = getNodeFromId(originId);
   if(originNode === undefined) {
@@ -46,13 +79,13 @@ function getOriginNode(originId:number):DetailedTraceNode|undefined {
   }
   const originCategory = originNode.data.category;
   const originTrace:TraceNode = {
-    category:originNode.data.category,
+    category:originCategory,
     documentType:originNode.getDocumentType(),
   };
-  if(isTestTrace(originTrace) || isRequirementTrace(originTrace)) {
+  if(isCategoryTraceable(originCategory)) {
     const documentNode = originNode.getDocument();
     const detailedTraceNode:DetailedTraceNode = {
-      category:originTrace.category,
+      category:originCategory,
       documentType:originTrace.documentType,
       nodeId:originId,
       documentId:documentNode.data.id
@@ -120,28 +153,28 @@ function filterNodesByDocType(nodes:SmoresNode[], acceptableTypes:string[]):Smor
 }
 
 function getValidURSOptions(allOptions:SmoresNode[]):SmoresNode[]|undefined{
-  return filterNodesByDocType(allOptions, [schmea.srsDocType, schmea.atpDocType, schmea.emptyDocType]);
+  return filterNodesByDocType(allOptions, [schema.srsDocType, schema.atpDocType, schema.emptyDocType]);
 }
 function getValidSRSOptions(allOptions:SmoresNode[]):SmoresNode[]|undefined{
-  return filterNodesByDocType(allOptions, [schmea.ursDocType, schmea.srsDocType, schmea.adsDocType, schmea.ddsDocType, schmea.stpDocType, schmea.itpDocType, schmea.emptyDocType]);
+  return filterNodesByDocType(allOptions, [schema.ursDocType, schema.srsDocType, schema.adsDocType, schema.ddsDocType, schema.stpDocType, schema.itpDocType, schema.emptyDocType]);
 }
 function getValidADSOptions(allOptions:SmoresNode[]):SmoresNode[]|undefined{
-  return filterNodesByDocType(allOptions, [schmea.srsDocType, schmea.ddsDocType, schmea.stpDocType, schmea.itpDocType, schmea.utpDocType, schmea.emptyDocType]);
+  return filterNodesByDocType(allOptions, [schema.srsDocType, schema.ddsDocType, schema.stpDocType, schema.itpDocType, schema.utpDocType, schema.emptyDocType]);
 }
 function getValidDDSOptions(allOptions:SmoresNode[]):SmoresNode[]|undefined{
-  return filterNodesByDocType(allOptions, [schmea.srsDocType, schmea.adsDocType, schmea.itpDocType, schmea.utpDocType, schmea.emptyDocType]);
+  return filterNodesByDocType(allOptions, [schema.srsDocType, schema.adsDocType, schema.itpDocType, schema.utpDocType, schema.emptyDocType]);
 }
 function getValidATPOptions(allOptions:SmoresNode[]):SmoresNode[]|undefined{
-  return filterNodesByDocType(allOptions, [schmea.ursDocType, schmea.emptyDocType]);
+  return filterNodesByDocType(allOptions, [schema.ursDocType, schema.emptyDocType]);
 }
 function getValidSTPOptions(allOptions:SmoresNode[]):SmoresNode[]|undefined{
-  return filterNodesByDocType(allOptions, [schmea.srsDocType, schmea.adsDocType, schmea.emptyDocType]);
+  return filterNodesByDocType(allOptions, [schema.srsDocType, schema.adsDocType, schema.emptyDocType]);
 }
 function getValidITPOptions(allOptions:SmoresNode[]):SmoresNode[]|undefined{
-  return filterNodesByDocType(allOptions, [schmea.srsDocType, schmea.adsDocType, schmea.ddsDocType, schmea.emptyDocType]);
+  return filterNodesByDocType(allOptions, [schema.srsDocType, schema.adsDocType, schema.ddsDocType, schema.emptyDocType]);
 }
 function getValidUTPOptions(allOptions:SmoresNode[]):SmoresNode[]|undefined{
-  return filterNodesByDocType(allOptions, [schmea.adsDocType, schmea.ddsDocType, schmea.emptyDocType]);
+  return filterNodesByDocType(allOptions, [schema.adsDocType, schema.ddsDocType, schema.emptyDocType]);
 }
 
 function getValidDocumentOptions(origin:DetailedTraceNode):SmoresNode[]|undefined {
@@ -150,23 +183,23 @@ function getValidDocumentOptions(origin:DetailedTraceNode):SmoresNode[]|undefine
     return undefined;
   }
   switch(origin.documentType) {
-  case schmea.emptyDocType:
+  case schema.emptyDocType:
     return allOptions;
-  case schmea.ursDocType:
+  case schema.ursDocType:
     return getValidURSOptions(allOptions);
-  case schmea.srsDocType:
+  case schema.srsDocType:
     return getValidSRSOptions(allOptions);
-  case schmea.adsDocType:
+  case schema.adsDocType:
     return getValidADSOptions(allOptions);
-  case schmea.ddsDocType:
+  case schema.ddsDocType:
     return getValidDDSOptions(allOptions);
-  case schmea.atpDocType:
+  case schema.atpDocType:
     return getValidATPOptions(allOptions);
-  case schmea.stpDocType:
+  case schema.stpDocType:
     return getValidSTPOptions(allOptions);
-  case schmea.itpDocType:
+  case schema.itpDocType:
     return getValidITPOptions(allOptions);
-  case schmea.utpDocType:
+  case schema.utpDocType:
     return getValidUTPOptions(allOptions);
   }
   return undefined;
@@ -184,7 +217,10 @@ async function getTargetDocument(options:SmoresNode[]):Promise<SmoresNode|undefi
     }
   }
   if(quickPickOptions) {
-    const selection = await window.showQuickPick(quickPickOptions,{canPickMany:false});
+    const selection = await window.showQuickPick(quickPickOptions,{
+      canPickMany:false,
+      title:"Select target document"
+    });
     if(selection) {
       for(let i=0; i<quickPickOptions.length; i++) { 
         if(selection === quickPickOptions[i]) {
@@ -196,80 +232,80 @@ async function getTargetDocument(options:SmoresNode[]):Promise<SmoresNode|undefi
 }
 function getValidCategoryOptions(origin:DetailedTraceNode):string[] {
   switch(origin.category) {
-  case schmea.userFRType:
+  case schema.userFRType:
     return [
-      schmea.userTestType, // tests
-      schmea.softFRType, schmea.softDCType // downstream
+      schema.userTestType, // tests
+      schema.softFRType, schema.softDCType // downstream
     ];
-  case schmea.softFRType:
+  case schema.softFRType:
     return [
-      schmea.softTestType, schmea.archTestType, // tests
-      schmea.userFRType, // upstream
-      schmea.archFRType, schmea.archDCType // downstream
+      schema.softTestType, schema.archTestType, // tests
+      schema.userFRType, // upstream
+      schema.archFRType, schema.archDCType // downstream
     ];
-  case schmea.archFRType:
+  case schema.archFRType:
     return [
-      schmea.archTestType, schmea.desTestType, // tests
-      schmea.softFRType, // upstream
-      schmea.desFRType, schmea.desDCType // downstream
+      schema.archTestType, schema.desTestType, // tests
+      schema.softFRType, // upstream
+      schema.desFRType, schema.desDCType // downstream
     ];
-  case schmea.desFRType:
+  case schema.desFRType:
     return [
-      schmea.desTestType, // tests
-      schmea.archFRType, // upstream
+      schema.desTestType, // tests
+      schema.archFRType, // upstream
     ];
-  case schmea.userNFRType:
+  case schema.userNFRType:
     return [
-      schmea.userTestType, // tests
-      schmea.softNFRType, schmea.softDCType // downstream
+      schema.userTestType, // tests
+      schema.softNFRType, schema.softDCType // downstream
     ];
-  case schmea.softNFRType:
+  case schema.softNFRType:
     return [
-      schmea.softTestType, schmea.archTestType, // test
-      schmea.userNFRType, // upstream
-      schmea.archNFRType, schmea.archDCType, schmea.desNFRType, schmea.desDCType // downstream
+      schema.softTestType, schema.archTestType, // test
+      schema.userNFRType, // upstream
+      schema.archNFRType, schema.archDCType, schema.desNFRType, schema.desDCType // downstream
     ];
-  case schmea.archNFRType:
+  case schema.archNFRType:
     return [
-      schmea.archTestType, schmea.desTestType, // tests
-      schmea.softNFRType, // upstream
-      schmea.desNFRType, schmea.desDCType // downstream
+      schema.archTestType, schema.desTestType, // tests
+      schema.softNFRType, // upstream
+      schema.desNFRType, schema.desDCType // downstream
     ];
-  case schmea.desNFRType:
+  case schema.desNFRType:
     return [
-      schmea.desTestType, // tests
-      schmea.archNFRType, schmea.softNFRType // upstream
+      schema.desTestType, // tests
+      schema.archNFRType, schema.softNFRType // upstream
     ];
-  case schmea.userDCType:
+  case schema.userDCType:
     return [
-      schmea.userTestType, //tests
-      schmea.softDCType
+      schema.userTestType, //tests
+      schema.softDCType
     ];
-  case schmea.softDCType:
+  case schema.softDCType:
     return [
-      schmea.softTestType, schmea.archTestType,
-      schmea.userNFRType, schmea.userDCType,
-      schmea.archDCType, schmea.desDCType
+      schema.softTestType, schema.archTestType,
+      schema.userNFRType, schema.userDCType,
+      schema.archDCType, schema.desDCType
     ];
-  case schmea.archDCType:
+  case schema.archDCType:
     return [
-      schmea.archTestType, schmea.desTestType,
-      schmea.softNFRType, schmea.softDCType,
-      schmea.desDCType
+      schema.archTestType, schema.desTestType,
+      schema.softNFRType, schema.softDCType,
+      schema.desDCType
     ];
-  case schmea.desDCType:
+  case schema.desDCType:
     return [
-      schmea.desTestType,
-      schmea.archNFRType, schmea.archDCType, schmea.softNFRType, schmea.softDCType
+      schema.desTestType,
+      schema.archNFRType, schema.archDCType, schema.softNFRType, schema.softDCType
     ];
-  case schmea.userTestType:
-    return [schmea.userFRType, schmea.userNFRType, schmea.userDCType];
-  case schmea.softTestType:
-    return [schmea.softFRType, schmea.softNFRType, schmea.softDCType];
-  case schmea.archTestType:
-    return [schmea.archFRType, schmea.archNFRType, schmea.archDCType];
-  case schmea.desTestType:
-    return [schmea.desFRType, schmea.desNFRType, schmea.desDCType];
+  case schema.userTestType:
+    return [schema.userFRType, schema.userNFRType, schema.userDCType];
+  case schema.softTestType:
+    return [schema.softFRType, schema.softNFRType, schema.softDCType];
+  case schema.archTestType:
+    return [schema.archFRType, schema.archNFRType, schema.archDCType];
+  case schema.desTestType:
+    return [schema.desFRType, schema.desNFRType, schema.desDCType];
   }  
   return[];
 }
@@ -308,7 +344,10 @@ async function getTraceTarget(targetOptions:SmoresNode[]):Promise<SmoresNode|und
     }
   }
   if(quickPickOptions) {
-    const selection = await window.showQuickPick(quickPickOptions,{canPickMany:false});
+    const selection = await window.showQuickPick(quickPickOptions,{
+      canPickMany:false,
+      title:"Select target item"
+    });
     if(selection) {
       for(let i=0; i<quickPickOptions.length; i++) { 
         if(selection === quickPickOptions[i]) {

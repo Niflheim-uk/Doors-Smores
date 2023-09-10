@@ -1,7 +1,8 @@
 import * as vscode from 'vscode';
 import { SmoresNode } from "../model/smoresNode";
-import * as smoresDataSchema from "../model/smoresDataSchema";
+import * as schema from "../model/smoresDataSchema";
 import { getExtensionBasedPath } from './getExtension';
+
 
 const ursLevelColour = 'debugConsole.sourceForeground';
 const srsLevelColour = 'debugConsole.errorForeground';
@@ -14,28 +15,28 @@ const imageColour = 'debugConsole.warningForeground';
 const mermaidColour = 'debugIcon.restartForeground';
 export function getDocumentColour(node:SmoresNode):vscode.ThemeColor|undefined {
   switch(node.getDocumentType()) {
-    case `${smoresDataSchema.ursDocType}`: 
+    case `${schema.ursDocType}`: 
       return new vscode.ThemeColor(ursLevelColour);
 
-    case `${smoresDataSchema.srsDocType}`: 
+    case `${schema.srsDocType}`: 
       return new vscode.ThemeColor(srsLevelColour);
 
-    case `${smoresDataSchema.adsDocType}`: 
+    case `${schema.adsDocType}`: 
       return new vscode.ThemeColor(adsLevelColour);
 
-    case `${smoresDataSchema.ddsDocType}`: 
+    case `${schema.ddsDocType}`: 
       return new vscode.ThemeColor(ddsLevelColour);
 
-    case `${smoresDataSchema.atpDocType}`: 
+    case `${schema.atpDocType}`: 
       return new vscode.ThemeColor(ursLevelColour);
 
-    case `${smoresDataSchema.stpDocType}`: 
+    case `${schema.stpDocType}`: 
       return new vscode.ThemeColor(srsLevelColour);
 
-    case `${smoresDataSchema.itpDocType}`: 
+    case `${schema.itpDocType}`: 
       return new vscode.ThemeColor(adsLevelColour);
 
-    case `${smoresDataSchema.utpDocType}`: 
+    case `${schema.utpDocType}`: 
       return new vscode.ThemeColor(ddsLevelColour);
   }
   return undefined;
@@ -44,48 +45,54 @@ export function getDocumentColour(node:SmoresNode):vscode.ThemeColor|undefined {
 export function getNodeIcon(node:SmoresNode):vscode.ThemeIcon {
   var iconColour:vscode.ThemeColor|undefined;
   switch(node.data.category) {
-    case "document":
-      iconColour = getDocumentColour(node);
-      return new vscode.ThemeIcon('book', iconColour);
-    case "heading":
-      iconColour = new vscode.ThemeColor('foreground');
-      return new vscode.ThemeIcon('symbol-text', iconColour);
-    case "userRequirement":
-      iconColour = new vscode.ThemeColor(ursLevelColour);
-      return new vscode.ThemeIcon('person', iconColour);
-    case "functionalRequirement":
-      iconColour = new vscode.ThemeColor(funcReqColour);
-      return new vscode.ThemeIcon('law', iconColour);
-    case "nonFunctionalRequirement":
-      iconColour = new vscode.ThemeColor(nonFuncReqColour);
-      return new vscode.ThemeIcon('law', iconColour);
-    case "designConstraint":
-      iconColour = new vscode.ThemeColor(desConColour);
-      return new vscode.ThemeIcon('lock', iconColour);
-    case "userAcceptanceTest":
-      iconColour = new vscode.ThemeColor(ursLevelColour);
-      return new vscode.ThemeIcon('beaker', iconColour);
-    case "softwareSystemTest":
-      iconColour = new vscode.ThemeColor(srsLevelColour);
-      return new vscode.ThemeIcon('beaker', iconColour);
-    case "softwareIntegrationTest":
-      iconColour = new vscode.ThemeColor(adsLevelColour);
-      return new vscode.ThemeIcon('beaker', iconColour);
-    case "softwareUnitTest":
-      iconColour = new vscode.ThemeColor(ddsLevelColour);
-      return new vscode.ThemeIcon('beaker', iconColour);
-    case "comment":
-      iconColour = new vscode.ThemeColor('foreground');
-      return new vscode.ThemeIcon('selection', iconColour);
-    case "image":
-      iconColour = new vscode.ThemeColor(imageColour);
-      return new vscode.ThemeIcon('symbol-color', iconColour);
-    case "mermaid":
-      iconColour = new vscode.ThemeColor(mermaidColour);
-      return new vscode.ThemeIcon('symbol-color', iconColour);
-    default:
-      iconColour = new vscode.ThemeColor('errorForeground');
-      return new vscode.ThemeIcon('question', iconColour);
+  case schema.documentType:
+    iconColour = getDocumentColour(node);
+    return new vscode.ThemeIcon('book', iconColour);
+  case schema.headingType:
+    iconColour = new vscode.ThemeColor('foreground');
+    return new vscode.ThemeIcon('symbol-text', iconColour);
+  case schema.userFRType:
+  case schema.softFRType:
+  case schema.archFRType:
+  case schema.desFRType:
+    iconColour = new vscode.ThemeColor(funcReqColour);
+    return new vscode.ThemeIcon('law', iconColour);
+  case schema.userNFRType:
+  case schema.softNFRType:
+  case schema.archNFRType:
+  case schema.desNFRType:
+    iconColour = new vscode.ThemeColor(nonFuncReqColour);
+    return new vscode.ThemeIcon('law', iconColour);
+  case schema.userDCType:
+  case schema.softDCType:
+  case schema.archDCType:
+  case schema.desDCType:
+    iconColour = new vscode.ThemeColor(desConColour);
+    return new vscode.ThemeIcon('lock', iconColour);
+  case schema.userTestType:
+    iconColour = new vscode.ThemeColor(ursLevelColour);
+    return new vscode.ThemeIcon('beaker', iconColour);
+  case schema.softTestType:
+    iconColour = new vscode.ThemeColor(srsLevelColour);
+    return new vscode.ThemeIcon('beaker', iconColour);
+  case schema.archTestType:
+    iconColour = new vscode.ThemeColor(adsLevelColour);
+    return new vscode.ThemeIcon('beaker', iconColour);
+  case schema.desTestType:
+    iconColour = new vscode.ThemeColor(ddsLevelColour);
+    return new vscode.ThemeIcon('beaker', iconColour);
+  case schema.commentType:
+    iconColour = new vscode.ThemeColor('foreground');
+    return new vscode.ThemeIcon('selection', iconColour);
+  case schema.imageType:
+    iconColour = new vscode.ThemeColor(imageColour);
+    return new vscode.ThemeIcon('symbol-color', iconColour);
+  case schema.mermaidType:
+    iconColour = new vscode.ThemeColor(mermaidColour);
+    return new vscode.ThemeIcon('symbol-color', iconColour);
+  default:
+    iconColour = new vscode.ThemeColor('errorForeground');
+    return new vscode.ThemeIcon('question', iconColour);
   }
 }
 export function getDocumentStylePaths():string[] {

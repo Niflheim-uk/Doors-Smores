@@ -1,10 +1,6 @@
 import * as vscode from "vscode";
-import * as path from "path";
-import * as fs from 'fs';
 import * as schema from '../model/smoresDataSchema';
-import { SmoresDataFile } from "../model/smoresDataFile";
 import { SmoresNode, getNodeFromId } from "../model/smoresNode";
-import * as utils from '../utils/utils';
 import { 
   getDownstreamReqTraceHtml, 
   getDownstreamTestTraceHtml,
@@ -12,11 +8,10 @@ import {
   getUpstreamTestTraceHtml,
   getTraceTargetHtml
  } from "./traceHtml";
-import { getProject } from "../model/smoresProject";
 import { clearNonce, getNonce } from "../utils/getNonce";
 import { getExtensionUri } from "../utils/getExtension";
 import { getScriptPath, getTracingStylePaths } from "../utils/gui";
-import { TraceNode, TraceValidity, setTraceValidationOrigin, validateTraceInput, verifyTraceLink } from "./traceVerification";
+import { getTraceSelection } from "./traceSelection";
 
 export class TraceView {
   public static currentPanel: TraceView | undefined;
@@ -78,7 +73,7 @@ export class TraceView {
   private async handleMessageFromPanel(message:any) {
     switch (message.command) {
     case 'addTrace':
-      await this.addTrace(message.traceType, message.traceUpstream);
+      await this.addTrace();
       this.refresh();
       return;
     case 'verifyTrace':
@@ -89,13 +84,9 @@ export class TraceView {
       return;
     case 'removeTrace':
       if(this._viewNode) {
-        if(message.traceUpstream) {
-          this._viewNode.removeUpstreamTrace(message.traceType, message.nodeId);
-        } else {
-          this._viewNode.removeDownstreamTrace(message.traceType, message.nodeId);
-        }
-        this.refresh();
+        this._viewNode.removeTrace(message.nodeId);
       }
+      this.refresh();
       return;
     case 'viewTrace':
       const traceNode = getNodeFromId(message.nodeId);
@@ -106,30 +97,15 @@ export class TraceView {
       return;
     }
   }
-  private async addTrace(traceType:string, upstream:boolean) {            
-    const projectNode = getProject();
-    if(this._viewNode === undefined || projectNode === undefined) {
+  private async addTrace() { 
+    if(this._viewNode === undefined) {
       return;
     }
-    const origin:TraceNode = {
-      category:this._viewNode.data.category,
-      documentType:this._viewNode.getDocumentType()
-    };
-    setTraceValidationOrigin(origin, upstream);
-    const nodeIdStr = await vscode.window.showInputBox({
-      prompt:"Enter the id of the target node",
-      placeHolder:"node id (number only, no prefix)",
-      validateInput: validateTraceInput});
-    if(nodeIdStr) {
-      const nodeId = parseInt(nodeIdStr);
-      if(projectNode.verifyId(nodeId)) {
-        if(upstream) {
-          this._viewNode.addUpstreamTrace(traceType, nodeId);
-        } else {
-          this._viewNode.addDownstreamTrace(traceType, nodeId);
-        }
-      }
+    const traceId = await getTraceSelection(this._viewNode.data.id);
+    if(this._viewNode && traceId) {
+      this._viewNode.addTrace(traceId);
     }
+    console.log(`selected: ${traceId}`);
   }
   private getPageHtml():string {
     if(this._viewNode === undefined) {
