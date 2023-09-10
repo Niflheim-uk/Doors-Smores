@@ -40,6 +40,7 @@ export class SmoresDocument extends DocumentNode {
       if(detail) {
         await this.addRevisionHistory(nextRev, [detail], false);
         this.exportDocument();
+        VersionController.issueProject(nextRev.major, nextRev.minor, detail);
       }
     }
   }

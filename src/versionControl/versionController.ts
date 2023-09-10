@@ -1,4 +1,5 @@
 import { pathspec, SimpleGitOptions, simpleGit } from 'simple-git';
+import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { DoorsSmores } from '../doorsSmores';
@@ -105,6 +106,41 @@ export class VersionController {
   }
   public static async getUserName() {
     return simpleGit(_gitOptions).raw('config', 'user.name').catch(err=>{return "Unknown";});
+  }
+  public static async issueProject(major:number, minor:number, message:string) {
+    const project = DoorsSmores.getActiveProject();
+    const issueTag = `${String(major).padStart(2, '0')}-${String(minor).padStart(2, '0')}`;
+    if(project) {
+      if(!_open) {
+        await VersionController.makeIssueCopy(issueTag);
+      } else {
+        await VersionController.tagIssue(issueTag, message);
+      }
+    }
+  }
+  private static async makeIssueCopy(tag:string) {
+    const srcRoot = DoorsSmores.getDataDirectory();
+    const destRoot = srcRoot.concat(`_${tag}`);
+    await VersionController.duplicateDirectory(srcRoot, destRoot);
+  }
+  private static async tagIssue(tag:string, message:string) {
+    await simpleGit(_gitOptions).addAnnotatedTag(tag, message);
+  }
+  private static async duplicateDirectory(src:string, dest:string) {
+    const srcContents = await vscode.workspace.fs.readDirectory(vscode.Uri.file(src));
+    for(let i=0; i < srcContents.length; i++) {
+      const [name, type] = srcContents[i];
+      const srcPath = path.join(src, name);
+      const destPath = path.join(dest, name);
+      if (type === vscode.FileType.File) {
+        vscode.workspace.fs.copy(vscode.Uri.file(srcPath),vscode.Uri.file(destPath));
+      } else if (type === vscode.FileType.Directory) {
+        vscode.workspace.fs.createDirectory(vscode.Uri.file(destPath));
+        await VersionController.duplicateDirectory(srcPath, destPath);
+      } else {
+        vscode.window.showErrorMessage(`Unexpected file type found during directory duplication: ${destPath}`);
+      }
+    }
   }
 }
   

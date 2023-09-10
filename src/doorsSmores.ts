@@ -12,7 +12,7 @@ import { newDocument } from './model/newDocument';
 import { VersionController } from './versionControl/versionController';
 import { SmoresDocument } from './model/smoresDocument';
 
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
   vscode.commands.executeCommand('setContext', 'doors-smores.projectOpen', false);
   new DoorsSmores(context);
 }
@@ -62,7 +62,7 @@ export class DoorsSmores {
     DocumentView.refresh();
     TraceView.refresh();
     DoorsSmores.updateStatusBar();
-  }
+}
   public static getWorkspaceDirectory() {
     const rootPath =
     vscode.workspace.workspaceFolders &&
