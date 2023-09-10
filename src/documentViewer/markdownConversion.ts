@@ -6,7 +6,14 @@ const converterOptions:ConverterOptions = {
 };
 export function getHtmlFromMd(mdString:string):string {
   const converter = new Converter(converterOptions);
-  return converter.makeHtml(mdString);
+  const html =  converter.makeHtml(mdString);
+  return paragraphHtml(html);
+}
+function paragraphHtml(html:string):string {
+  if(html.slice(-4) === '</p>') {
+    return html;
+  }
+  return `<p>${html}</p>`;
 }
 
 export function getIndentedHtmlFromMd(mdString:string):string {

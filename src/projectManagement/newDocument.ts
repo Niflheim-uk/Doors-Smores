@@ -2,9 +2,14 @@ import * as vscode from 'vscode';
 import { getProject } from '../model/smoresProject';
 import { SmoresNode } from '../model/smoresNode';
 import * as smoresDataSchema from '../model/smoresDataSchema';
-import { createNodesForSRSFull, createNodesForSRSMini } from './documentTemplates/srsTemplate';
 import { createNodesForURSFull, createNodesForURSMini } from './documentTemplates/ursTemplate';
+import { createNodesForSRSFull, createNodesForSRSMini } from './documentTemplates/srsTemplate';
+import { createNodesForADSFull, createNodesForADSMini } from './documentTemplates/adsTemplate';
+import { createNodesForDDSFull, createNodesForDDSMini } from './documentTemplates/ddsTemplate';
+import { createNodesForATPFull, createNodesForATPMini } from './documentTemplates/atpTemplate';
 import { createNodesForSTPFull, createNodesForSTPMini } from './documentTemplates/stpTemplate';
+import { createNodesForITPFull, createNodesForITPMini } from './documentTemplates/itpTemplate';
+import { createNodesForUTPFull, createNodesForUTPMini } from './documentTemplates/utpTemplate';
 import { VersionController } from '../versionControl/versionController';
 
 
@@ -59,51 +64,51 @@ function createTemplateNodes(docNode:SmoresNode, docType:string) {
     case `${smoresDataSchema.ursDocType} (Mini)`:
       createNodesForURSMini(docNode);
       break;
-    // case `${ursDocType} (Full)`:
-    //   createNodesForURSFull(docNode);
-    //   break;
+    case `${smoresDataSchema.ursDocType} (Full)`:
+      createNodesForURSFull(docNode);
+      break;
     case `${smoresDataSchema.srsDocType} (Mini)`:
       createNodesForSRSMini(docNode);
       break;
     case `${smoresDataSchema.srsDocType} (Full)`:
       createNodesForSRSFull(docNode);
       break;
-    // case `${adsDocType} (Mini)`:
-    //   createNodesForADSMini(docNode);
-    //   break;
-    // case `${adsDocType} (Full)`:
-    //   createNodesForADSFull(docNode);
-    //   break;
-    // case `${ddsDocType} (Mini)`:
-    //   createNodesForDDSMini(docNode);
-    //   break;
-    // case `${ddsDocType} (Full)`:
-    //   createNodesForDDSFull(docNode);
-    //   break;
-    // case `${atpDocType} (Mini)`:
-    //   createNodesForATPMini(docNode);
-    //   break;
-    // case `${atpDocType} (Full)`:
-    //   createNodesForATPFull(docNode);
-    //   break;
+    case `${smoresDataSchema.adsDocType} (Mini)`:
+      createNodesForADSMini(docNode);
+      break;
+    case `${smoresDataSchema.adsDocType} (Full)`:
+      createNodesForADSFull(docNode);
+      break;
+    case `${smoresDataSchema.ddsDocType} (Mini)`:
+      createNodesForDDSMini(docNode);
+      break;
+    case `${smoresDataSchema.ddsDocType} (Full)`:
+      createNodesForDDSFull(docNode);
+      break;
+    case `${smoresDataSchema.atpDocType} (Mini)`:
+      createNodesForATPMini(docNode);
+      break;
+    case `${smoresDataSchema.atpDocType} (Full)`:
+      createNodesForATPFull(docNode);
+      break;
     case `${smoresDataSchema.stpDocType} (Mini)`:
       createNodesForSTPMini(docNode);
       break;
-    // case `${stpDocType} (Full)`:
-    //   createNodesForSTPFull(docNode);
-    //   break;
-    // case `${itpDocType} (Mini)`:
-    //   createNodesForITPMini(docNode);
-    //   break;
-    // case `${itpDocType} (Full)`:
-    //   createNodesForITPFull(docNode);
-    //   break;
-    // case `${utpDocType} (Mini)`:
-    //   createNodesForUTPMini(docNode);
-    //   break;
-    // case `${utpDocType} (Full)`:
-    //   createNodesForUTPFull(docNode);
-    //   break;
+    case `${smoresDataSchema.stpDocType} (Full)`:
+      createNodesForSTPFull(docNode);
+      break;
+    case `${smoresDataSchema.itpDocType} (Mini)`:
+      createNodesForITPMini(docNode);
+      break;
+    case `${smoresDataSchema.itpDocType} (Full)`:
+      createNodesForITPFull(docNode);
+      break;
+    case `${smoresDataSchema.utpDocType} (Mini)`:
+      createNodesForUTPMini(docNode);
+      break;
+    case `${smoresDataSchema.utpDocType} (Full)`:
+      createNodesForUTPFull(docNode);
+      break;
     default:
       break;
   }

@@ -1,23 +1,17 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { SmoresNode } from "../../model/smoresNode";
-import { newComment, newHeading } from "../newNode";
+import { 
+  createHistoryTable,
+  createReferenceTable,
+  createGlossaryTable,
+  createIntroduction
+ } from "./documentParts";
 
 export function createNodesForSRSFull(docNode:SmoresNode) {
-  const path_1 = docNode.newItem("heading", "Introduction");
-  const node_1 = new SmoresNode(path_1!);
-  node_1.newItem("comment", "The introduction should provide an overview of the entire SRS.");
-  const path_1_1 = node_1.newItem("heading", "Purpose");
-  const node_1_1 = new SmoresNode(path_1_1!);
-  node_1_1.newItem("comment", "This subsection should describe the purpose of the SRS, and specify the intended audience");
-  const path_1_2 = node_1.newItem("heading", "Scope");
-  const node_1_2 = new SmoresNode(path_1_2!);
-  node_1_2.newItem("comment", "This subsection should   \n- Identify the software to be produced by name   \n- Explain what the software will do   \n- Describe the application of the software, including any benefits or goals");
-  const path_1_3 = node_1.newItem("heading", "Definitions, acronyms, and abbreviations");
-  const node_1_3 = new SmoresNode(path_1_3!);
-  node_1_3.newItem("comment", "This subsection should provide the definitions of all terms, acronyms, and abbreviations required to properly interpret the SRS. This information may be provided by reference to one or more appendixes in the SRS or by reference to other documents.");
-  const path_1_4 = node_1.newItem("heading", "References");
-  const node_1_4 = new SmoresNode(path_1_4!);
-  node_1_4.newItem("comment", "This subsection should   \n- Provide a complete list of all documents referenced elsewhere in the SRS;   \n- Identify each document by title, report number (if applicable), date, and publishing organization   \n- Specify the sources from which the references can be obtained.   \nThis information may be provided by reference to an appendix or to another document.");
+  createHistoryTable(docNode);
+  const node_1 = createIntroduction(docNode);
+  createGlossaryTable(node_1);
+  createReferenceTable(node_1);
   const path_1_5 = node_1.newItem("heading", "Overview");
   const node_1_5 = new SmoresNode(path_1_5!);
   node_1_5.newItem("comment", "This subsection should   \n- Describe what the rest of the SRS contains   \n- Explain how the SRS is organized.");
@@ -132,6 +126,7 @@ export function createNodesForSRSFull(docNode:SmoresNode) {
 }
 
 export function createNodesForSRSMini(docNode:SmoresNode) {
+  createHistoryTable(docNode);
   const path_1 = docNode.newItem("heading", "Introduction");
   const node_1 = new SmoresNode(path_1!);
   node_1.newItem("comment", "The introduction should outline the document. What is its purpose? Who is it for? What will the rest of the document contain?");

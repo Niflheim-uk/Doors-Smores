@@ -4,11 +4,11 @@ import {
   documentStart
  } from "./documentParts";
 
-export function createNodesForURSFull(docNode:SmoresNode) {
+export function createNodesForADSFull(docNode:SmoresNode) {
   documentStart(docNode);
 }
 
-export function createNodesForURSMini(docNode:SmoresNode) {
+export function createNodesForADSMini(docNode:SmoresNode) {
   documentStart(docNode);
 
   const path_2 = docNode.newItem("heading", "Overall description");
