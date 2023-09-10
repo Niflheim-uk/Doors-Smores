@@ -82,7 +82,7 @@ function getMdForTestCategory(node:DocumentNode):string {
   return `| | |    \n|-|-|    \n|__Test case ${node.data.id}__|${text}|    \n|__Expected results__|${results}|    \n\n`;
 }
 function getMdForMermaidImageCategory(node:DocumentNode):string {
-  return `Mermaid ${node.data.id}:    \n\t${node.data.text}    \n\n`;
+  return `Mermaid ${node.data.id}:    \n\`\`\`\n${node.data.text}\n\`\`\`\n\n`;
 }
 async function getMdForImageCategory(node:DocumentNode):Promise<string> {
   const imageFilepath = join(node.getDirPath(), `${node.data.text}`);
@@ -90,8 +90,8 @@ async function getMdForImageCategory(node:DocumentNode):Promise<string> {
     const fileStat = await vscode.workspace.fs.stat(vscode.Uri.file(imageFilepath));
     const creationDate = new Date(fileStat.ctime).toDateString();
     const modifyDate = new Date(fileStat.mtime).toDateString();
-    return `Image ${node.data.id}:    \n\tFile: ${node.data.text}    \n\tSize: ${fileStat.size}    \n\tCreated: ${creationDate}    \n\tModified: ${modifyDate}    \n\n`;
+    return `Image ${node.data.id}:    \n\`\`\`\nFile: ${node.data.text}    \nSize: ${fileStat.size}    \nCreated: ${creationDate}    \nModified: ${modifyDate}\n\`\`\`\n\n`;
   } else {
-    return `Image ${node.data.id}:    \n\tFile: ${node.data.text} (Not found)    \n\n`;
+    return `Image ${node.data.id}:    \n\`\`\`\nFile: ${node.data.text} (Not found)\n\`\`\`\n\n`;
   }
 }
