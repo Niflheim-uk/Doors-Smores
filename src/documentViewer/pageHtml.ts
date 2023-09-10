@@ -1,34 +1,18 @@
 import * as vscode from "vscode";
-import * as fs from 'fs';
-import * as path from 'path';
-import { SmoresNode } from "../model/smoresNode";
-import {getBodyHtml} from './bodyHtml';
 import * as utils from "../utils/utils";
-import { SmoresDataFile } from "../model/smoresDataFile";
+import { getNonce } from "../utils/getNonce";
+import { getExtensionBasedPath } from "../utils/getExtension";
+import { getBaseStylePaths, getScriptPath } from "../utils/gui";
 
-const _extensionPath = SmoresDataFile.getExtensionPath();
-
-function getMermaidPath():string|undefined {
-  if(_extensionPath) {
-    return path.join(_extensionPath, 'resources', 'vendor', 'mermaid', 'mermaid.min.js');
-  }
-  return undefined;
-}
-function getStyleBlock(exporting:boolean):string {
-  const nonce = utils.getNonce();
-  const webview = utils.getDocumentWebview();
-  const stylePaths = utils.getDocStylePaths(_extensionPath);
-  if(webview === undefined || stylePaths === undefined) {
+export function getStyleBlock(webview:vscode.Webview, exporting:boolean):string {
+  const nonce = getNonce();
+  const stylePaths = getBaseStylePaths();
+  if(webview === undefined) {
     return "";
   }
   var styleUri:string[];
   if(exporting) {
-    styleUri = [
-      stylePaths[0],
-      stylePaths[1],
-      stylePaths[2],
-      stylePaths[3]
-    ];
+    styleUri = stylePaths;
   } else {
     styleUri = [
       webview.asWebviewUri(vscode.Uri.file(stylePaths[0])).toString(),
@@ -44,11 +28,10 @@ function getStyleBlock(exporting:boolean):string {
   <link nonce="${nonce}" href="${styleUri[3]}" rel="stylesheet"/>
   `;
 }
-function getScriptBlock(exporting:boolean):string {
-  const nonce = utils.getNonce();
-  const webview = utils.getDocumentWebview();
-  const scriptPath = utils.getScriptPath(_extensionPath);
-  if(webview === undefined || scriptPath === undefined) {
+export function getScriptBlock(webview:vscode.Webview, exporting:boolean):string {
+  const nonce = getNonce();
+  const scriptPath = getScriptPath();
+  if(webview === undefined) {
     return "";
   }
   if(exporting === true) {
@@ -60,10 +43,9 @@ function getScriptBlock(exporting:boolean):string {
   `;
 }
 
-function getMermaidBlock(exporting:boolean):string {
-  const nonce = utils.getNonce();
-  const webview = utils.getDocumentWebview();
-  const mermaidPath = getMermaidPath();
+export function getMermaidBlock(webview:vscode.Webview, exporting:boolean):string {
+  const nonce = getNonce();
+  const mermaidPath = getExtensionBasedPath(['resources', 'vendor', 'mermaid', 'mermaid.min.js']);
   const mermaidConfig = `{ 
     startOnLoad: true, 
     theme: 'neutral',
@@ -73,7 +55,7 @@ function getMermaidBlock(exporting:boolean):string {
       } 
     }`;
   var mermaidUri;
-  if(webview === undefined || mermaidPath === undefined) {
+  if(webview === undefined) {
     return "";
   }
   if(exporting) {
@@ -86,41 +68,3 @@ function getMermaidBlock(exporting:boolean):string {
   <script nonce="${nonce}" src="${mermaidUri}"></script>
   <script nonce="${nonce}">mermaid.initialize(${mermaidConfig});</script>`;
 }
-export function getPageHtml(node:SmoresNode, exporting:boolean, editNode?:SmoresNode):string {
-  const nonce = utils.getNonce();
-  const webview = utils.getDocumentWebview();
-  if(webview === undefined) {
-    return "";
-  }
-  const bodyHtml = getBodyHtml(node, exporting, editNode);
-  const styleBlock = getStyleBlock(exporting);
-  const scriptBlock = getScriptBlock(exporting);
-  const mermaidBlock = getMermaidBlock(exporting);
-  utils.clearNonce();
-  
-  return `
-  <!DOCTYPE html>
-  <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta http-equiv="Content-Security-Policy" content="
-        default-src 'none'; 
-        img-src ${webview.cspSource} 'nonce-${nonce}';
-        script-src ${webview.cspSource} 'nonce-${nonce}';
-        style-src ${webview.cspSource} 'nonce-${nonce}';
-      "/>
-      ${styleBlock}
-      <title>${node.data.text}</title>
-    </head>
-    <body>${bodyHtml}${mermaidBlock}${scriptBlock}</body>    
-  </html>`;  
-}
-/*
-      <meta http-equiv="Content-Security-Policy" content="
-        default-src 'none'; 
-        img-src ${webview.cspSource} 'nonce-${nonce}';
-        script-src ${webview.cspSource} 'nonce-${nonce}';
-        style-src ${webview.cspSource} 'nonce-${nonce}';
-      "/>
-*/

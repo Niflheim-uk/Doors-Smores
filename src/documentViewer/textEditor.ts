@@ -17,15 +17,13 @@ function getButtons(nodeId:number) {
   const dataAttribute = `data-node-id='${nodeId}'`;
   return `
   <button class="editSubmit" ${dataAttribute}>Submit</button>
+  <button class="helpButton" ${dataAttribute}>(?)</button>
   <button class="editCancel">Cancel</button>
   `;
 }
 
 function getHelp(helpText:string, nodeId:number) {
-  const dataAttribute = `data-node-id='${nodeId}'`;
-  return`
-  <button class="helpButton" ${dataAttribute}>(?)</button>
-  <div id="help-${nodeId}" class="helpText">${helpText}</div>`;
+  return`<div id="help-${nodeId}" class="helpText">${helpText}</div>`;
 }
 function getCommentEditDivHtml(node:SmoresNode):string {
   let helpText:string = `${commentHelp}<br/>${mdHelp}`;

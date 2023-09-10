@@ -31,8 +31,6 @@ export class DoorsSmores {
   static traceView:TraceView;
   constructor(context: vscode.ExtensionContext) {
     DoorsSmores.treeView = new TreeNodeProvider();
-    DoorsSmores.documentView = new DocumentViewer();
-    DoorsSmores.traceView = new TraceView();
     this.register(context);
   }
 
@@ -50,25 +48,27 @@ export class DoorsSmores {
     context.subscriptions.push(...registrations);
   }
   static refreshViews() {
-    if(DoorsSmores.documentView.isViewActive()) {
-      DoorsSmores.documentView.updatePanel();
+    if(DocumentViewer.currentPanel) {
+      DocumentViewer.currentPanel.refresh();
     }
     DoorsSmores.treeView.refresh();
   }
   static viewTreeNode(node:TreeNode) {
-    DoorsSmores.documentView.showNode(node.smoresNode);
+    DocumentViewer.render(node.smoresNode);
   }
   static traceTreeNode(node:TreeNode) {
-    DoorsSmores.traceView.showTraceView(node.smoresNode);
+    TraceView.render(node.smoresNode);
   }
   static traceWebviewNode(context:any) {
     const node = getNodeFromContext(context);
     if(node) {
-      DoorsSmores.traceView.showTraceView(node);
+      TraceView.render(node);
     }
   }
   static editWebviewNode(context:any) {
-    DoorsSmores.documentView.editNode(context);
+    if(DocumentViewer.currentPanel) {
+      DocumentViewer.currentPanel.editNode(context);
+    }
   }
   
   private registerProjectCommands():vscode.Disposable[] {

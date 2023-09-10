@@ -12,51 +12,94 @@ import {
   getTraceTargetHtml
  } from "./traceHtml";
 import { getProject } from "../model/smoresProject";
+import { clearNonce, getNonce } from "../utils/getNonce";
+import { getExtensionUri } from "../utils/getExtension";
+import { getScriptPath, getTracingStylePaths } from "../utils/gui";
 
 export class TraceView {
-  private _viewPanel: vscode.WebviewPanel | undefined;
-  private _viewedNode: SmoresNode|undefined;
+  public static currentPanel: TraceView | undefined;
+  private readonly _panel: vscode.WebviewPanel;
+  private _disposables: vscode.Disposable[] = [];
+  private _viewNode: SmoresNode|undefined;
 
-  constructor() {}
-
-  public showTraceView(node: SmoresNode) {
-    if(node === undefined) {
-      return;
-    }
-    if (this._viewPanel === undefined) {
-      this._createPanel(node);
-    } else {
-      this._viewedNode = node;
-      this._viewPanel.reveal();
-    }
-    this.updatePanel();
+  private constructor(panel: vscode.WebviewPanel, node:SmoresNode) {
+    this._panel = panel;
+    this._viewNode = node;
+    // Assign event handlers
+    this._panel.webview.onDidReceiveMessage((message) => {
+      this.handleMessageFromPanel(message);
+    });
+    this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
   }
+  public dispose() {
+    TraceView.currentPanel = undefined;
+    this._panel.dispose();
+    while (this._disposables.length) {
+      const disposable = this._disposables.pop();
+      if (disposable) {
+        disposable.dispose();
+      }
+    }
+  }
+
+  public setViewNode(node:SmoresNode) {
+    this._viewNode = node;
+  }
+
+  public static render(node:SmoresNode) {
+    if (TraceView.currentPanel) {
+      TraceView.currentPanel.setViewNode(node);
+      TraceView.currentPanel._panel.reveal(vscode.ViewColumn.One);
+    } else {
+      const extensionUri = getExtensionUri();
+      const panel = vscode.window.createWebviewPanel(
+        "smoresTraceView", // Identifies the type of the webview. Used internally
+        "Trace View", // Title of the panel displayed to the user
+        vscode.ViewColumn.One, // Editor column to show the new webview panel in.
+        {
+          enableScripts: true,
+          localResourceRoots:[
+            vscode.Uri.joinPath(extensionUri, 'resources'),
+            vscode.Uri.joinPath(extensionUri, 'node_modules', '@vscode', 'codicons', 'dist')
+          ]
+        }
+      );
+      TraceView.currentPanel = new TraceView(panel, node);
+    }
+    return TraceView.currentPanel.refresh();
+  }
+  public refresh() {
+    this._panel.webview.html = this.getPageHtml();
+    return this._panel.webview.html;
+  }
+    
   private handleMessageFromPanel(message:any) {
     switch (message.command) {
       case 'addTrace':
         this.addTrace(message.traceType, message.traceUpstream);
         return;
       case 'removeTrace':
-        if(this._viewedNode) {
+        if(this._viewNode) {
           if(message.traceUpstream) {
-            this._viewedNode.removeUpstreamTrace(message.traceType, message.nodeId);
+            this._viewNode.removeUpstreamTrace(message.traceType, message.nodeId);
           } else {
-            this._viewedNode.removeDownstreamTrace(message.traceType, message.nodeId);
+            this._viewNode.removeDownstreamTrace(message.traceType, message.nodeId);
           }
-          this.showTraceView(this._viewedNode);
+          this.refresh();
         }
         return;
       case 'viewTrace':
         const traceNode = getNodeFromId(message.nodeId);
         if(traceNode) {
-          this.showTraceView(traceNode);
+          this.setViewNode(traceNode);
+          this.refresh();
         }
         return;
     }
   }
   private async addTrace(traceType:string, upstream:boolean) {            
     const projectNode = getProject();
-    if(this._viewedNode === undefined || projectNode === undefined) {
+    if(this._viewNode === undefined || projectNode === undefined) {
       return;
     }
     const nodeIdStr = await vscode.window.showInputBox({
@@ -74,73 +117,31 @@ export class TraceView {
       const nodeId = parseInt(nodeIdStr);
       if(projectNode.verifyId(nodeId)) {
         if(upstream) {
-          this._viewedNode.addUpstreamTrace(traceType, nodeId);
+          this._viewNode.addUpstreamTrace(traceType, nodeId);
         } else {
-          this._viewedNode.addDownstreamTrace(traceType, nodeId);
+          this._viewNode.addDownstreamTrace(traceType, nodeId);
         }
       }
-      this.showTraceView(this._viewedNode);
+      this.refresh();
     }
   }
-  private _createPanel(node:SmoresNode) {
-    this._viewedNode = node;
-    const extensionPath = SmoresDataFile.getExtensionPath();
-    if(extensionPath === undefined) {
-      return;
-    }
-    const extensionUri = vscode.Uri.file(extensionPath);    
-    this._viewPanel = vscode.window.createWebviewPanel(
-      "smoresTraceView", // Identifies the type of the webview. Used internally
-      "Trace View", // Title of the panel displayed to the user
-      vscode.ViewColumn.One, // Editor column to show the new webview panel in.
-      {
-        enableScripts: true,
-        localResourceRoots:[
-          vscode.Uri.joinPath(extensionUri, 'resources'),
-          vscode.Uri.joinPath(extensionUri, 'node_modules', '@vscode', 'codicons', 'dist')
-        ]
-      }
-    );
-    utils.setTraceWebview(this._viewPanel.webview);
-    // Assign event handlers
-    this._viewPanel.webview.onDidReceiveMessage((message) => {
-      this.handleMessageFromPanel(message);
-    });
-
-    this._viewPanel.onDidDispose((e) => {
-      console.log("closed panel");
-      this._viewPanel = undefined;
-      utils.clearTraceWebview();
-    });
-  }
-  public updatePanel() {
-    if(this._viewPanel === undefined || this._viewedNode === undefined) {
-      return;
-    }
-    this._viewPanel.webview.html = this.getPageHtml(this._viewedNode);
-  }
-  private getPageHtml(node:SmoresNode):string {
-    const extensionPath = SmoresDataFile.getExtensionPath();
-    const nonce = utils.getNonce();
-    const webview = utils.getTraceWebview();
-    const stylePaths = utils.getTracingStylePaths(extensionPath);
-    const scriptPath = utils.getScriptPath(extensionPath);
-    if(webview === undefined || stylePaths === undefined) {
+  private getPageHtml():string {
+    if(this._viewNode === undefined) {
       return "";
     }
-    if(scriptPath === undefined) {
-      return "";
-    }
+    const nonce =  getNonce();
+    const stylePaths = getTracingStylePaths();
+    const scriptPath = getScriptPath();
     const webUri = [
-      webview.asWebviewUri(vscode.Uri.file(stylePaths[0])).toString(),
-      webview.asWebviewUri(vscode.Uri.file(stylePaths[1])).toString(),
-      webview.asWebviewUri(vscode.Uri.file(stylePaths[2])).toString(),
-      webview.asWebviewUri(vscode.Uri.file(stylePaths[3])).toString(),
-      webview.asWebviewUri(vscode.Uri.file(stylePaths[4])).toString(),
-      webview.asWebviewUri(vscode.Uri.file(scriptPath)).toString()
+      this._panel.webview.asWebviewUri(vscode.Uri.file(stylePaths[0])).toString(),
+      this._panel.webview.asWebviewUri(vscode.Uri.file(stylePaths[1])).toString(),
+      this._panel.webview.asWebviewUri(vscode.Uri.file(stylePaths[2])).toString(),
+      this._panel.webview.asWebviewUri(vscode.Uri.file(stylePaths[3])).toString(),
+      this._panel.webview.asWebviewUri(vscode.Uri.file(stylePaths[4])).toString(),
+      this._panel.webview.asWebviewUri(vscode.Uri.file(scriptPath)).toString()
     ];
-    const bodyHtml = this.getBodyHtml(node);
-    utils.clearNonce();
+    const bodyHtml = this.getBodyHtml(this._viewNode);
+    clearNonce();
     return `
     <!DOCTYPE html>
     <html lang="en">
@@ -152,7 +153,7 @@ export class TraceView {
         <link nonce="${nonce}" href="${webUri[2]}" rel="stylesheet"/>
         <link nonce="${nonce}" href="${webUri[3]}" rel="stylesheet"/>
         <link nonce="${nonce}" href="${webUri[4]}" rel="stylesheet"/>
-        <title>Tracing Id: ${node.data.id}</title>
+        <title>Tracing Id: ${this._viewNode.data.id}</title>
       </head>
       <body class='tracing'><div class='tracingOuter'>${bodyHtml}</div>
         <script nonce="${nonce}" src="${webUri[5]}"></script>

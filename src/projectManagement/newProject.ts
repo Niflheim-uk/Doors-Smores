@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
-import * as utils from '../utils/utils';
 import { SmoresDataFile } from '../model/smoresDataFile';
 import { SmoresProject } from '../model/smoresProject';
+import { getWorkspaceRoot } from '../utils/getWorkspaceRoot';
 
 async function getProjectName():Promise<string|undefined> {
   return await vscode.window.showInputBox({
@@ -12,7 +12,7 @@ async function getProjectName():Promise<string|undefined> {
   });
 }
 async function getProjectParent():Promise<string|undefined> {
-  const workspaceRoot = utils.getWorkspaceRoot();
+  const workspaceRoot = getWorkspaceRoot();
   if(workspaceRoot === undefined) {
     return undefined;
   }

@@ -1,7 +1,7 @@
-{
+{ 
   "name": "doors-smores",
   "publisher": "Niflheim",
-  "displayName": "Doors Smores",
+  "displayName": "Doors Smores", 
   "icon": "resources/smores.png",
   "description": "Requirements simplified",
   "preview": true,
@@ -431,7 +431,7 @@
         }
       ]
     }
-  },
+  }, 
   "scripts": {
     "vscode:prepublish": "npm run esbuild-base -- --minify",
     "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node",

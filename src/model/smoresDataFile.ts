@@ -13,40 +13,27 @@ export class SmoresDataFile {
   static clearProjectFilepath() {
     SmoresDataFile._projectFilepath = undefined;
   }
-  static getExtensionPath():string|undefined {
-    const _extension = vscode.extensions.getExtension("Niflheim.doors-smores");
-    return _extension?.extensionPath;
-  }
   static getProjectRoot() {
     if(SmoresDataFile._projectFilepath) {
       const baseFolder = path.dirname(SmoresDataFile._projectFilepath.toString());
       return baseFolder;
     }
-    return undefined;
+    return "";
   }
   static getDataFilepath() {
     const baseFolder = SmoresDataFile.getProjectRoot();
-    if(baseFolder) {
-      const dataPath = path.join(baseFolder, '.smoresData');
-      return dataPath;
-    }
-    return undefined;
+    const dataPath = path.join(baseFolder, '.smoresData');
+    return dataPath;
   }
   static getNodeFilepath(nodeId:number) {
     const dataFolder = SmoresDataFile.getDataFilepath();
-    if(dataFolder) {
-      const nodePath = path.join(dataFolder, `${nodeId}.smores`);
-      return nodePath;
-    }
-    return undefined;
+    const nodePath = path.join(dataFolder, `${nodeId}.smores`);
+    return nodePath;
   }
   static getImagesFilepath() {
     const dataFolder = SmoresDataFile.getDataFilepath();
-    if(dataFolder) {
-      const imagesPath = path.join(dataFolder, 'images');
-      return imagesPath;
-    }
-    return undefined;
+    const imagesPath = path.join(dataFolder, 'images');
+    return imagesPath;
   }
 
   public data:any;

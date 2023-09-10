@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { SmoresNode } from "../model/smoresNode";
 import * as smoresDataSchema from "../model/smoresDataSchema";
+import { getExtensionBasedPath } from './getExtension';
 
 const ursLevelColour = 'debugConsole.sourceForeground';
 const srsLevelColour = 'debugConsole.errorForeground';
@@ -83,4 +84,27 @@ export function getNodeIcon(node:SmoresNode):vscode.ThemeIcon {
       iconColour = new vscode.ThemeColor('errorForeground');
       return new vscode.ThemeIcon('question', iconColour);
   }
+}
+export function getBaseStylePaths():string[] {
+  // Local path to css styles
+  const stylesPaths:string[] = [
+    getExtensionBasedPath(['resources', 'theme.css']),
+    getExtensionBasedPath(['resources', 'document.css']),
+    getExtensionBasedPath(['resources', 'displayStyle.css']),
+    getExtensionBasedPath(['resources', 'pagination.css']),
+  ];
+  return stylesPaths;
+}
+export function getTracingStylePaths():string[] {
+  const stylesPaths:string[] = [
+    getExtensionBasedPath(['resources', 'theme.css']),
+    getExtensionBasedPath(['resources', 'tracing.css']),
+    getExtensionBasedPath(['resources', 'displayStyle.css']),
+    getExtensionBasedPath(['resources', 'pagination.css']),
+    getExtensionBasedPath(['node_modules', '@vscode/codicons', 'dist', 'codicon.css'])
+  ];
+  return stylesPaths;
+}
+export function getScriptPath():string {
+  return getExtensionBasedPath(['resources', 'smoresScript.js']);
 }

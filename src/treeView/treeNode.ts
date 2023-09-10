@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import * as fs from "fs";
-import * as guiStyle from '../utils/guiStyle';
+import * as guiStyle from '../utils/gui';
 import * as smoresDataSchema from '../model/smoresDataSchema';
 import { SmoresNode } from "../model/smoresNode";
 import { SmoresDataFile } from "../model/smoresDataFile";

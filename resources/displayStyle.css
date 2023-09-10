@@ -14,6 +14,35 @@ div.section {
   left: 1.5cm;
 }
 
+button {
+  color: var(--vscode-button-foreground);
+  background-color: var(--vscode-button-background);
+  border: 1px solid var(--vscode-button-border,transparent);
+  box-sizing: border-box;
+  width: 3cm;
+  padding: 4px;
+  border-radius: 2px;
+  text-align: center;
+  cursor: pointer;
+  justify-content: center;
+  align-items: center;
+  line-height: 18px;
+}
+button:hover {
+  background-color: var(--vscode-button-hoverBackground);
+}
+button.secondary {
+  color: var(--vscode-button-secondaryForeground);
+  background-color: var(--vscode-button-secondaryBackground);
+}
+button.secondary:hover {
+  background-color: var(--vscode-button-secondaryHoverBackground);
+}
+button.icon {
+  color: var(--vscode-editor-foreground);
+  background-color: var(--vscode-editor-background);
+}
+
 
 /* Fonts */
 body {

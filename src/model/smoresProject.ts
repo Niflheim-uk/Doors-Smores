@@ -3,6 +3,7 @@ import {NodeDataModel} from "./smoresDataSchema";
 import * as fs from "fs";
 import * as path from "path";
 import { SmoresDataFile } from "./smoresDataFile";
+import { getExtensionBasedUri } from "../utils/getExtension";
 
 export interface ProjectDataModel {
   idBase: number;
@@ -31,15 +32,9 @@ export class SmoresProject extends SmoresDataFile {
     }
   }
   private setDefaultImage() {
-    const projectDataDir = SmoresDataFile.getDataFilepath();
-    const extensionPath = SmoresDataFile.getExtensionPath();
-    if(extensionPath === undefined || projectDataDir === undefined) {
-      return;
-    }
-    const imageSrc = path.join(extensionPath, 'resources', 'defaultImage.jpg');
-    const imageDest = path.join(projectDataDir, 'defaultImage.jpg');
-    const imageSrcUri = vscode.Uri.file(imageSrc);
-    const imageDestUri = vscode.Uri.file(imageDest);
+    const imageSrcUri = getExtensionBasedUri(['resources', 'defaultImage.jpg']);
+    const projectDataUri = vscode.Uri.file(SmoresDataFile.getDataFilepath());
+    const imageDestUri = vscode.Uri.joinPath(projectDataUri, 'defaultImage.jpg');
     vscode.workspace.fs.copy(imageSrcUri, imageDestUri, {overwrite:true});
   }
   private setDefaults():boolean {

@@ -20,13 +20,9 @@
 }
 .buttonContainer {
   position:relative;
-}
-.helpButton {
-  color: var(--helpButton-foreground);
-  background-color: var(--helpButton-background);
-  text-align: center;
-  padding: 5px 5px;
-  border-radius: 10px;
+  width: 16cm;
+  justify-content: space-evenly;
+  display: flex;
 }
 .helpText {
   position: absolute;
