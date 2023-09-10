@@ -2,21 +2,17 @@ import * as vscode from "vscode";
 import * as fs from "fs";
 import * as path from "path";
 import { TreeNode } from "./treeNode";
-import { SmoresProject } from "../model/smoresProject";
+import { getProject, SmoresProject } from "../model/smoresProject";
 import { SmoresNode } from "../model/smoresNode";
 import * as utils from "../utils";
+import { SmoresDataFile } from "../model/smoresDataFile";
 
 export class TreeNodeProvider implements vscode.TreeDataProvider<TreeNode> {
   private _onDidChangeTreeData: vscode.EventEmitter<TreeNode | undefined> =
     new vscode.EventEmitter<TreeNode | undefined>();
   readonly onDidChangeTreeData: vscode.Event<TreeNode | undefined> =
     this._onDidChangeTreeData.event;
-  private project?:SmoresProject;
-
-  constructor(private projectFilePath?: fs.PathLike) {
-    if(this.projectFilePath) {
-      this.project = new SmoresProject(this.projectFilePath);
-    }
+  constructor() {
   }
 
   refresh(entry?: TreeNode): void {
@@ -56,7 +52,7 @@ export class TreeNodeProvider implements vscode.TreeDataProvider<TreeNode> {
     vscode.window.showInformationMessage(`Opening ${projectFilepath}`);
     if(projectFilepath && projectFilepath.match(/\.smores-project$/)) {
       vscode.commands.executeCommand('setContext', 'doors-smores.projectOpen', true);
-      this.project = new SmoresProject(projectFilepath);
+      SmoresDataFile.setProjectFilePath(projectFilepath);
       this.refresh();
     }
   }
@@ -67,9 +63,10 @@ export class TreeNodeProvider implements vscode.TreeDataProvider<TreeNode> {
 
   getChildren(element?: TreeNode): Thenable<TreeNode[]> {
     return vscode.window.withProgress({location:{viewId:"smoresTreeView"}}, () => {
-      if(this.project) {
+      const project = getProject();
+      if(project) {
         if (!element) {
-          return Promise.resolve(this.getTreeNodesFromPaths(this.project.getDocumentPaths()));
+          return Promise.resolve(this.getTreeNodesFromPaths(project.getDocumentPaths()));
         } else {
           return Promise.resolve(this.getTreeNodesFromSmoresNodes(element.smoresNode.getChildNodes()));
         }
@@ -143,38 +140,45 @@ export class TreeNodeProvider implements vscode.TreeDataProvider<TreeNode> {
     );
     context.subscriptions.push(registrations);
    }
-   private registerNewContentCommands(context: vscode.ExtensionContext) {
+   private registerContentCommands(context: vscode.ExtensionContext) {
     const registrations = (
       vscode.commands.registerCommand("doors-smores.New-Document", async () => {
-        if(this.project) {
-          const documentName = await vscode.window.showInputBox({ placeHolder: 'document name?' });
-          if(documentName) {
-            this.project.newDocument(documentName);
-            this.refresh();
-          }
+        const project = getProject();
+        const documentName = await vscode.window.showInputBox({ placeHolder: 'document name?' });
+        if(project && documentName) {
+          project.newDocument(documentName);
+          this.refresh();
         }
       }),
       vscode.commands.registerCommand("doors-smores.New-Heading", async (node:TreeNode) => {
         const heading = await vscode.window.showInputBox({ placeHolder: 'new heading?' });
         if(heading) {
           node.smoresNode.newHeading(heading);
-          vscode.commands.executeCommand('doors-smores.View-TreeNode',node.smoresNode);
+          vscode.commands.executeCommand('doors-smores.View-TreeNode',node);
           this.refresh();
         }
       }),
       vscode.commands.registerCommand("doors-smores.New-Comment", (node:TreeNode) => {
         node.smoresNode.newComment();
-        vscode.commands.executeCommand('doors-smores.View-TreeNode',node.smoresNode);
+        vscode.commands.executeCommand('doors-smores.View-TreeNode',node);
         this.refresh();
       }),
       vscode.commands.registerCommand("doors-smores.New-Functional-Requirement", (node:TreeNode) => {
         node.smoresNode.newFunctionalRequirement();
-        vscode.commands.executeCommand('doors-smores.View-TreeNode',node.smoresNode);
+        vscode.commands.executeCommand('doors-smores.View-TreeNode',node);
         this.refresh();
       }),
       vscode.commands.registerCommand("doors-smores.New-Image", (node:TreeNode) => {
         node.smoresNode.newImage();
-        vscode.commands.executeCommand('doors-smores.View-TreeNode',node.smoresNode);
+        vscode.commands.executeCommand('doors-smores.View-TreeNode',node);
+        this.refresh();
+      }),
+      vscode.commands.registerCommand("doors-smores.Delete-TreeNode", (node:TreeNode) => {
+        const parent = node.smoresNode.getParentNode();
+        node.smoresNode.delete();
+        if(parent !== null) {
+          vscode.commands.executeCommand('doors-smores.View-TreeNode', parent);
+        }
         this.refresh();
       })
     );
@@ -190,7 +194,7 @@ export class TreeNodeProvider implements vscode.TreeDataProvider<TreeNode> {
     // build
     this.registerWorkspaceCommands(context);
     this.registerNodeMovementCommands(context);
-    this.registerNewContentCommands(context);
+    this.registerContentCommands(context);
     const registrations = (
       vscode.window.registerTreeDataProvider('smoresTreeView', this),
       vscode.commands.registerCommand('doors-smores.Update-TreeView', () => {

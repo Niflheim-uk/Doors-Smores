@@ -1,2 +1,1 @@
 - Add 2nd Tree view for when workspace is open, but no project is. This treeview would allow you to select the smores-project file or create a new one
-- Add mermaid support

@@ -55,6 +55,25 @@ export class SmoresNode extends SmoresDataFile {
   newImage() {
     this.newItem("image", "../defaultImage.jpg");
   }
+  delete() {
+    const parent = this.getParentNode();
+    const children = this.getChildNodes();
+    children.forEach(child => {
+      child.delete();
+    });
+    if(parent !== null) {
+      parent.removeChild(this.data.id);
+    } else {
+      if(this.data.category === "document") {
+        const project = getProject();
+        if(project) {
+          project.deleteDocument(this.data.id);
+        }
+      }
+    }
+    // Todo: remove traces when implemented
+    this.deleteDataFile();
+  }
   promote() {
     const parent = this.getParentNode();
     if(!this.canPromoteNode() || parent === null) {
@@ -159,6 +178,9 @@ export class SmoresNode extends SmoresDataFile {
       if(parent.data.children && idPos > 0) {
         const prevSiblingId = parent.data.children[idPos-1];
         const prevSiblingPath = SmoresNode.getNodeFilepath(prevSiblingId);
+        if(prevSiblingPath === undefined) {
+          return false;
+        }
         const prevSibling = new SmoresNode(prevSiblingPath);
         if(prevSibling.data.category === "heading") {
           return true;
@@ -209,9 +231,16 @@ export class SmoresNode extends SmoresDataFile {
     return -1;
   }
   protected newChild(childData:smoresDataSchema.BaseNodeDataModel) {
-    const newId = getProject().getUniqueId();
+    const project = getProject();
+    if(project === undefined) {
+      return;
+    }
+    const newId = project.getUniqueId();
     childData.id = newId;
     const newNodePath = SmoresDataFile.getNodeFilepath(newId);
+    if(newNodePath === undefined) {
+      return;
+    }
     const newDataFile = new SmoresDataFile(newNodePath);
     newDataFile.data = childData;
     newDataFile.write();

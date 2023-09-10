@@ -75,6 +75,12 @@
         "icon": "$(eye)"
       },
       {
+        "command": "doors-smores.Delete-TreeNode",
+        "category": "Smores",
+        "title": "Delete document item, and sub-items",
+        "icon": "$(trash)"
+      },
+      {
         "command": "doors-smores.Edit-Section",
         "category": "Smores",
         "title": "Edit document section"
@@ -165,6 +171,11 @@
           "group": "inline@5"
         },
         {
+          "command": "doors-smores.Delete-TreeNode",
+          "when": "view == smoresTreeView",
+          "group": "inline@6"
+        },
+        {
           "command": "doors-smores.New-Heading",
           "when": "view == smoresTreeView && ((viewItem =~ /document/) || (viewItem =~ /heading/))"
         },
@@ -206,7 +217,6 @@
     "typescript": "^5.1.3"
   },
   "dependencies": {
-    "mermaid": "^10.2.4",
     "showdown": "^2.1.0",
     "xss": "^1.0.14"
   }

@@ -39,3 +39,13 @@
   width: 18%;
 }
 
+.requirementsTable {
+  table-layout: fixed;
+  width: 100%;
+}
+.requirementsTableCol1 {
+  width: 20%;
+}
+.requirementsTableCol2 {
+  width: 80%;
+}

@@ -12,7 +12,7 @@ export class TreeNode extends vscode.TreeItem {
       console.log("WTF?");
     }
     if(node.data.children && node.data.children.length > 0) {
-      state = vscode.TreeItemCollapsibleState.Collapsed;
+      state = vscode.TreeItemCollapsibleState.Expanded;
     }
     const nodeLabel = `${getLabelPrefix(node.data)}${node.data.id} - ${node.data.text.split("\n")[0]}`;
     super(nodeLabel, state);
@@ -34,8 +34,8 @@ function getLabelPrefix(nodeData:dataModel.BaseNodeDataModel):string {
       return "H";
     case "comment":
       return "C";
-    case "mermaidImage":
-      return "MI";
+    case "image":
+      return "I";
     case "functionalRequirement":
       return "FR";
     default:

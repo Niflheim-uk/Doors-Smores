@@ -11,8 +11,12 @@ export interface ProjectDataModel {
   uniqueIds: number[];
   documentIds: number[];
 }
-export function getProject():SmoresProject {
-  return new SmoresProject(SmoresDataFile.getProjectFilePath());
+export function getProject():SmoresProject|undefined {
+  const projectFilepath = SmoresDataFile.getProjectFilePath();
+  if(projectFilepath) {
+    return new SmoresProject(projectFilepath);
+  }
+  return undefined;
 }
 export class SmoresProject extends SmoresDataFile {
   declare readonly data:ProjectDataModel;
@@ -72,6 +76,9 @@ export class SmoresProject extends SmoresDataFile {
       for (let index = 0; index < documentIds.length; index++) {
         const childId = documentIds[index];
         const nodeFilepath = SmoresDataFile.getNodeFilepath(childId);
+        if(nodeFilepath === undefined) {
+          return [];
+        }
         if(Array.isArray(documentPaths)) {
           documentPaths.push(nodeFilepath);
         } else {
@@ -83,6 +90,39 @@ export class SmoresProject extends SmoresDataFile {
       return documentPaths;
     }
     return [];
+  }
+  newDocument(documentName:string) {
+    console.log("New document called");
+    const newId = this.getUniqueId();
+    const newNodePath = SmoresDataFile.getNodeFilepath(newId);
+    if(newNodePath === undefined) {
+      return;
+    }
+    const newDocument = new SmoresDataFile(newNodePath);
+    const newDocumentData:smoresDataSchema.DocumentDataModel = {
+      id:newId,
+      category:"document",
+      text:documentName,
+      parent:0
+    };
+    newDocument.data = newDocumentData;
+    newDocument.write();
+    if(this.data.documentIds && this.data.documentIds.length > 0) {
+      this.data.documentIds.push(newId);
+    } else {
+      this.data.documentIds = [newId];
+    }
+    this.write();
+  }
+  deleteDocument(documentId:number) {
+    if(this.data.documentIds !== undefined) {
+      let docs:number[] = this.data.documentIds;
+      const idPos = docs.findIndex(id => documentId === id);
+      if(idPos >= 0) {
+        this.data.documentIds.splice(idPos,1);
+      }
+      this.write();
+    }
   }
 
 
@@ -121,26 +161,4 @@ export class SmoresProject extends SmoresDataFile {
     }
     return testNumber;
   }
-  newDocument(documentName:string) {
-    console.log("New document called");
-    const newId = this.getUniqueId();
-    const newNodePath = SmoresDataFile.getNodeFilepath(newId);
-    const newDocument = new SmoresDataFile(newNodePath);
-    const newDocumentData:smoresDataSchema.DocumentDataModel = {
-      id:newId,
-      category:"document",
-      text:documentName,
-      parent:0
-    };
-    newDocument.data = newDocumentData;
-    newDocument.write();
-    if(this.data.documentIds && this.data.documentIds.length > 0) {
-      this.data.documentIds.push(newId);
-    } else {
-      this.data.documentIds = [newId];
-    }
-    this.write();
-  }
-
-
 }
