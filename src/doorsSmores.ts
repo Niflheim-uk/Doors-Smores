@@ -125,11 +125,7 @@ export class DoorsSmores {
       if(projectName) {
         const projectUri = vscode.Uri.joinPath(directory[0], `${projectName}`, `${projectName}.${SmoresFile.projectExtension}`);
         DoorsSmores.openProjectPath(projectUri.fsPath);
-        if(await VersionController.repoExists()) {
-          VersionController.queryExistingRepoUse();
-        } else {
-          VersionController.queryStartRepoUse();
-        }
+        await VersionController.startRepoUse();
       }
     }
   }

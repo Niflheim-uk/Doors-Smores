@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { DoorsSmores } from '../doorsSmores';
 import { SmoresDocument } from '../model/smoresDocument';
-import { existsSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
 
 export type DiffRecord = {
   filepath:string;
@@ -14,7 +14,6 @@ export type DiffRecord = {
 };
 
 
-var _open:boolean = false;
 var _pathSpec:string = '.';
 var _gitOptions: Partial<SimpleGitOptions> = {
   binary: 'git',
@@ -27,11 +26,14 @@ var _tagTag:string = "";
 var _tagMessage:string = "";
 var _tagTimer:NodeJS.Timeout;
 export class VersionController {
+  private static open:boolean = false;
+  private static readonly firstTag:string = "start";
+  private static readonly firstTagMessage:string = "DO NOT REMOVE: Used for diff";
   public static isOpen() {
-    return _open;
+    return VersionController.open;
   }
   public static close() {
-    _open = false;
+    VersionController.open = false;
   }
   public static async repoExists():Promise<boolean> {
     const projDir = DoorsSmores.getProjectDirectory();
@@ -61,7 +63,7 @@ export class VersionController {
     if(project) {
       project.exportAll();
     }
-    if(!_open || _commitMessage === "") {
+    if(!VersionController.open || _commitMessage === "") {
       return; 
     }
     simpleGit(_gitOptions).status([pathspec(_pathSpec)]).then(result=>{
@@ -69,53 +71,46 @@ export class VersionController {
       filesChanged.push(...result.created);
       filesChanged.push(...result.deleted);
       filesChanged.push(...result.modified);
-      const filesToAdd = filterIgnoredFiles(filesChanged, result.ignored);
+      const filesToAdd = VersionController.filterIgnoredFiles(filesChanged, result.ignored);
       simpleGit(_gitOptions).add(filesToAdd).commit(_commitMessage);
       _commitMessage = "";
     });
   }
 
   public static async initialise() {
-    _open = false;
+    VersionController.open = false;
     const projectNode = DoorsSmores.getActiveProject();
     if(projectNode === undefined || !projectNode.data.gitInUse) {
-      console.log("Repo not in use");
+      vscode.window.showErrorMessage("Repo not in use");
       return;
     }
     _gitOptions.baseDir = projectNode.data.repoRoot;
     if(_gitOptions.baseDir && projectNode.data.repoPathspec) {
       _pathSpec = projectNode.data.repoPathspec;
-      if(!await testRepo()) {
+      if(!await VersionController.testRepo()) {
         vscode.window.showErrorMessage(`Git repository not found.\nExpected root: ${_gitOptions.baseDir}`);
       } else {
         console.log("Opened pre-existing repo");
-        _open = true;
+        VersionController.open = true;
       }
     }
   }
-  public static queryStartRepoUse() {
-    const msg = "Would you like to initialise a Git repository for version control?";
-    const items:vscode.MessageItem[] = [{title: "Yes"}, {title: "No"}];
-    vscode.window.showInformationMessage(msg,...items).then(item=>{
-      if(item) {
-        if(item.title === "Yes") {
-          makeRepo();
+  public static async startRepoUse() {
+    if(await VersionController.repoExists()) {
+      const msg = "The project resides inside a Git repository.\nWould you like to use the inherited Git repository,\nor create a separate Git repository for this\nproject?\nNote, if a separate repository is created, a\n.gitIgnore file will be created to hide the\nnested repository from the existing repository.";
+      const items:vscode.MessageItem[] = [{title: "Inherited"}, {title: "New nested"}];
+      vscode.window.showInformationMessage(msg, ...items).then(item=>{
+        if(item && item.title === "Inherited") {
+          VersionController.initExistingRepo();
+        } else {
+          VersionController.initNewRepo(true);
         }
-      }
-    },err=>{
-      console.error(err);
-    });
-  }
-  public static queryExistingRepoUse() {
-    const msg = "The project resides inside a Git repository.\nWould you like to auto-commit changes within the active Doors Smores project folder?";
-    const items:vscode.MessageItem[] = [{title: "Yes"}, {title: "No"}];
-    vscode.window.showInformationMessage(msg,...items).then(item=>{
-      if(item && item.title === "Yes") {
-        startRepoUse();
-      }
-    },err=>{
-      console.error(err);
-    });
+      },err=>{
+        console.error(err);
+      });
+    } else {
+      VersionController.initNewRepo(false);
+    }  
   }
   public static async getUserName() {
     return simpleGit(_gitOptions).raw('config', 'user.name').catch(err=>{return "Unknown";});
@@ -128,7 +123,7 @@ export class VersionController {
     }
     const docName = document.data.text.split("\n")[0].replace(/\s/g,'_');
     const tag = `${tr}${document.data.id}_${docName}_revision_${lastRev.getIssueString()}`;
-    if(_open && verify) {
+    if(VersionController.open && verify) {
       const tags:TagResult = await simpleGit(_gitOptions).tags();
       for (let i = 0; i < tags.all.length; i++) {
         const testTag = tags.all[i];
@@ -136,7 +131,7 @@ export class VersionController {
           return tag;
         }        
       }
-      return "start";
+      return VersionController.getStartTag();
     }
     return tag;
   }
@@ -146,12 +141,8 @@ export class VersionController {
   }
   public static async issueDocument(document:SmoresDocument, traceReport:boolean) {
     const issueTag = await VersionController.getLastTag(document, traceReport, false);
-    if(!_open) {
-      await document.completeDuplication(issueTag);
-    } else {
-      const detail = VersionController.getLastTagDetail(document, traceReport);
-      await VersionController.tagIssue(issueTag, detail);
-    }
+    const detail = VersionController.getLastTagDetail(document, traceReport);
+    await VersionController.tagIssue(issueTag, detail);
   }
   public static async getDiffRecords(document:SmoresDocument, traceReport:boolean) {
     const tag = await VersionController.getLastTag(document, traceReport, true);
@@ -176,6 +167,63 @@ export class VersionController {
     }
     return records;
   }
+
+
+  private static getStartTag() {
+    const projectName = path.basename(DoorsSmores.getProjectDirectory());
+    return`${VersionController.firstTag}_${projectName.replace(/\s/g,"_")}`;
+  }
+  private static async makeFirstCommit(createdNewRepo:boolean) {
+    const startTag = VersionController.getStartTag();
+    await simpleGit(_gitOptions).add(`${_pathSpec}/*`)
+    .commit('Initial commit')
+    .addAnnotatedTag(startTag,VersionController.firstTagMessage).then(()=>{
+      VersionController.open = true;
+      if(createdNewRepo) {
+        console.log("Made new project repo");
+      } else {
+        console.log("Started using existing repo");
+      }
+      VersionController.updateProjectNodeWithGitUse();
+    });
+  }
+  private static addProjectFolderToGitIgnore() {
+    if(_gitOptions.baseDir === undefined) {
+      vscode.window.showErrorMessage("baseDir of git options is undefined");
+      return;
+    }
+    const gitIgnore = path.join(_gitOptions.baseDir, "..", ".gitignore");
+    var ignoreString:string = "";
+    if(existsSync(gitIgnore)) {
+      ignoreString = readFileSync(gitIgnore, "utf-8");
+      ignoreString = ignoreString.concat("\n");
+    }
+    ignoreString = ignoreString.concat(`${path.basename(_gitOptions.baseDir)}`);
+    writeFileSync(gitIgnore, ignoreString, {encoding:"utf-8"});
+  }
+  private static async initNewRepo(nested:boolean=false) {
+    _gitOptions.baseDir = DoorsSmores.getProjectDirectory();
+    _pathSpec = '.';
+    await simpleGit(_gitOptions)
+    .init().then(async()=> {
+      await VersionController.makeFirstCommit(true);
+    });
+    if(nested) {
+      VersionController.addProjectFolderToGitIgnore();
+    }
+  }
+  private static async initExistingRepo(nested:boolean=false) {
+    const projDir = DoorsSmores.getProjectDirectory();
+    _gitOptions.baseDir = projDir;
+    if(projDir === undefined) {
+      return;
+    }
+    simpleGit(_gitOptions).revparse('--show-toplevel').then(async gitRoot=>{
+      _gitOptions.baseDir = gitRoot;
+      _pathSpec = path.relative(gitRoot, projDir);
+      await VersionController.makeFirstCommit(false);
+    });
+  }
   private static getModificationState(summaryResponse:string[], filepath:string) {
     for(let i=0; i<summaryResponse.length; i++) {
       const entry = summaryResponse[i];
@@ -187,64 +235,15 @@ export class VersionController {
     return 'Error';
   }
   private static async getIssueChanges(tag:string) {
-    var numstatResponse;
-    var summaryResponse;
-    var numstat;
-    var summary;
-    if(_open) {
-      numstatResponse = await simpleGit(_gitOptions).raw('diff', '--exit-code', '--no-renames', '--numstat', `${tag}..HEAD`);
-      summaryResponse = await simpleGit(_gitOptions).raw('diff', '--exit-code', '--no-renames', '--compact-summary', '--name-status', `${tag}..HEAD`);
-      numstat = numstatResponse.split("\n");
-      summary = summaryResponse.split("\n");
-    } else {
-      const dataRoot = DoorsSmores.getDataDirectory();
-      const tagRoot = dataRoot.concat(`_${tag}`);
-      const tempRoot = DoorsSmores.getDataTempDirectory();
-      numstatResponse = await simpleGit(_gitOptions).raw('diff', '--no-index', '--no-renames', '--exit-code', '--numstat', `${tagRoot}`, `${tempRoot}`);
-      summaryResponse = await simpleGit(_gitOptions).raw('diff', '--no-index', '--no-renames', '--exit-code', '--compact-summary', '--name-status', `${tagRoot}`, `${tempRoot}`);
-      numstat = numstatResponse.split("\n");
-      summary = summaryResponse.split("\n");
-      for(let i=0; i<numstat.length; i++) {
-        const parts = numstat[i].split("\t");
-        if(parts[2]) {
-          const matchesMod = parts[2].match('[^}]*}\/(.*)');
-          const matchesAddDel = parts[2].match('.*\.smoresData[^\/]*\/(.*)');
-          if(matchesMod !== null) {
-            numstat[i] = `${parts[0]}\t${parts[1]}\t${matchesMod[1]}`;
-          } else if(matchesAddDel !== null) {
-            const filepath = matchesAddDel[1].replace(" => dev/null}","").replace("}","");
-            numstat[i] = `${parts[0]}\t${parts[1]}\t${filepath}`;
-          }
-        }
-      }
-      for(let i=0; i<summary.length; i++) {
-        const parts = summary[i].split("\t");
-        if(parts.length>1) {
-          const matches = parts[parts.length-1].match('.*\.smoresData[^\/]*\/(.*)');
-          if(matches !== null) {
-            summary[i] = `${parts[0]}\t${matches[1]}`;
-          }
-        }
-      }
-    }
+    const numstatResponse = await simpleGit(_gitOptions).raw('diff', '--exit-code', '--no-renames', '--numstat', `${tag}..HEAD`);
+    const summaryResponse = await simpleGit(_gitOptions).raw('diff', '--exit-code', '--no-renames', '--compact-summary', '--name-status', `${tag}..HEAD`);
+    const numstat = numstatResponse.split("\n");
+    const summary = summaryResponse.split("\n");
     return [numstat, summary];
   }
   private static async getDiffRecordDetail(filepath:string, tag:string, mod:string) {
     var detailResponse;
-    if(_open) {
-      detailResponse  = await simpleGit(_gitOptions).raw('diff', '--no-renames', '--exit-code', `${tag}..HEAD`, '--', filepath);
-    } else {
-      const dataDir = DoorsSmores.getDataDirectory();
-      var left = path.join(dataDir.concat(`_${tag}`), filepath);
-      var right = path.join(DoorsSmores.getDataTempDirectory(), filepath);
-      if(!existsSync(left)) {
-        left = '/dev/null';
-      }
-      if(!existsSync(right)) {
-        right = '/dev/null';
-      }
-      detailResponse  = await simpleGit(_gitOptions).raw('diff', '--no-index', '--no-renames', '--exit-code', `${left}`, `${right}`);
-    }
+    detailResponse  = await simpleGit(_gitOptions).raw('diff', '--no-renames', '--exit-code', `${tag}..HEAD`, '--', filepath);
     const detailArray = detailResponse.split("\n");
     if(mod === "M") {
       detailResponse = detailArray.slice(4).join("\n");
@@ -270,87 +269,56 @@ export class VersionController {
       err=>{console.error(err);}
     );
   }
+  private static async updateProjectNodeWithGitUse():Promise<void> {
+    const projNode = DoorsSmores.getActiveProject();
+    if(projNode === undefined) {
+      return;
+    }
+    projNode.data.gitInUse = VersionController.open;
+    if(VersionController.open) {
+      projNode.data.repoPathspec = _pathSpec;
+      projNode.data.repoRoot = await VersionController.getGitRoot();
+    } else {
+      projNode.data.repoPathspec = undefined;
+      projNode.data.repoRoot = undefined;
+    }
+    projNode.write();
+    await VersionController.commitChanges("Updated git use");
+  }
+  private static filterIgnoredFiles(filesChanged:string[], filesIgnored?:string[]):string[] {
+    var filteredFiles:string[]|undefined;
+    if(filesIgnored) {
+      filesChanged.forEach(file => {
+        const filePos = filesIgnored.findIndex(ignored => file === ignored);
+        if(filePos === -1) /* not found */ {
+          if(Array.isArray(filteredFiles)) {
+            filteredFiles.push(file);
+          } else {
+            filteredFiles = [file];
+          }
+        }
+      });
+    } else {
+      filteredFiles = filesChanged;
+    }
+    if(filteredFiles) {
+      return filteredFiles;
+    } else {
+      return [];
+    }
+  }
+  private static async testRepo():Promise<boolean> {
+    let repoAsExpected = false;
+    if(await VersionController.repoExists()) {
+      if(await VersionController.getGitRoot() === _gitOptions.baseDir) {
+        repoAsExpected = true;
+      } 
+    }    
+    return repoAsExpected;
+  }
+  private static async getGitRoot():Promise<string> {
+    const gitRoot = await simpleGit(_gitOptions).revparse('--show-toplevel');
+    return gitRoot;
+  }
 }
   
-function filterIgnoredFiles(filesChanged:string[], filesIgnored?:string[]):string[] {
-  var filteredFiles:string[]|undefined;
-  if(filesIgnored) {
-    filesChanged.forEach(file => {
-      const filePos = filesIgnored.findIndex(ignored => file === ignored);
-      if(filePos === -1) /* not found */ {
-        if(Array.isArray(filteredFiles)) {
-          filteredFiles.push(file);
-        } else {
-          filteredFiles = [file];
-        }
-      }
-    });
-  } else {
-    filteredFiles = filesChanged;
-  }
-  if(filteredFiles) {
-    return filteredFiles;
-  } else {
-    return [];
-  }
-}
-function makeRepo() {
-  _gitOptions.baseDir = DoorsSmores.getProjectDirectory();
-  _pathSpec = '.';
-  simpleGit(_gitOptions)
-  .init()
-  .add(`${_pathSpec}/*`)
-  .commit('Initial commit')
-  .addAnnotatedTag("start","DO NOT REMOVE: Used for diff").then(()=>{
-    _open = true;
-    console.log("Made new project repo");
-    updateProjectNodeWithGitUse();
-  });
-}
-function startRepoUse():void {
-  const projDir = DoorsSmores.getProjectDirectory();
-  _gitOptions.baseDir = projDir;
-  if(projDir === undefined) {
-    return;
-  }
-  simpleGit(_gitOptions).revparse('--show-toplevel').then(gitRoot=>{
-    _gitOptions.baseDir = gitRoot;
-    _pathSpec = path.relative(gitRoot, projDir);
-    simpleGit(_gitOptions).add(`${_pathSpec}/*`)
-    .commit('Initial commit of Doors Smores project')
-    .addAnnotatedTag("start","DO NOT REMOVE: Used for diff").then(()=>{
-      _open = true;
-      console.log("Started using existing repo");
-      updateProjectNodeWithGitUse();
-    });
-  });
-}
-async function updateProjectNodeWithGitUse():Promise<void> {
-  const projNode = DoorsSmores.getActiveProject();
-  if(projNode === undefined) {
-    return;
-  }
-  projNode.data.gitInUse = _open;
-  if(_open) {
-    projNode.data.repoPathspec = _pathSpec;
-    projNode.data.repoRoot = await getGitRoot();
-  } else {
-    projNode.data.repoPathspec = undefined;
-    projNode.data.repoRoot = undefined;
-  }
-  projNode.write();
-  await VersionController.commitChanges("Updated git use");
-}
-async function testRepo():Promise<boolean> {
-  let repoAsExpected = false;
-  if(await VersionController.repoExists()) {
-    if(await getGitRoot() === _gitOptions.baseDir) {
-      repoAsExpected = true;
-    } 
-  }    
-  return repoAsExpected;
-}
-async function getGitRoot():Promise<string> {
-  const gitRoot = await simpleGit(_gitOptions).revparse('--show-toplevel');
-  return gitRoot;
-}
