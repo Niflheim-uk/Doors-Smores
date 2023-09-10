@@ -6,6 +6,7 @@ import {
   getInnerHtmlForTest,
   getIdLabel
 } from '../documentViewer/contentInnerHtml';
+import { getDecomposedFromTraceType, getDecomposesToTraceType, getDetailedByTraceType, getDetailsTraceType, getSatisfiedByTraceType, getSatisfiesTraceType, getVerifiedByTraceType, getVerifiesTraceType } from "./traceSorting";
 
 var viewSVG:string = "<i class='tracing codicon codicon-zoom-in'></i>";
 var deleteSVG:string = "<i class='tracing codicon codicon-trash'></i>";
@@ -97,13 +98,24 @@ function getTraceTable(originId:number, traceArray:number[]|undefined, title:str
   </div>
   `;
 }
+function getTraceCategoryLabels(traceIds:number[]):string[] {
+  var labels =[];
+  for(let i=0; i<traceIds.length; i++) {
+    const traceNode = getNodeFromId(traceIds[i]);
+    if(traceNode) {
+      labels.push(schema.getLabelPrefix(traceNode.data.category));
+    } else {
+      labels.push(schema.getLabelPrefix("unknown"));
+    }
+  }
+  return labels;
+}
 export function getDownstreamReqTraceHtml(node:SmoresNode):string {
   let html = "";
   const originCategory = node.data.category;
   const originCategoryLabel = schema.getLabelPrefix(originCategory);
   const traces = node.data.traces.traceIds;
   const traceCategoryLabels = getTraceCategoryLabels(traces);
-  const suspects = node.data.traces.suspectIds;
 
   const decomposedFrom = getDecomposedFromTraceType(originCategoryLabel, traces, traceCategoryLabels);
   const decomposesTo = getDecomposesToTraceType(originCategoryLabel, traces, traceCategoryLabels);
@@ -113,61 +125,61 @@ export function getDownstreamReqTraceHtml(node:SmoresNode):string {
   const detailedBy = getDetailedByTraceType(originCategoryLabel, traces, traceCategoryLabels);
   const verifies = getVerifiesTraceType(originCategoryLabel, traces, traceCategoryLabels);
   const verifiedBy = getVerifiedByTraceType(originCategoryLabel, traces, traceCategoryLabels);
-  switch(documentType) {
-  case schema.ursDocType:
-    html = html.concat(getTraceTable(node.data.id, downstream?.decompose, "Decomposes To"));
-    break;
-  case schema.srsDocType:
-    html = html.concat(getTraceTable(node.data.id, downstream?.satisfy, "Satisfied By"));
-    html = html.concat(getTraceTable(node.data.id, downstream?.detail, "Detailed By"));
-    break;
-  case schema.adsDocType:
-    html = html.concat(getTraceTable(node.data.id, downstream?.detail, "Detailed By"));
-    break;
-  case schema.ddsDocType:
-    break;
-  case schema.emptyDocType:
-    html = html.concat(getTraceTable(node.data.id, downstream?.decompose, "Decomposes To"));
-    html = html.concat(getTraceTable(node.data.id, downstream?.satisfy, "Satisfied By"));
-    html = html.concat(getTraceTable(node.data.id, downstream?.detail, "Detailed By"));
-    break;
+  if(decomposesTo.length > 0) {
+    html = html.concat(getTraceTable(node.data.id, decomposesTo, "Decomposes To"));
+  }
+  if(satisfiedBy.length > 0) {
+    html = html.concat(getTraceTable(node.data.id, satisfiedBy, "Satisfied By"));
+  }
+  if(detailedBy.length > 0) {
+    html = html.concat(getTraceTable(node.data.id, detailedBy, "Detailed By"));
   }
   return html;
 }
 export function getDownstreamTestTraceHtml(node:SmoresNode):string {
   let html = "";
-  const downstream = node.data.traces?.downstream;
-  html = html.concat(getTraceTable(node.data.id, downstream?.verify, "Verified By"));
+  const originCategory = node.data.category;
+  const originCategoryLabel = schema.getLabelPrefix(originCategory);
+  const traces = node.data.traces.traceIds;
+  const traceCategoryLabels = getTraceCategoryLabels(traces);
+
+  const verifiedBy = getVerifiedByTraceType(originCategoryLabel, traces, traceCategoryLabels);
+  if(verifiedBy.length > 0) {
+    html = html.concat(getTraceTable(node.data.id, verifiedBy, "Verified By"));
+  }
   return html;
 }
 export function getUpstreamReqTraceHtml(node:SmoresNode):string {
   let html = "";
-  const documentType = node.getDocumentType();
-  const upstream = node.data.traces?.upstream;
-  switch(documentType) {
-  case schema.ursDocType:
-    break;
-  case schema.srsDocType:
-    html = html.concat(getTraceTable(node.data.id, upstream?.decompose, "Decomposed From"));
-    break;
-  case schema.adsDocType:
-    html = html.concat(getTraceTable(node.data.id, upstream?.satisfy, "Satisfies"));
-    break;
-  case schema.ddsDocType:
-    html = html.concat(getTraceTable(node.data.id, upstream?.detail, "Details"));
-    break;
-  case schema.emptyDocType:
-    html = html.concat(getTraceTable(node.data.id, upstream?.decompose, "Decomposed From"));
-    html = html.concat(getTraceTable(node.data.id, upstream?.satisfy, "Satisfies"));
-    html = html.concat(getTraceTable(node.data.id, upstream?.detail, "Details"));
-    break;
+  const originCategory = node.data.category;
+  const originCategoryLabel = schema.getLabelPrefix(originCategory);
+  const traces = node.data.traces.traceIds;
+  const traceCategoryLabels = getTraceCategoryLabels(traces);
+  const decomposedFrom = getDecomposedFromTraceType(originCategoryLabel, traces, traceCategoryLabels);
+  const satisfies = getSatisfiesTraceType(originCategoryLabel, traces, traceCategoryLabels);
+  const details = getDetailsTraceType(originCategoryLabel, traces, traceCategoryLabels);
+  if(decomposedFrom.length > 0) {
+    html = html.concat(getTraceTable(node.data.id, decomposedFrom, "Decomposed From"));
+  }
+  if(satisfies.length > 0) {
+    html = html.concat(getTraceTable(node.data.id, satisfies, "Satisfies"));
+  }
+  if(details.length > 0) {
+    html = html.concat(getTraceTable(node.data.id, details, "Details"));
   }
   return html;
 }
 export function getUpstreamTestTraceHtml(node:SmoresNode):string {
   let html = "";
-  const upstream = node.data.traces?.upstream;
-  html = html.concat(getTraceTable(node.data.id, upstream?.verify, "Verifies"));
+  const originCategory = node.data.category;
+  const originCategoryLabel = schema.getLabelPrefix(originCategory);
+  const traces = node.data.traces.traceIds;
+  const traceCategoryLabels = getTraceCategoryLabels(traces);
+
+  const verifies = getVerifiesTraceType(originCategoryLabel, traces, traceCategoryLabels);
+  if(verifies.length > 0) {
+    html = html.concat(getTraceTable(node.data.id, verifies, "Verifies"));
+  }
   return html;
 }
 export function getTraceTargetHtml(node:SmoresNode):string {

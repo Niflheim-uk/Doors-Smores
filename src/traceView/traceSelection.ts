@@ -2,6 +2,7 @@ import { SmoresNode, getNodeFromId } from "../model/smoresNode";
 import * as schema from '../model/smoresDataSchema';
 import { getProject } from "../model/smoresProject";
 import { window } from "vscode";
+import { getTargetableDocumentTypes, isCategoryTraceable } from "./traceSorting";
 
 export type TraceNode = {
   category:string;
@@ -46,29 +47,6 @@ export async function getTraceSelection(originId:number):Promise<number|undefine
     return traceTarget.data.id;
   } else {
     return undefined;
-  }
-}
-function isCategoryTraceable(category:string):boolean {
-  switch(category) {
-  case schema.userFRType:
-  case schema.softFRType:
-  case schema.archFRType:
-  case schema.desFRType:
-  case schema.userNFRType:
-  case schema.softNFRType:
-  case schema.archNFRType:
-  case schema.desNFRType:
-  case schema.userDCType:
-  case schema.softDCType:
-  case schema.archDCType:
-  case schema.desDCType:
-  case schema.userTestType:
-  case schema.softTestType:
-  case schema.archTestType:
-  case schema.desTestType:
-    return true;    
-  default:
-    return false;
   }
 }
 function getOriginNode(originId:number):DetailedTraceNode|undefined {
@@ -152,55 +130,14 @@ function filterNodesByDocType(nodes:SmoresNode[], acceptableTypes:string[]):Smor
   return filtered;
 }
 
-function getValidURSOptions(allOptions:SmoresNode[]):SmoresNode[]|undefined{
-  return filterNodesByDocType(allOptions, [schema.srsDocType, schema.atpDocType, schema.emptyDocType]);
-}
-function getValidSRSOptions(allOptions:SmoresNode[]):SmoresNode[]|undefined{
-  return filterNodesByDocType(allOptions, [schema.ursDocType, schema.srsDocType, schema.adsDocType, schema.ddsDocType, schema.stpDocType, schema.itpDocType, schema.emptyDocType]);
-}
-function getValidADSOptions(allOptions:SmoresNode[]):SmoresNode[]|undefined{
-  return filterNodesByDocType(allOptions, [schema.srsDocType, schema.ddsDocType, schema.stpDocType, schema.itpDocType, schema.utpDocType, schema.emptyDocType]);
-}
-function getValidDDSOptions(allOptions:SmoresNode[]):SmoresNode[]|undefined{
-  return filterNodesByDocType(allOptions, [schema.srsDocType, schema.adsDocType, schema.itpDocType, schema.utpDocType, schema.emptyDocType]);
-}
-function getValidATPOptions(allOptions:SmoresNode[]):SmoresNode[]|undefined{
-  return filterNodesByDocType(allOptions, [schema.ursDocType, schema.emptyDocType]);
-}
-function getValidSTPOptions(allOptions:SmoresNode[]):SmoresNode[]|undefined{
-  return filterNodesByDocType(allOptions, [schema.srsDocType, schema.adsDocType, schema.emptyDocType]);
-}
-function getValidITPOptions(allOptions:SmoresNode[]):SmoresNode[]|undefined{
-  return filterNodesByDocType(allOptions, [schema.srsDocType, schema.adsDocType, schema.ddsDocType, schema.emptyDocType]);
-}
-function getValidUTPOptions(allOptions:SmoresNode[]):SmoresNode[]|undefined{
-  return filterNodesByDocType(allOptions, [schema.adsDocType, schema.ddsDocType, schema.emptyDocType]);
-}
-
 function getValidDocumentOptions(origin:DetailedTraceNode):SmoresNode[]|undefined {
   const allOptions = getAllDocumentOptions(origin.documentId);
   if(allOptions === undefined) {
     return undefined;
   }
-  switch(origin.documentType) {
-  case schema.emptyDocType:
-    return allOptions;
-  case schema.ursDocType:
-    return getValidURSOptions(allOptions);
-  case schema.srsDocType:
-    return getValidSRSOptions(allOptions);
-  case schema.adsDocType:
-    return getValidADSOptions(allOptions);
-  case schema.ddsDocType:
-    return getValidDDSOptions(allOptions);
-  case schema.atpDocType:
-    return getValidATPOptions(allOptions);
-  case schema.stpDocType:
-    return getValidSTPOptions(allOptions);
-  case schema.itpDocType:
-    return getValidITPOptions(allOptions);
-  case schema.utpDocType:
-    return getValidUTPOptions(allOptions);
+  const validTargetDocumentTypes = getTargetableDocumentTypes(origin.documentType);
+  if(validTargetDocumentTypes) {
+    return filterNodesByDocType(allOptions, validTargetDocumentTypes);
   }
   return undefined;
 }
