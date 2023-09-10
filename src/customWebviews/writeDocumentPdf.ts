@@ -17,10 +17,10 @@ export function writeDocumentPdf(document:SmoresDocument, htmlDocFilepath:string
   const outputFilename = `${outputName}.pdf`;
   const outputPath = join(dirname(htmlDocFilepath), outputFilename);
   const tocStylePath = join(DoorsSmores.getExtensionPath(), 'resources', 'wkhtmltopdfTOCxsl.xml');
-  const generalOptions = `--dpi 1200 --print-media-type --enable-local-file-access --outline --zoom 2.0`;
+  const generalOptions = `--dpi 1200 --print-media-type --enable-local-file-access --outline`;
   const headerOptions = `--header-html "${headerPath}"`;
   const footerOptions = `--footer-html "${footerPath}"`;
-  const pages = `cover "${coverPath}" "${historyPath}" toc --xsl-style-sheet "${tocStylePath}" --zoom 1.25 "${htmlDocFilepath}" "${outputPath}"`;
+  const pages = `cover "${coverPath}" "${historyPath}" toc --xsl-style-sheet "${tocStylePath}" "${htmlDocFilepath}" "${outputPath}"`;
   const cmd = `wkhtmltopdf ${margins} ${generalOptions} ${headerOptions} ${footerOptions} ${pages}`;
   console.log(cmd);
   generateHeaderFooterHtmlFiles(outputFilename);
