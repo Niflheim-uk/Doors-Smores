@@ -103,10 +103,7 @@ function getHistoryTable(document:SmoresDocument, traceReport:boolean) {
   var rows:string[] = [];
   for(let i=0; i<historyItems.length; i++) {
     const item = historyItems[i];
-    const issueDate = `${item.day} ${months[item.month]} ${item.year}`;
-    const maj = String(item.major).padStart(2, "0");
-    const min = String(item.minor).padStart(2, "0");
-    rows.push(`<tr><td>${issueDate}</td><td>${maj}-${min}</td><td>${item.detail}</td><td>${item.author}</td></tr>`);
+    rows.push(item.getTableRow());
   }
   if(rows.length === 0) {
     rows.push(`<tr><td>TBD</td><td>00-01</td><td>TBD</td><td>TBD</td></tr>`);

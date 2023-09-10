@@ -6,21 +6,31 @@ import { basename, join } from "path";
 import { rmSync } from "fs";
 
 export class RevisionHistoryItem {
-  public day:number = 0;
-  public month:number = 0;
-  public year:number = 0;
-  public major:number = 0;
-  public minor:number = 0;
-  public detail:string[] =[""];
-  public author:string = "";
-  public isMajor:boolean = false;
-  constructor() {};
+  constructor(  
+    public day:number,
+    public month:number,
+    public year:number,
+    public major:number,
+    public minor:number,
+    public detail:string,
+    public author:string,
+    public isMajor:boolean,
+  ) {};
+  public static makeEmpty() {
+    return new RevisionHistoryItem(0,0,0,0,0,"","",false);
+  }
+  public static make(data:RevisionHistoryItem) {
+    return new RevisionHistoryItem(data.day, data.month, data.year, data.major, data.minor, data.detail, data.author, data.isMajor);
+  }
   public getIssueString(major:number=this.major, minor:number=this.minor) {
     return `${String(major).padStart(2, '0')}-${String(minor).padStart(2, '0')}`;
   }
   public getDateString() {
     const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     return `${this.day} ${months[this.month]} ${this.year}`;
+  }
+  public getTableRow() {
+    return `<tr><td>${this.getDateString()}</td><td>${this.getIssueString()}</td><td>${this.detail.split("\n").join('<br>')}</td><td>${this.author}</td></tr>`;
   }
 };
 interface DocumentData {

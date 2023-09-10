@@ -118,7 +118,7 @@ export class VersionController {
     if(!_open) {
       await document.duplicateDocumentNodes(issueTag, traceReport);
     } else {
-      await VersionController.tagIssue(issueTag, lastRev.detail.join("\n"));
+      await VersionController.tagIssue(issueTag, lastRev.detail);
     }
   }
   private static async tagIssue(tag:string, message:string) {
