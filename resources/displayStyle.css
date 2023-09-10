@@ -44,7 +44,7 @@ div.section {
 /* Fonts */
 
 /* Normal */
-body /*, p, h1, h2, h3, h4, code, table, td, th*/{
+body, p, h1, h2, h3, h4, code, table, td, th{
   font-family: Arial;
   font-size: 10pt;
   position: relative;
@@ -61,8 +61,9 @@ p, h1, h2, h3, h4, code, table, td, th{
   padding: 0;
   margin-bottom: 12pt;
 }
-  .indented {
+.indented {
   margin-left: 1.5cm;
+  width: 14.5;
 }
 h1 {
   font-size: 12pt;

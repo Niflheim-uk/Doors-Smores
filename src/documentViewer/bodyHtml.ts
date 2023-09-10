@@ -2,10 +2,9 @@ import { SmoresNode } from '../model/smoresNode';
 import { getInnerHtmlForImage } from './imageInnerHtml';
 import { getInnerHtmlForRequirement } from './requirementInnerHtml';
 import { getHeadingHtml } from './headingInnerHtml';
-import { getMarkdownParagraphs, insertHtmlClass, setWebviewSection } from '../utils/utils';
+import { getMarkdownParagraphs } from '../utils/utils';
 import { getEditHtmlForNodeType } from './textEditor';
-import { Converter } from "showdown";
-
+import * as markdown from './markdownConversion';
 
 function getViewDivHtml(node:SmoresNode, innerHtml:string) {
   const tooltip = `<b>category</b>: ${node.data.category}<br/><b>id</b>: ${node.data.id}`;
@@ -29,7 +28,6 @@ function getViewHtmlForNodeType(node:SmoresNode, exporting:boolean):string {
   let mdString:string = "";
   let innerHtml:string = "";
   let insertPageBreak = false;
-  const converter = new Converter({simpleLineBreaks:true});
   switch(node.data.category) {
     case "document":
       return innerHtml;
@@ -45,8 +43,7 @@ function getViewHtmlForNodeType(node:SmoresNode, exporting:boolean):string {
       return getViewDivHtml(node, innerHtml);
     case "comment":
       const comment = getMarkdownParagraphs(node.data.text);
-      innerHtml =  converter.makeHtml(comment);
-      innerHtml = insertHtmlClass(innerHtml, "indented");
+      innerHtml = markdown.getIndentedHtmlFromMd(comment);
       return getViewDivHtml(node, innerHtml);
     case "image":
       innerHtml = getInnerHtmlForImage(node, exporting);
