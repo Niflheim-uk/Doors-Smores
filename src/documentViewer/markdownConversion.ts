@@ -1,7 +1,11 @@
-import { Converter } from "showdown";
+import { Converter, ConverterOptions } from "showdown";
 
+const converterOptions:ConverterOptions = {
+  simpleLineBreaks:true,
+  tables:true
+};
 export function getHtmlFromMd(mdString:string):string {
-  const converter = new Converter({simpleLineBreaks:true});
+  const converter = new Converter(converterOptions);
   return converter.makeHtml(mdString);
 }
 
@@ -16,17 +20,15 @@ export function getTableTextHtmlFromMd(mdString:string):string {
     ol: 'tableText',
     span: 'tableText'
   };
-  const tableTextInserter = Object.keys(classMap)
-    .map(key => ({
-      type: 'output',
-      regex: new RegExp(`<${key}(.*)>`, 'g'),
-      //@ts-ignore
-      replace: `<${key} class="${classMap[key]}" $1>`
-    }));
-
+  const tableTextInserter = Object.keys(classMap).map(key => ({
+    type: 'output',
+    regex: new RegExp(`<${key}(.*)>`, 'g'),
+    //@ts-ignore
+    replace: `<${key} class="${classMap[key]}" $1>`
+  }));
   mdString=`<span>${mdString}</span>`;
-  const converter = new Converter({
-    extensions: [...tableTextInserter]
-  });
+  var options = converterOptions;
+  options.extensions = [...tableTextInserter];  
+  const converter = new Converter(options);
   return converter.makeHtml(mdString);  
 }
