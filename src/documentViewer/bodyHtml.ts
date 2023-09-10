@@ -1,12 +1,15 @@
 import { SmoresNode } from '../model/smoresNode';
 import { getInnerHtmlForImage } from './imageInnerHtml';
 import { getInnerHtmlForRequirement } from './requirementInnerHtml';
-import { getHeadingHtml } from './headingInnerHtml';
+import * as heading from './headingInnerHtml';
 import { getMarkdownParagraphs } from '../utils/utils';
 import { getEditHtmlForNodeType } from './textEditor';
 import * as markdown from './markdownConversion';
 
-function getViewDivHtml(node:SmoresNode, innerHtml:string) {
+function getViewDivHtml(node:SmoresNode, exporting:boolean, innerHtml:string) {
+  if(exporting) {
+    return innerHtml;
+  }
   const tooltip = `<b>category</b>: ${node.data.category}<br/><b>id</b>: ${node.data.id}`;
   const outerHtml = `<div class="tooltip">
       <div class="toolTipText">${tooltip}</div>
@@ -32,35 +35,37 @@ function getViewHtmlForNodeType(node:SmoresNode, exporting:boolean):string {
     case "document":
       return innerHtml;
     case "heading":
-      [innerHtml, insertPageBreak] =  getHeadingHtml(node);
+      [innerHtml, insertPageBreak] =  heading.getHeadingHtml(node);
       if(insertPageBreak) {
-        return pageBreak.concat(getViewDivHtml(node, innerHtml));
+        return pageBreak.concat(getViewDivHtml(node, exporting, innerHtml));
       } else {
-        return getViewDivHtml(node, innerHtml);
+        return getViewDivHtml(node, exporting, innerHtml);
       }
     case "functionalRequirement":
       innerHtml =  getInnerHtmlForRequirement(node);
-      return getViewDivHtml(node, innerHtml);
+      return getViewDivHtml(node, exporting, innerHtml);
     case "comment":
       const comment = getMarkdownParagraphs(node.data.text);
       innerHtml = markdown.getIndentedHtmlFromMd(comment);
-      return getViewDivHtml(node, innerHtml);
+      return getViewDivHtml(node, exporting, innerHtml);
     case "image":
       innerHtml = getInnerHtmlForImage(node, exporting);
-      return getViewDivHtml(node, innerHtml);
+      return getViewDivHtml(node, exporting, innerHtml);
     default:
       innerHtml =  "<H1>ERROR - Unknown Category</H1>";
-      return getViewDivHtml(node, innerHtml);
+      return getViewDivHtml(node, exporting, innerHtml);
   }
 }
 function getHtmlForNodeChildren(node:SmoresNode, exporting:boolean, editNode?:SmoresNode):string {
   let html:string = "";
   if(node.data.children && node.data.children.length > 0) {
+    heading.increaseHeaderDepth();
     const childNodes = node.getChildNodes();
     for (let index = 0; index < childNodes.length; index++) {
       const child = childNodes[index];
       html = html.concat(getHtmlForNode(child, exporting, editNode));
     }
+    heading.decreaseHeaderDepth();
   }
   return html;
 }
@@ -72,5 +77,6 @@ function getHtmlForNode(node: SmoresNode, exporting:boolean, editNode?: SmoresNo
 }
 
 export function getBodyHtml(node: SmoresNode, exporting:boolean, editNode?: SmoresNode):string {
+  heading.resetHeaderDepth();
   return getHtmlForNode(node, exporting, editNode);
 }

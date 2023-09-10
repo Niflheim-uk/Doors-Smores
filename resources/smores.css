@@ -39,13 +39,11 @@
   bottom: 110%; 
   width:16cm;
 }
-
 /* Show the tooltip text when you mouse over the tooltip container */
 .tooltip:hover .toolTipText {
   visibility: visible;
   transition-delay:2s;
 }
-
 .editDiv {
   position:relative;
   width:16cm;
