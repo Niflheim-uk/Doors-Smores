@@ -5,8 +5,8 @@ export function createHistoryTable(parentNode:SmoresNode) {
   const path = parentNode.newItem("heading", "History");
   const node = new SmoresNode(path!);
   node.newItem("comment", 
-  `| Date | Issue | Summary     | Author |\n
-   |------|-------|-------------|--------|\n
+  `| Date | Issue | Summary     | Author |
+   |------|-------|-------------|--------|
    |  TBD | 00-01 | First issue |    TBD |`);
   return node;
 }
@@ -14,8 +14,8 @@ export function createReferenceTable(parentNode:SmoresNode) {
   const path = parentNode.newItem("heading", "References");
   const node = new SmoresNode(path!);
   node.newItem("comment", 
-  `| ID | Reference Name | Title          |\n
-   |----|----------------|----------------|\n
+  `| ID | Reference Name | Title          |
+   |----|----------------|----------------|
    | [1]| doc1           | Document title |`);
   return node;
 }
@@ -24,8 +24,8 @@ export function createGlossaryTable(parentNode:SmoresNode) {
   const node = new SmoresNode(path!);
   node.newItem("comment", "Defined terms are capitalized in this document. These terms are defined in the table below.");
   node.newItem("comment", 
-  `| Term | Definition             |\n
-   |------|------------------------|\n
+  `| Term | Definition             |
+   |------|------------------------|
    | TERM | The definition for TERM|`);
   return node;
 }
