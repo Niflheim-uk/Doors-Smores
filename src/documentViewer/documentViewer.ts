@@ -1,45 +1,27 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from 'fs';
+import { SmoresDataFile } from "../model/smoresDataFile";
 import { TreeNode } from "../treeView/treeNode";
 import { SmoresNode } from "../model/smoresNode";
 import { getPageHtml } from './pageHtml';
 import * as utils from '../utils/utils';
-import { setImagesPath } from "./imageInnerHtml";
 
 export class DocumentViewer {
-  private _extensionUri!:vscode.Uri;
-  private _imagesUri!:vscode.Uri;
   private _referenceNode:SmoresNode|undefined;
   private _nodeToEdit:SmoresNode|undefined;
   private _viewPanel: vscode.WebviewPanel | undefined;
 
   constructor() {}
 
-  register(context: vscode.ExtensionContext) {
-    this._extensionUri = context.extensionUri;
-    const registrations = (
-      vscode.commands.registerCommand(
-        "doors-smores.View-TreeNode",
-        (node: TreeNode) => {
-          this._showNode(node.smoresNode);
-        }
-      ),
-      vscode.commands.registerCommand(
-        "doors-smores.Edit-Section",(context:any) => {
-          this._editNode(context);
-        }
-      ),
-      vscode.commands.registerCommand(
-        'doors-smores.Export-Document', 
-        (node: TreeNode) => {
-        this._exportDocument(node.smoresNode);
-      })
-
-    );
-    context.subscriptions.push(registrations);
+  isViewActive() {
+    if(this._referenceNode) {
+      return true;
+    }
+    return false;
   }
-  _editNode(context:any) {
+
+  public editNode(context:any) {
     if(context.webviewSection && this._referenceNode) {
       const webviewSection:string = context.webviewSection;
       const nodeId:number = Number(webviewSection.replace("Node-",""));
@@ -51,11 +33,11 @@ export class DocumentViewer {
         this._editImageSource(node);
       } else {
         this._nodeToEdit = node;
-        this._updatePanel();
+        this.updatePanel();
       }
     }
   }
-  private _showNode(node: SmoresNode) {
+  public showNode(node: SmoresNode) {
     if(node === undefined) {
       return;
     }
@@ -65,9 +47,9 @@ export class DocumentViewer {
       this._referenceNode = node;
       this._viewPanel.reveal();
     }
-    this._updatePanel();
+    this.updatePanel();
   }
-  private async _exportDocument(node:SmoresNode) {
+  public async exportDocument(node:SmoresNode) {
     const workspaceRoot = utils.getWorkspaceRoot();
     let documentNode:SmoresNode|null = node;
     while(documentNode!== null && documentNode.getParentNode() !== null) {
@@ -78,7 +60,7 @@ export class DocumentViewer {
         { value: `${documentNode.data.text}.html` });
       if(workspaceRoot && filename) {
         const filePath = path.join(workspaceRoot, filename);
-        this._showNode(documentNode);
+        this.showNode(documentNode);
         const html = getPageHtml(documentNode, true);
         if(html !== undefined) {
           fs.writeFileSync(filePath,html);
@@ -94,20 +76,29 @@ export class DocumentViewer {
           this._nodeToEdit = undefined;
           vscode.commands.executeCommand('doors-smores.Update-TreeView');
         }
-        this._updatePanel();
+        this.updatePanel();
         vscode.window.showErrorMessage(message.text);
         return;
       case 'cancel':
         this._nodeToEdit=undefined;
-        this._updatePanel();
+        this.updatePanel();
         return;
     }
   }
   private _createPanel(node:SmoresNode) {
     this._referenceNode = node;
-    const nodeUri = vscode.Uri.file(path.dirname(node.filePath.toString()));
-    this._imagesUri = vscode.Uri.joinPath(nodeUri, "images");
-    setImagesPath(this._imagesUri.path);
+    const imagesPath = SmoresDataFile.getImagesFilepath();
+    const nodePath = SmoresDataFile.getDataFilepath();
+    const extensionPath = SmoresDataFile.getExtensionPath();
+    if(imagesPath === undefined || nodePath === undefined) {
+      return;
+    }
+    if(extensionPath === undefined) {
+      return;
+    }
+    const imagesUri = vscode.Uri.file(imagesPath);    
+    const nodeUri = vscode.Uri.file(nodePath);    
+    const extensionUri = vscode.Uri.file(extensionPath);    
     this._viewPanel = vscode.window.createWebviewPanel(
       "smoresNodeView", // Identifies the type of the webview. Used internally
       "Smores Preview", // Title of the panel displayed to the user
@@ -115,13 +106,12 @@ export class DocumentViewer {
       {
         enableScripts: true,
         localResourceRoots:[
-          vscode.Uri.joinPath(this._extensionUri, 'resources'),
+          vscode.Uri.joinPath(extensionUri, 'resources'),
           nodeUri,
-          this._imagesUri
+          imagesUri
         ]
       }
     );
-    console.log(path.dirname(node.filePath.toString()));
     utils.setWebview(this._viewPanel.webview);
     // Assign event handlers
     this._viewPanel.webview.onDidReceiveMessage((message) => {
@@ -130,6 +120,7 @@ export class DocumentViewer {
 
     this._viewPanel.onDidDispose((e) => {
       console.log("closed panel");
+      vscode.commands.executeCommand('doors-smores.Stop-Viewing');
       this._viewPanel = undefined;
       utils.clearWebview();
     });
@@ -142,26 +133,31 @@ export class DocumentViewer {
       node.data.text = newValue;
       node.write();
       vscode.commands.executeCommand('doors-smores.Update-TreeView');
-      this._updatePanel();
+      this.updatePanel();
     }
   }
   private async _editImageSource(node: SmoresNode) {
+    const imagesPath = SmoresDataFile.getImagesFilepath();
+    if(imagesPath === undefined) {
+      return;
+    }
+    const imagesUri = vscode.Uri.file(imagesPath);    
     const uri = await vscode.window.showOpenDialog({
       canSelectMany:false,
       /* eslint-disable  @typescript-eslint/naming-convention */
       filters:{'Image source':['jpg','jpeg','png','gif','tif']},
       openLabel:"Select New Image Source",
       canSelectFolders:false,
-      defaultUri:this._imagesUri
+      defaultUri:imagesUri
     });
     if(uri) {
-      node.data.text = path.relative(this._imagesUri.path, uri[0].path);
+      node.data.text = path.relative(imagesUri.path, uri[0].path);
       node.write();
       vscode.commands.executeCommand('doors-smores.Update-TreeView');
-      this._updatePanel();
+      this.updatePanel();
     }  
   }
-  private _updatePanel() {
+  public updatePanel() {
     if(this._viewPanel === undefined || this._referenceNode === undefined) {
       return;
     }

@@ -20,7 +20,7 @@
       {
         "view": "smoresTreeView",
         "when": "workspaceFolderCount > 0 && !doors-smores.projectOpen",
-        "contents": "No current doors-smores project.\n[learn more](https://xkcd.com/1319/).\n[Start New Project](command:doors-smores.Initialise-Workspace)\n[Open Existing Project](command:doors-smores.Open-Project)"
+        "contents": "No current doors-smores project.\n[learn more](https://xkcd.com/1319/).\n[Start New Project](command:doors-smores.New-Project)\n[Open Existing Project](command:doors-smores.Open-Project)"
       },
       {
         "view": "smoresTreeView",
@@ -54,14 +54,19 @@
     },
     "commands": [
       {
-        "command": "doors-smores.Initialise-Workspace",
+        "command": "doors-smores.New-Project",
         "category": "Smores",
-        "title": "Initialise Workspace"
+        "title": "New Project"
       },
       {
         "command": "doors-smores.Open-Project",
         "category": "Smores",
         "title": "Open Project"
+      },
+      {
+        "command": "doors-smores.Close-Project",
+        "category": "Smores",
+        "title": "Close Project"
       },
       {
         "command": "doors-smores.New-Document",
@@ -159,6 +164,10 @@
           "command": "doors-smores.Update-TreeView",
           "when": "view == smoresTreeView",
           "group": "navigation"
+        },
+        {
+          "command": "doors-smores.Close-Project",
+          "when": "view == smoresTreeView"
         },
         {
           "command": "doors-smores.New-Document",

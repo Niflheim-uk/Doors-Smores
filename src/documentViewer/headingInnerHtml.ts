@@ -10,7 +10,11 @@ function clearHeadingCounter() {
   }
 }
 function incrementHeadingCounter() {
-  if(_headerDepth >= 0 && _headerDepth < _headingCounters.length) {
+  if(_headerDepth <0) {
+    _headerDepth = 0;
+    clearHeadingCounter();
+  }
+  if( _headerDepth < _headingCounters.length) {
     _headingCounters[_headerDepth]++;
   }
 }

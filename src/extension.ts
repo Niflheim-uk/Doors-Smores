@@ -1,10 +1,9 @@
 import * as vscode from 'vscode';
-import { TreeNodeProvider } from './treeView/treeNodeProvider';
-import { DocumentViewer } from './documentViewer/documentViewer';
+import {DoorsSmores} from './doorsSmores';
 
+var doorsSmores:DoorsSmores;
 export function activate(context: vscode.ExtensionContext) {
   vscode.commands.executeCommand('setContext', 'doors-smores.projectOpen', false);
-  new TreeNodeProvider().register(context);
-  new DocumentViewer().register(context); 
+  doorsSmores = new DoorsSmores(context);
 }
 export function deactivate() {}

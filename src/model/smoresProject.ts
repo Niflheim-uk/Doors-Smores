@@ -12,7 +12,7 @@ export interface ProjectDataModel {
   documentIds: number[];
 }
 export function getProject():SmoresProject|undefined {
-  const projectFilepath = SmoresDataFile.getProjectFilePath();
+  const projectFilepath = SmoresDataFile.getProjectFilepath();
   if(projectFilepath) {
     return new SmoresProject(projectFilepath);
   }
@@ -22,26 +22,22 @@ export class SmoresProject extends SmoresDataFile {
   declare readonly data:ProjectDataModel;
   constructor (readonly projectFilepath:fs.PathLike) {
     super(projectFilepath);
-    SmoresDataFile.setProjectFilePath(projectFilepath);
+    SmoresDataFile.setProjectFilepath(projectFilepath);
     if(this.setDefaults()) {
       this.setDefaultImage();
     }
   }
   private setDefaultImage() {
-    const extension = vscode.extensions.getExtension('Niflheim.doors-smores');
-    const extensionUri = extension?.extensionUri;
-    if(extensionUri === undefined) {
+    const projectDataDir = SmoresDataFile.getDataFilepath();
+    const extensionPath = SmoresDataFile.getExtensionPath();
+    if(extensionPath === undefined || projectDataDir === undefined) {
       return;
     }
-    const defaultImageSrc = vscode.Uri.joinPath(
-      extensionUri, 'resources', 'defaultImage.jpg'
-    );
-    const projectRoot = path.dirname(this.filePath.toString());
-    const projectName = path.basename(this.filePath.toString(), '.smores-project');
-    const projectDir = path.join(projectRoot, projectName);
-    const imageDest = path.join(projectDir, 'defaultImage.jpg');
-    const imageUri = vscode.Uri.file(imageDest);
-    vscode.workspace.fs.copy(defaultImageSrc, imageUri, {overwrite:true});
+    const imageSrc = path.join(extensionPath, 'resources', 'defaultImage.jpg');
+    const imageDest = path.join(projectDataDir, 'defaultImage.jpg');
+    const imageSrcUri = vscode.Uri.file(imageSrc);
+    const imageDestUri = vscode.Uri.file(imageDest);
+    vscode.workspace.fs.copy(imageSrcUri, imageDestUri, {overwrite:true});
   }
   private setDefaults():boolean {
     let change = false;

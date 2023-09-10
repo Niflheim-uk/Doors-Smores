@@ -5,15 +5,16 @@ import { createTemplateNodesForSRS } from './srsTemplate';
 
 async function getDocumentType():Promise<string|undefined> {
   const documentTypes:string[] = [
-        // "User Requirements Specification",
-        "Software Requirements Specification",
-        // "Architecture Design Specification",
-        // "Detailed Design Specification",
-        // "Software Acceptance Test Protocol",
-        // "Software System Test Protocol",
-        // "Software Integration Test Protocol",
-        // "Software Unit Test Protocol"
-      ];
+    "Empty document",
+    // "User Requirements Specification",
+    "Software Requirements Specification",
+    // "Architecture Design Specification",
+    // "Detailed Design Specification",
+    // "Software Acceptance Test Protocol",
+    // "Software System Test Protocol",
+    // "Software Integration Test Protocol",
+    // "Software Unit Test Protocol"
+  ];
 
   return await vscode.window.showQuickPick(documentTypes,{
     canPickMany:false
@@ -35,6 +36,8 @@ function createDocument(title:string, docType:string):string|undefined {
 
 function createTemplateNodes(docNode:SmoresNode, docType:string) {
   switch(docType) {
+    case "Empty Document":
+      break;
     // case "User Requirements Specification":
     case "Software Requirements Specification":
       createTemplateNodesForSRS(docNode);

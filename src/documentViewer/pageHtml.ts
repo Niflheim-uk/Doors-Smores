@@ -4,10 +4,9 @@ import * as path from 'path';
 import { SmoresNode } from "../model/smoresNode";
 import {getBodyHtml} from './bodyHtml';
 import * as utils from "../utils/utils";
+import { SmoresDataFile } from "../model/smoresDataFile";
 
-const _extension = vscode.extensions.getExtension("Niflheim.doors-smores");
-const _extensionPath = _extension?.extensionPath;
-
+const _extensionPath = SmoresDataFile.getExtensionPath();
 
 function getStylePaths():string[]|undefined {
   if(_extensionPath) {
