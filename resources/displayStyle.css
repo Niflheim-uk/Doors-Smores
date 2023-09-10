@@ -1,6 +1,6 @@
 /* Heading number scheme */
 body {
-  width:21cm;
+  width:100%;
   color: var(--vscode-editor-foreground);
   background: var(--vscode-editor-background)
 }
@@ -11,7 +11,7 @@ div.section {
 
 .tabStop {
   position: absolute;
-  left: 1.5cm;
+  margin-left: 10%;
 }
 
 button {
@@ -19,7 +19,7 @@ button {
   background-color: var(--vscode-button-background);
   border: 1px solid var(--vscode-button-border,transparent);
   box-sizing: border-box;
-  width: 3cm;
+  width: 20%;
   padding: 4px;
   border-radius: 2px;
   text-align: center;
@@ -60,12 +60,12 @@ li, ol, ul {
   font-size: 10pt;
 }
 .indented {
-  margin-left: 1.5cm;
-  width: 19.5cm;
+  margin-left: 10%;
+  width: 90%;
 }
 .imageHolder {
-  margin-left: 1.5cm;
-  width: 19.5cm;
+  margin-left: 10%;
+  width: 90%;
   text-align: center;
   position: relative;
 }
@@ -100,8 +100,8 @@ table {
   position:relative;
   border-collapse: collapse;
   table-layout: fixed;
-  left: 0cm;
-  width: 19.5cm; /* 21 - (2.5 left, 2.5 right, 1.5 indent) */
+  margin-left: 0;
+  width: 100%; 
 }
 table, td, th {
   border: 1px solid;
@@ -111,17 +111,10 @@ table, td, th {
   margin-bottom: 3pt;
 }
 
-table.heading, td.heading {
-  border:none;
-  padding-left: 0;
-  padding-right: 0;
-}
-table.heading tr>td:first-child {
-  width: 1.5cm;
-}
 table.indented2ColSmall {
-  margin-left: 1.5cm;
+  margin-left: 10%;
+  width: 90%
 }
 table.indented2ColSmall tr>td:first-child {
-  width: 1.5cm;
+  width: 15%;
 }

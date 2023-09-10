@@ -69,15 +69,15 @@ export function getHeadingHtml(node:DocumentNode):[string, boolean] {
   const bangs = getHeadingBangs(node);
   const headingMd = `${bangs} ${node.data.text.split("\n")[0]}`;
   const headingHtml = convert.makeHtml(headingMd);
-  const hFront = headingHtml.substring(0, 4);
+  const hOpen = headingHtml.substring(0, 4);
   const hMiddle = headingHtml.substring(4, headingHtml.length-5);
-  const hRear = headingHtml.substring(headingHtml.length-5);
+  const hClose = headingHtml.substring(headingHtml.length-5);
   const hPrefix = getHeadingPrefix();
-  if(hFront === '<h1>') {
+  if(hOpen === '<h1>') {
     pageBreakRequired = true;
   }
   return [`
   <div class="section">
-    ${hFront}${hPrefix}<span class="tabStop">${hMiddle}</span>${hRear}
+    <div class="headingNumber">${hOpen}${hPrefix}&nbsp;&nbsp;<span class="headingLabel">${hMiddle}</span>${hClose}</div>
   </div>`, pageBreakRequired];
 }

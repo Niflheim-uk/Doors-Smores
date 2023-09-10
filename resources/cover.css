@@ -1,5 +1,5 @@
 h1.frontpage {
-  padding-top: 20cm;
+  padding-top: 18cm;
   text-align: center;
   font-family: Arial;
   font-size: 20pt;
@@ -20,7 +20,7 @@ table.history {
   border-collapse: collapse;
   table-layout: auto;
   left: 0cm;
-  width: 21cm; /* 21 - (2.5 left, 2.5 right */
+  width: 100%; /* 21 - (2.5 left, 2.5 right */
 }
 table, td, th {
   border: 1px solid;
@@ -31,14 +31,14 @@ table, td, th {
 }
 
 table.history tr>td:nth-child(1) {
-  width: 3cm;
+  width: 20%;
 }
 table.history tr>td:nth-child(2) {
-  width: 1cm;
+  width: 5%;
 }
 table.history tr>td:nth-child(3) {
-  width: 14cm;
+  width: 55%;
 }
 table.history tr>td:nth-child(4) {
-  width: 3cm;
+  width: 20%;
 }

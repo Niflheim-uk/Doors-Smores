@@ -22,7 +22,6 @@
 }
 .buttonContainer {
   position:relative;
-  width: 16cm;
   justify-content: space-evenly;
   display: flex;
 }
@@ -37,7 +36,7 @@
   padding: 5px 5px;
   border-radius: 6px;
   bottom: 110%; 
-  width:16cm;
+  width:85%;
 }
 @media screen {
   /* Show the tooltip text when you mouse over the tooltip container */
@@ -52,10 +51,12 @@
 }
 .editDiv {
   position:relative;
-  width:16cm;
+  width:80%;
   display:flex;
   flex-direction: column;
   margin-top: 1cm;
+  margin-left:10%;
+  margin-right:10%;
   margin-bottom: 1cm;
 }
 .editBox {
@@ -70,15 +71,13 @@ table, td, th {
   margin-bottom: 3pt;
 }
 
-table.heading, td.heading {
-  border:none;
-  padding-left: 0;
-  padding-right: 0;
+div.headingNumber {
+  position:relative;
+  width: 100%;
+  margin:0;
 }
-table.heading tr>td:first-child {
-  width: 1.5cm;
+span.headingLabel {
+  position:absolute;
+  top:0;
+  left:10%;
 }
-table.indented2ColSmall {
-  margin-left: 1.5cm;
-}
-
