@@ -94,7 +94,10 @@ export class DocumentView {
       }
     }
   }
-  public static async exportDocument(node:DocumentNode, userAction:boolean=true) {
+  public static async exportDocument(node:DocumentNode|undefined, userAction:boolean=true) {
+    if(node=== undefined) {
+      return;
+    }
     let documentNode:DocumentNode|null = node;
     while(documentNode!== null && documentNode.getParent() !== null) {
       documentNode = documentNode.getParent();

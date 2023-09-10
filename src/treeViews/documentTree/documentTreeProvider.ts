@@ -41,7 +41,7 @@ export class DocumentTreeProvider implements vscode.TreeDataProvider<DocumentTre
         vscode.window.registerTreeDataProvider('doors-smores.documentTree', DocumentTreeProvider.tree),
         vscode.window.createTreeView('doors-smores.documentTree', {treeDataProvider: DocumentTreeProvider.tree, showCollapseAll: false}),
         vscode.commands.registerCommand('doors-smores.NewDocument', DoorsSmores.newDocumentGui),
-        vscode.commands.registerCommand('doors-smores.ExportDocument', ()=>{DocumentView.render(DoorsSmores.getActiveDocument());}),
+        vscode.commands.registerCommand('doors-smores.ExportDocument', ()=>{DocumentView.exportDocument(DoorsSmores.getActiveDocument());}),
         vscode.commands.registerCommand('doors-smores.ViewDocumentNode', (item:DocumentTreeItem)=>{DocumentView.render(item.node);}),
         vscode.commands.registerCommand('doors-smores.DeleteDocumentNode', (item:DocumentTreeItem)=>{item.deleteNode();}),
         vscode.commands.registerCommand('doors-smores.ViewTraces', TraceView.render),
