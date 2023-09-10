@@ -31,7 +31,7 @@ export interface DocumentNodeData {
 }
 const defaultData:DocumentNodeData = {     
   id: -1,
-  parent: -1,
+  parent: 0,
   category: "",
   text: "TBD",
   traces: {traceIds:[],suspectIds:[]},
@@ -53,7 +53,9 @@ export class DocumentNode extends SmoresFile {
   constructor(filepath:string) {
     super(filepath);
     if(this.data.id === undefined) {
+      const nodeId = basename(filepath, SmoresFile.nodeExtension);
       this.data = defaultData;
+      this.data.id = Number(nodeId);
       this.write();
     }
     this.data = fixData(this.data);
