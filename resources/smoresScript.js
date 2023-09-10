@@ -81,7 +81,7 @@ function addDownstreamArrow() {
 }
 function addTestArrow() {
   const gridDiv = document.getElementsByClassName('tracingGrid')[0];
-  if(gridDiv) {
+  if(gridDiv && gridDiv.children[3].children[0]) {
     const targetRect = gridDiv.children[2].children[0].getBoundingClientRect();
     const testRect = gridDiv.children[3].children[0].getBoundingClientRect();
     const divLeft = targetRect.right + arrowGap;
