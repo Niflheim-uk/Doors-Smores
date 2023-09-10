@@ -51,6 +51,9 @@ export function newNonFuncReq(node:SmoresNode, insertPos?:number) {
 export function newDesCon(node:SmoresNode, insertPos?:number) {
   return node.newItem("designConstraint", "new design constraint", insertPos);
 }
+export function newUserTest(node:SmoresNode, insertPos?:number) {
+  return node.newItem("userAcceptanceTest", "new user acceptance test", insertPos);
+}
 export function newSysTest(node:SmoresNode, insertPos?:number) {
   return node.newItem("softwareSystemTest", "new software system test", insertPos);
 }

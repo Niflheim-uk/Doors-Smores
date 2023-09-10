@@ -38,6 +38,7 @@ export class VersionController {
   }
 
   public static async commitChanges(msg:string) {
+    console.log(msg);
     if(!_open) {
       return; 
     }

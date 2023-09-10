@@ -62,6 +62,9 @@ export function getNodeIcon(node:SmoresNode):vscode.ThemeIcon {
     case "designConstraint":
       iconColour = new vscode.ThemeColor(desConColour);
       return new vscode.ThemeIcon('lock', iconColour);
+    case "userAcceptanceTest":
+      iconColour = new vscode.ThemeColor(ursLevelColour);
+      return new vscode.ThemeIcon('beaker', iconColour);
     case "softwareSystemTest":
       iconColour = new vscode.ThemeColor(srsLevelColour);
       return new vscode.ThemeIcon('beaker', iconColour);

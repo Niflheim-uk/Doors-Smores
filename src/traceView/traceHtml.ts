@@ -52,28 +52,23 @@ function getTraceTypeFromTitle(title:string):[string,boolean] {
   }
   return ['unknown', true];
 }
-function isTraceSuspect(nodeId:number, suspectTraces:number[]|undefined):boolean {
-  if(suspectTraces) {
-    return suspectTraces.includes(nodeId);
-  }
-  return false;
-}
-function getTraceRow(nodeId:number, suspectTraces:number[]|undefined, traceType:string, traceUpstream:boolean):string {
-  const suspect = isTraceSuspect(nodeId, suspectTraces);
-  const node = getNodeFromId(nodeId);
-  const traceLabel = getIdLabel(node!);
-  const traceName = getNameFromId(nodeId);
-  let verStatus = verifiedSVG;
+function getTraceRow(originId:number, traceId:number, traceType:string, traceUpstream:boolean):string {
+  const traceNode = getNodeFromId(traceId);
+  const suspect = traceNode!.isTraceSuspect(originId);
+  const traceLabel = getIdLabel(traceNode!);
+  const traceName = getNameFromId(traceId);
+  const viewDetail = `title='View' id='ViewTd-${traceId}' data-node-id='${traceId}' data-trace-type='${traceType}'`;
+  const deleteDetail = `title='Delete' id='DeleteTd-${traceId}' data-node-id='${traceId}' data-trace-type='${traceType}' data-trace-upstream='${traceUpstream}'`;
+  const verDetail = `title='Verify Trace' id='VerifyTd-${traceId}' data-node-id='${traceId}' data-trace-type='${traceType}'`;
+  const verifyButton = `<button class='tracing' ${verDetail}>${unverifiedSVG}</button>`;
+  let verHealth = verifiedSVG;
   if(suspect) {
-    verStatus = unverifiedSVG;
+    verHealth = verifyButton;
   }
-  const viewDetail = `id='ViewTd-${nodeId}' data-node-id='${nodeId}' data-trace-type='${traceType}'`;
-  const deleteDetail = `id='DeleteTd-${nodeId}' data-node-id='${nodeId}'
-  data-trace-type='${traceType}' data-trace-upstream='${traceUpstream}'`;
   // The empty cell allows for easier layout as it takes up any slack
   return `
   <tr>
-    <td class='traceHealth'>${verStatus}</td>
+    <td class='traceHealth'>${verHealth}</td>
     <td class='traceId tableSmall'>${traceLabel}</td>
     <td class='traceLink'>${traceName}</td>
     <td class='traceHealth'><button class='tracing' ${viewDetail}>${viewSVG}</button></td>
@@ -81,13 +76,13 @@ function getTraceRow(nodeId:number, suspectTraces:number[]|undefined, traceType:
     <td class='traceHealth'></td> 
   </tr>`;
 }
-function getTraceTable(traceArray:number[]|undefined, suspectTraces:number[]|undefined, title:string) {
+function getTraceTable(originId:number, traceArray:number[]|undefined, title:string) {
   let traceRows = "";
   const [traceType, traceUpstream] = getTraceTypeFromTitle(title);
   if(traceArray) {
     for (let index = 0; index < traceArray.length; index++) {
       const traceId = traceArray[index];
-      traceRows = traceRows.concat(getTraceRow(traceId, suspectTraces, traceType, traceUpstream));
+      traceRows = traceRows.concat(getTraceRow(originId, traceId, traceType, traceUpstream));
     }
   }
   const newButtonDetail = `id='New-${traceType}' data-trace-type='${traceType}' data-trace-upstream='${traceUpstream}'`;
@@ -106,24 +101,23 @@ export function getDownstreamReqTraceHtml(node:SmoresNode):string {
   let html = "";
   const documentType = node.getDocumentType();
   const downstream = node.data.traces?.downstream;
-  const suspectTraces = node.data.traces?.suspectTrace;
   switch(documentType) {
   case schema.ursDocType:
-    html = html.concat(getTraceTable(downstream?.decompose, suspectTraces, "Decomposes To"));
+    html = html.concat(getTraceTable(node.data.id, downstream?.decompose, "Decomposes To"));
     break;
   case schema.srsDocType:
-    html = html.concat(getTraceTable(downstream?.satisfy, suspectTraces, "Satisfied By"));
-    html = html.concat(getTraceTable(downstream?.detail, suspectTraces, "Detailed By"));
+    html = html.concat(getTraceTable(node.data.id, downstream?.satisfy, "Satisfied By"));
+    html = html.concat(getTraceTable(node.data.id, downstream?.detail, "Detailed By"));
     break;
   case schema.adsDocType:
-    html = html.concat(getTraceTable(downstream?.detail, suspectTraces, "Detailed By"));
+    html = html.concat(getTraceTable(node.data.id, downstream?.detail, "Detailed By"));
     break;
   case schema.ddsDocType:
     break;
   case schema.emptyDocType:
-    html = html.concat(getTraceTable(downstream?.decompose, suspectTraces, "Decomposes To"));
-    html = html.concat(getTraceTable(downstream?.satisfy, suspectTraces, "Satisfied By"));
-    html = html.concat(getTraceTable(downstream?.detail, suspectTraces, "Detailed By"));
+    html = html.concat(getTraceTable(node.data.id, downstream?.decompose, "Decomposes To"));
+    html = html.concat(getTraceTable(node.data.id, downstream?.satisfy, "Satisfied By"));
+    html = html.concat(getTraceTable(node.data.id, downstream?.detail, "Detailed By"));
     break;
   }
   return html;
@@ -131,31 +125,29 @@ export function getDownstreamReqTraceHtml(node:SmoresNode):string {
 export function getDownstreamTestTraceHtml(node:SmoresNode):string {
   let html = "";
   const downstream = node.data.traces?.downstream;
-  const suspectTraces = node.data.traces?.suspectTrace;
-  html = html.concat(getTraceTable(downstream?.verify, suspectTraces, "Verified By"));
+  html = html.concat(getTraceTable(node.data.id, downstream?.verify, "Verified By"));
   return html;
 }
 export function getUpstreamReqTraceHtml(node:SmoresNode):string {
   let html = "";
   const documentType = node.getDocumentType();
   const upstream = node.data.traces?.upstream;
-  const suspectTraces = node.data.traces?.suspectTrace;
   switch(documentType) {
   case schema.ursDocType:
     break;
   case schema.srsDocType:
-    html = html.concat(getTraceTable(upstream?.decompose, suspectTraces, "Decomposed From"));
+    html = html.concat(getTraceTable(node.data.id, upstream?.decompose, "Decomposed From"));
     break;
   case schema.adsDocType:
-    html = html.concat(getTraceTable(upstream?.satisfy, suspectTraces, "Satisfies"));
+    html = html.concat(getTraceTable(node.data.id, upstream?.satisfy, "Satisfies"));
     break;
   case schema.ddsDocType:
-    html = html.concat(getTraceTable(upstream?.detail, suspectTraces, "Details"));
+    html = html.concat(getTraceTable(node.data.id, upstream?.detail, "Details"));
     break;
   case schema.emptyDocType:
-    html = html.concat(getTraceTable(upstream?.decompose, suspectTraces, "Decomposed From"));
-    html = html.concat(getTraceTable(upstream?.satisfy, suspectTraces, "Satisfies"));
-    html = html.concat(getTraceTable(upstream?.detail, suspectTraces, "Details"));
+    html = html.concat(getTraceTable(node.data.id, upstream?.decompose, "Decomposed From"));
+    html = html.concat(getTraceTable(node.data.id, upstream?.satisfy, "Satisfies"));
+    html = html.concat(getTraceTable(node.data.id, upstream?.detail, "Details"));
     break;
   }
   return html;
@@ -163,8 +155,7 @@ export function getUpstreamReqTraceHtml(node:SmoresNode):string {
 export function getUpstreamTestTraceHtml(node:SmoresNode):string {
   let html = "";
   const upstream = node.data.traces?.upstream;
-  const suspectTraces = node.data.traces?.suspectTrace;
-  html = html.concat(getTraceTable(upstream?.verify, suspectTraces, "Verifies"));
+  html = html.concat(getTraceTable(node.data.id, upstream?.verify, "Verifies"));
   return html;
 }
 export function getTraceTargetHtml(node:SmoresNode):string {
@@ -176,6 +167,7 @@ export function getTraceTargetHtml(node:SmoresNode):string {
       return `<div class='tracing'>${title}${getInnerHtmlForRequirement(node)}</div>`;
     case "designConstraint":
       return `<div class='tracing'>${title}${getInnerHtmlForConstraint(node)}</div>`;
+    case "userAcceptanceTest":
     case "softwareSystemTest":
     case "softwareIntegrationTest":
     case "softwareUnitTest":

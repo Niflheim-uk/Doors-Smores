@@ -11,6 +11,6 @@
 - [x] Filter new content options based on document type
 - [ ] Basic template for test protocol
 ### 0.3
-- [ ] Tracing entry
-- [ ] Tracing modification
+- [x] Tracing entry
+- [x] Tracing modification
 - [ ] Tracing marked as suspicious if other end changes

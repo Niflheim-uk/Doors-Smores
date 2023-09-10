@@ -12,17 +12,14 @@ export function getIdLabel(node:SmoresNode) {
   case "comment":
     return `Comment<br/>Id:${node.data.id}`;
   case "userRequirement":
-    return `Requirement<br/>Id:${node.data.id}`;
   case "functionalRequirement":
-    return `Requirement<br/>Id:${node.data.id}`;
   case "nonFunctionalRequirement":
     return `Requirement<br/>Id:${node.data.id}`;
   case "designConstraint":
     return `Constraint<br/>Id:${node.data.id}`;
+  case "userAcceptanceTest":
   case "softwareSystemTest":
-    return `Test Case<br/>Id:${node.data.id}`;
   case "softwareIntegrationTest":
-    return `Test Case<br/>Id:${node.data.id}`;
   case "softwareUnitTest":
     return `Test Case<br/>Id:${node.data.id}`;
   case "image":

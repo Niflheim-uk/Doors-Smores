@@ -94,6 +94,7 @@ export function getEditHtmlForNodeType(node:SmoresNode):string {
       return getRequirementEditDivHtml(node);
     case "designConstraint":
       return getConstraintEditDivHtml(node);
+    case "userAcceptanceTest":
     case "softwareSystemTest":
     case "softwareIntegrationTest":
     case "softwareUnitTest":

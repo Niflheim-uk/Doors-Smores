@@ -10,17 +10,18 @@ function initialize() {
     var matches = el.id.match(/ViewTd-([\d]+)/);
     if(Array.isArray(matches)) {
       el.addEventListener('click', traceViewOnClick);
-      console.log('view');
+    }
+    var matches = el.id.match(/VerifyTd-([\d]+)/);
+    if(Array.isArray(matches)) {
+      el.addEventListener('click', traceVerifyOnClick);
     }
     matches = el.id.match(/DeleteTd-([\d]+)/);
     if(Array.isArray(matches)) {
       el.addEventListener('click', traceDeleteOnClick);
-      console.log('del');
     }
     matches = el.id.match(/New-([\S]+)/);
     if(Array.isArray(matches)) {
       el.addEventListener('click', traceAddOnClick);
-      console.log('new');
     }
   }
   elements = document.getElementsByClassName('editSubmit');
@@ -118,9 +119,12 @@ function getArrowSVG(x1, y1, x2, y2, color) {
   </svg>`;
 }
 function traceViewOnClick(event) {
-
-  const nodeId = event.currentTarget.dataset["nodeId"];
-  vscode.postMessage({command: 'viewTrace', nodeId});
+  const nodeId = Number(event.currentTarget.dataset["nodeId"]);
+  vscode.postMessage({command: 'viewTrace', nodeId:nodeId});
+}
+function traceVerifyOnClick(event) {
+  const nodeId = Number(event.currentTarget.dataset["nodeId"]);
+  vscode.postMessage({command: 'verifyTrace', nodeId:nodeId});
 }
 function traceDeleteOnClick(event) {
   const nodeId = Number(event.currentTarget.dataset["nodeId"]);
@@ -139,8 +143,7 @@ function traceAddOnClick(event) {
   }
   vscode.postMessage({command: 'addTrace', traceType:traceType, traceUpstream:upstream});
 }
-function editOnSubmit(event) {
-  const nodeId = Number(event.currentTarget.dataset["nodeId"]);
+function editOnSubmit() {
   const textAreas = document.getElementsByTagName('textarea');
   var message = {command:'submit', text: undefined, translationRationale: undefined};
   for (let i = 0; i < textAreas.length; i++) {
@@ -151,6 +154,8 @@ function editOnSubmit(event) {
       message.text = dataValue;
     } else if(dataType === 'translationRationale') {
       message.translationRationale = dataValue;
+    } else if(dataType === 'expectedResults') {
+      message.expectedResults = dataValue;
     }
   }
   vscode.postMessage(message);

@@ -48,6 +48,7 @@ export class SmoresDataFile {
         fs.mkdirSync(directoryPath, { recursive: true });
       }    
       fs.writeFileSync(this.filePath, jsonString);
+      console.log(`wrote file ${this.data.id}`);
     } catch (err) {
       console.error(err);
     }

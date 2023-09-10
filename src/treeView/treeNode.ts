@@ -85,6 +85,7 @@ function getLabelPrefix(nodeData:smoresDataSchema.NodeDataModel):string {
     case "functionalRequirement": return "FR";
     case "nonFunctionalRequirement": return "NFR";
     case "designConstraint": return "DC";
+    case "userAcceptanceTest": return "AT";
     case "softwareSystemTest": return "ST";
     case "softwareIntegrationTest": return "IT";
     case "softwareUnitTest": return "UT";

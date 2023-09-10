@@ -49,7 +49,9 @@ export class DocumentViewer {
   }
   public static render(node:SmoresNode, exporting:boolean = false) {
     if (DocumentViewer.currentPanel) {
+      const docType = node.getDocumentType();
       DocumentViewer.currentPanel.setViewNode(node);
+      DocumentViewer.currentPanel._panel.title = docType;
       DocumentViewer.currentPanel._panel.reveal(vscode.ViewColumn.One);
     } else {
       const docType = node.getDocumentType();

@@ -15,6 +15,7 @@ import { getProject } from "../model/smoresProject";
 import { clearNonce, getNonce } from "../utils/getNonce";
 import { getExtensionUri } from "../utils/getExtension";
 import { getScriptPath, getTracingStylePaths } from "../utils/gui";
+import { TraceNode, TraceValidity, setTraceValidationOrigin, validateTraceInput, verifyTraceLink } from "../model/traceVerification";
 
 export class TraceView {
   public static currentPanel: TraceView | undefined;
@@ -73,28 +74,35 @@ export class TraceView {
     return this._panel.webview.html;
   }
     
-  private handleMessageFromPanel(message:any) {
+  private async handleMessageFromPanel(message:any) {
     switch (message.command) {
-      case 'addTrace':
-        this.addTrace(message.traceType, message.traceUpstream);
-        return;
-      case 'removeTrace':
-        if(this._viewNode) {
-          if(message.traceUpstream) {
-            this._viewNode.removeUpstreamTrace(message.traceType, message.nodeId);
-          } else {
-            this._viewNode.removeDownstreamTrace(message.traceType, message.nodeId);
-          }
-          this.refresh();
+    case 'addTrace':
+      await this.addTrace(message.traceType, message.traceUpstream);
+      this.refresh();
+      return;
+    case 'verifyTrace':
+      if(this._viewNode) {
+        this._viewNode.verifyTrace(message.nodeId);
+        this.refresh();
+      }
+      return;
+    case 'removeTrace':
+      if(this._viewNode) {
+        if(message.traceUpstream) {
+          this._viewNode.removeUpstreamTrace(message.traceType, message.nodeId);
+        } else {
+          this._viewNode.removeDownstreamTrace(message.traceType, message.nodeId);
         }
-        return;
-      case 'viewTrace':
-        const traceNode = getNodeFromId(message.nodeId);
-        if(traceNode) {
-          this.setViewNode(traceNode);
-          this.refresh();
-        }
-        return;
+        this.refresh();
+      }
+      return;
+    case 'viewTrace':
+      const traceNode = getNodeFromId(message.nodeId);
+      if(traceNode) {
+        this.setViewNode(traceNode);
+        this.refresh();
+      }
+      return;
     }
   }
   private async addTrace(traceType:string, upstream:boolean) {            
@@ -102,17 +110,15 @@ export class TraceView {
     if(this._viewNode === undefined || projectNode === undefined) {
       return;
     }
+    const origin:TraceNode = {
+      category:this._viewNode.data.category,
+      documentType:this._viewNode.getDocumentType()
+    };
+    setTraceValidationOrigin(origin, upstream);
     const nodeIdStr = await vscode.window.showInputBox({
       prompt:"Enter the id of the target node",
       placeHolder:"node id (number only, no prefix)",
-      validateInput: text => {
-        if(/^\d+$/.test(text)) {
-          return null;
-        } else {
-          return 'Not a valid node Id. Please enter an integer number.';
-        }
-      }  
-    });
+      validateInput: validateTraceInput});
     if(nodeIdStr) {
       const nodeId = parseInt(nodeIdStr);
       if(projectNode.verifyId(nodeId)) {
@@ -122,7 +128,6 @@ export class TraceView {
           this._viewNode.addDownstreamTrace(traceType, nodeId);
         }
       }
-      this.refresh();
     }
   }
   private getPageHtml():string {
@@ -167,6 +172,7 @@ export class TraceView {
       case "nonFunctionalRequirement":
       case "designConstraint":
         return this.getReqTracingGrid(node);
+      case "userAcceptanceTest":
       case "softwareSystemTest":
       case "softwareIntegrationTest":
       case "softwareUnitTest":

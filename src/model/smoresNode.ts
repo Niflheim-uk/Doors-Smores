@@ -4,6 +4,7 @@ import * as fs from "fs";
 import { SmoresProject, getProject } from "./smoresProject";
 import { SmoresDataFile } from "./smoresDataFile";
 import { VersionController } from "../versionControl/versionController";
+import { verifyTraceLink } from "./traceVerification";
 
 export function getNodeFromId(nodeId:number) {
   const filePath = SmoresDataFile.getNodeFilepath(nodeId);
@@ -94,8 +95,10 @@ export class SmoresNode extends SmoresDataFile {
     this.write();    
   }
   setNewData(dataMap:any) {
+    let commitMessage = "";
     if(dataMap.text) {
       this.data.text = dataMap.text;
+      commitMessage = `Updated text field on ${this.data.id}`;  
     }
     if(dataMap.translationRationale) {
       if(this.data.requirementData === undefined) {
@@ -103,19 +106,33 @@ export class SmoresNode extends SmoresDataFile {
       } else {
         this.data.requirementData.translationRationale = dataMap.translationRationale;
       }
+      commitMessage = `Updated translation rationale field on ${this.data.id}`;  
     }
+    if(dataMap.expectedResults) {
+      if(this.data.testData === undefined) {
+        this.data.testData = {expectedResults:dataMap.expectedResults};
+      } else {
+        this.data.testData.expectedResults = dataMap.expectedResults;
+      }
+      commitMessage = `Updated expected results field on ${this.data.id}`;  
+    }
+    this.markTracesSuspect();
     this.write();
+    if(commitMessage !== "") {
+      VersionController.commitChanges(commitMessage);
+    }  
   }
   public newItem(category:string,defaultText:string, insertPos?:number):string|undefined {
     console.log(`New ${category} called`);
-    VersionController.commitChanges(`New ${category} added`);
     const newData = {
       id:0,
       category:`${category}`,
       text:`${defaultText}`,
       parent:this.data.id
     };
-    return this.newChild(newData, insertPos);
+    const node = this.newChild(newData, insertPos);
+    VersionController.commitChanges(`New ${category} added`);
+    return node;
   }  
   public canDemoteNode():boolean {
     const parent = this.getParentNode();
@@ -248,9 +265,82 @@ export class SmoresNode extends SmoresDataFile {
       this.write();
     }
   }
+  public isTraceSuspect(nodeId:number):boolean {
+    if(this.data.traces === undefined) {
+      this.data.traces = {downstream:{},upstream:{}};
+    }
+    if(this.data.traces.suspectTrace) {
+      return this.data.traces.suspectTrace.includes(nodeId);
+    }
+    return false;
+  }
+  public addSuspectTrace(nodeId:number) {
+    if(!this.isTraceSuspect(nodeId)) {
+      if(Array.isArray(this.data.traces!.suspectTrace)) {
+        this.data.traces!.suspectTrace.push(nodeId);
+      } else {
+        this.data.traces!.suspectTrace = [nodeId];
+      }
+      this.write();
+    }
+  }
+  public verifyTrace(nodeId:number, reciprocate:boolean=true) {
+    if(this.isTraceSuspect(nodeId)) {
+      this.removeSuspectTrace(nodeId);
+    }
+    if(reciprocate) {
+      const traceNode = getNodeFromId(nodeId);
+      if(traceNode) {
+        traceNode.verifyTrace(this.data.id, false);
+      }
+      VersionController.commitChanges(`Verified trace from ${this.data.id} to ${nodeId}`);
+    }    
+  }
   ///////////////////////////////////////////
   // Private methods
   ///////////////////////////////////////////
+  private removeSuspectTrace(nodeId:number) {
+    if(this.data.traces && this.data.traces.suspectTrace) {
+      const suspects = this.data.traces.suspectTrace;
+      const idPos = suspects.findIndex(id => nodeId === id);
+      suspects.splice(idPos,1);
+      this.data.traces.suspectTrace = suspects;
+      this.write();
+    }
+  }
+  private markTracesSuspect() {
+    if(this.data.traces) {
+      this.markTraceDataSuspect(this.data.traces.upstream);
+      this.markTraceDataSuspect(this.data.traces.downstream);
+    }
+  }
+  private markTraceDataSuspect(traceData:TraceData) {
+    if(traceData.decompose) {
+      this.markTraceArraySuspect(traceData.decompose);
+    }
+    if(traceData.detail) {
+      this.markTraceArraySuspect(traceData.detail);
+    }
+    if(traceData.implement) {
+      this.markTraceArraySuspect(traceData.implement);
+    }
+    if(traceData.satisfy) {
+      this.markTraceArraySuspect(traceData.satisfy);
+    }
+    if(traceData.verify) {
+      this.markTraceArraySuspect(traceData.verify);
+    }
+  }
+  private markTraceArraySuspect(traceArray:number[]) {
+    for(let i = 0; i < traceArray.length; i++) {
+      const trace = traceArray[i];
+      this.addSuspectTrace(trace);
+      const traceNode = getNodeFromId(trace);
+      if(traceNode) {
+        traceNode.addSuspectTrace(this.data.id);
+      }
+    }
+  }
   private addTraceEntry(traceData:TraceData, traceType:string, traceId:number) {
     switch(traceType) {
       case "decompose":

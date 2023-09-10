@@ -50,23 +50,16 @@ function getViewHtmlForNodeType(node:SmoresNode, exporting:boolean):string {
       innerHtml = markdown.getIndentedHtmlFromMd(comment);
       return getViewDivHtml(node, exporting, innerHtml);
     case "userRequirement":
-      innerHtml = getInnerHtmlForRequirement(node);
-      return getViewDivHtml(node, exporting, innerHtml);
     case "functionalRequirement":
-      innerHtml = getInnerHtmlForRequirement(node);
-      return getViewDivHtml(node, exporting, innerHtml);
     case "nonFunctionalRequirement":
       innerHtml = getInnerHtmlForRequirement(node);
       return getViewDivHtml(node, exporting, innerHtml);
     case "designConstraint":
       innerHtml = getInnerHtmlForConstraint(node);
       return getViewDivHtml(node, exporting, innerHtml);
+    case "userAcceptanceTest":
     case "softwareSystemTest":
-      innerHtml = getInnerHtmlForTest(node);
-      return getViewDivHtml(node, exporting, innerHtml);
     case "softwareIntegrationTest":
-      innerHtml = getInnerHtmlForTest(node);
-      return getViewDivHtml(node, exporting, innerHtml);
     case "softwareUnitTest":
       innerHtml = getInnerHtmlForTest(node);
       return getViewDivHtml(node, exporting, innerHtml);
