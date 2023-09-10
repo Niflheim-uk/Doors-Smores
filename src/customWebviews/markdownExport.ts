@@ -41,7 +41,7 @@ async function getMdForCategory(node:DocumentNode, headingDepth:number):Promise<
   } else if(node.data.category === schema.imageCategory) {
     return await getMdForImageCategory(node);
   } else {
-    return `Unknown category for node ${node.data.id}`;
+    return `Unknown category for node ${node.data.id}    \n`;
   }
 }
 function getMdForDocumentCategory(node:DocumentNode):string {
@@ -52,10 +52,10 @@ function getMdForHeadingCategory(node:DocumentNode, headingDepth:number):string 
   for(let i=0; i<headingDepth; i++) {
     bangs = bangs.concat('#');
   }
-  return `${bangs} ${node.data.text}\n`;
+  return `${bangs} ${node.data.text}    \n`;
 }
 function getMdForCommentCategory(node:DocumentNode):string {
-  return `${node.data.text}\n`;
+  return `${node.data.text}    \n\n`;
 }
 function getMdForRequirementCategory(node:DocumentNode):string {
   const text = node.data.text.replace("\n",'<br/>');
@@ -63,10 +63,7 @@ function getMdForRequirementCategory(node:DocumentNode):string {
   if(rationale) {
     rationale = rationale.replace("\n",'<br/>');
   }
-  return `| | |
-|-|-|
-|__Requirement ${node.data.id}__|${text}|
-|__Translation rationale__|${rationale}|\n`;
+  return `| | |    \n|-|-|    \n|__Requirement ${node.data.id}__|${text}|    \n|__Translation rationale__|${rationale}|    \n\n`;
 }
 function getMdForConstraintCategory(node:DocumentNode):string {
   const text = node.data.text.replace("\n",'<br/>');
@@ -74,10 +71,7 @@ function getMdForConstraintCategory(node:DocumentNode):string {
   if(rationale) {
     rationale = rationale.replace("\n",'<br/>');
   }
-  return `| | |
-|-|-|
-|__Constraint ${node.data.id}__|${text}|
-|__Translation rationale__|${rationale}|\n`;
+  return `| | |    \n|-|-|    \n|__Constraint ${node.data.id}__|${text}|    \n|__Translation rationale__|${rationale}|    \n\n`;
 }
 function getMdForTestCategory(node:DocumentNode):string {
   const text = node.data.text.replace(/\n/g,'<br/>');
@@ -85,13 +79,10 @@ function getMdForTestCategory(node:DocumentNode):string {
   if(results) {
     results = results.replace(/\n/g,'<br/>');
   }
-  return `| | |
-|-|-|
-|__Test case ${node.data.id}__|${text}|
-|__Expected results__|${results}|\n`;
+  return `| | |    \n|-|-|    \n|__Test case ${node.data.id}__|${text}|    \n|__Expected results__|${results}|    \n\n`;
 }
 function getMdForMermaidImageCategory(node:DocumentNode):string {
-  return `${node.data.text}\n`;
+  return `Mermaid ${node.data.id}:    \n\t${node.data.text}    \n\n`;
 }
 async function getMdForImageCategory(node:DocumentNode):Promise<string> {
   const imageFilepath = join(node.getDirPath(), `${node.data.text}`);
@@ -99,8 +90,8 @@ async function getMdForImageCategory(node:DocumentNode):Promise<string> {
     const fileStat = await vscode.workspace.fs.stat(vscode.Uri.file(imageFilepath));
     const creationDate = new Date(fileStat.ctime).toDateString();
     const modifyDate = new Date(fileStat.mtime).toDateString();
-    return `Image file: ${node.data.text}\nSize: ${fileStat.size}\nCreated: ${creationDate}\nModified: ${modifyDate}\n`;
+    return `Image ${node.data.id}:    \n\tFile: ${node.data.text}    \n\tSize: ${fileStat.size}    \n\tCreated: ${creationDate}    \n\tModified: ${modifyDate}    \n\n`;
   } else {
-    return `Image file: ${node.data.text} (Not found)`;
+    return `Image ${node.data.id}:    \n\tFile: ${node.data.text} (Not found)    \n\n`;
   }
 }
