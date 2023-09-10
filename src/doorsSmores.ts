@@ -85,6 +85,10 @@ export class DoorsSmores {
     const projectDirectory = DoorsSmores.getProjectDirectory();
     return join(projectDirectory, SmoresFile.dataSubDirName);
   }
+  public static getDataTempDirectory():string {
+    const dataDir = DoorsSmores.getDataDirectory();
+    return dataDir.concat('_temp');
+  }
   public static getNodeDirectory(id:number):string {
     const dataDirectory = DoorsSmores.getDataDirectory();
     return join(dataDirectory, `${id}`);

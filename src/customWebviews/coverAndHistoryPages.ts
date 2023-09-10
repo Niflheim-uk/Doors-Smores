@@ -57,7 +57,7 @@ function getCoverHtml(document:SmoresDocument, projectName:string, traceReport:b
 
 export function getHistoryHtml(document:SmoresDocument, traceReport:boolean) {
   const stylePaths = getCoverStylePaths();
-  const historyTableRows = getHistoryTable(document, traceReport);
+  const historyTableRows:string = getHistoryTable(document, traceReport);
   return `
 <!DOCTYPE html>
 <html lang="en">
@@ -90,7 +90,7 @@ export function getHistoryHtml(document:SmoresDocument, traceReport:boolean) {
 function getHistoryTable(document:SmoresDocument, traceReport:boolean) {
   var historyItems:RevisionHistoryItem[];
   if(document.data.documentData === undefined) {
-    return [""];
+    return "";
   }
   if(traceReport) {
     historyItems = document.data.documentData.traceReportRevisionHistory;
@@ -98,15 +98,16 @@ function getHistoryTable(document:SmoresDocument, traceReport:boolean) {
     historyItems = document.data.documentData.revisionHistory;
   }
   if(historyItems === undefined) {
-    return [""];
+    return "";
   }
-  var rows:string[] = [];
+  var rows:string = "";
   for(let i=0; i<historyItems.length; i++) {
-    const item = historyItems[i];
-    rows.push(item.getTableRow());
+    const item = RevisionHistoryItem.make(historyItems[i]);
+    rows = rows.concat(`
+            ${item.getTableRow()}`);
   }
   if(rows.length === 0) {
-    rows.push(`<tr><td>TBD</td><td>00-01</td><td>TBD</td><td>TBD</td></tr>`);
+    rows = `<tr><td>TBD</td><td>00-01</td><td>TBD</td><td>TBD</td></tr>`;
   }
   return rows;
 }

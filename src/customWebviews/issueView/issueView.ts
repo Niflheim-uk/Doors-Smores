@@ -23,6 +23,7 @@ export class IssueView {
       await commands.executeCommand('workbench.action.closeActiveEditor');
       IssueView.currentPanel = undefined;
     }
+    await document.duplicateDocumentNodes(traceReport);
     IssueView.currentPanel = new IssueView(document, traceReport);
     IssueView.refresh();
   }
@@ -39,16 +40,31 @@ export class IssueView {
       this.document.data.documentData!.revisionHistory.push(item);
     }
     this.document.write();
+    await this.document.removeTempDirectory();
+    if(this.traceReport) {
+      await this.document.exportTraceReport();
+    } else {
+      await this.document.exportDocument();
+    }
+    setTimeout(IssueView.storeVersion, 2000);
+  }
+  private static async storeVersion() {
+    var commitPrefix = "";
+    if(IssueView.currentPanel === undefined) {
+      return;
+    }
+    if(IssueView.currentPanel.traceReport) {
+      commitPrefix = "trace report for ";
+    }
+    await VersionController.commitChanges(`Issued ${commitPrefix}document ${IssueView.currentPanel.document.data.id}`);
+    await VersionController.issueDocument(IssueView.currentPanel.document, IssueView.currentPanel.traceReport);
     await commands.executeCommand('workbench.action.closeActiveEditor');
     IssueView.currentPanel = undefined;      
-    if(this.traceReport) {
-      this.document.exportTraceReport();
-    } else {
-      this.document.exportDocument();
-    }
-    await VersionController.issueDocument(this.document, this.traceReport);
   }
   private dispose() {
+    if(IssueView.currentPanel) {
+      IssueView.currentPanel.document.removeTempDirectory();
+    }
     IssueView.currentPanel = undefined;
     this.panel.dispose();
     while (this._disposables.length) {

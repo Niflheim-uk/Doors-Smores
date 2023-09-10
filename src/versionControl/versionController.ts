@@ -1,9 +1,15 @@
 import { pathspec, SimpleGitOptions, simpleGit } from 'simple-git';
-import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { DoorsSmores } from '../doorsSmores';
 import { SmoresDocument } from '../model/smoresDocument';
+
+export type DiffRecord = {
+  filepath:string;
+  insertions:number;
+  deletions:number;
+};
+
 
 var _open:boolean = false;
 var _pathSpec:string = '.';
@@ -14,8 +20,11 @@ var _gitOptions: Partial<SimpleGitOptions> = {
 };
 var _commitMessage:string = "";
 var _commitTimer:NodeJS.Timeout;
+var _tagTag:string = "";
+var _tagMessage:string = "";
+var _tagTimer:NodeJS.Timeout;
 export class VersionController {
-  public static ready() {
+  public static isOpen() {
     return _open;
   }
   public static close() {
@@ -108,21 +117,63 @@ export class VersionController {
   public static async getUserName() {
     return simpleGit(_gitOptions).raw('config', 'user.name').catch(err=>{return "Unknown";});
   }
-  public static async issueDocument(document:SmoresDocument, traceReport:boolean) {
+  public static getLastTag(document:SmoresDocument, traceReport:boolean) {
     const lastRev = document.getLatestRevision(traceReport);
     var tr = "";
     if(traceReport) {
       tr="TR_";
     }
-    const issueTag = `${tr}${document.data.id}_${document.data.text}_revision_${lastRev.getIssueString()}`;
+    return `${tr}${document.data.id}_${document.data.text}_revision_${lastRev.getIssueString()}`;
+  }
+  public static getLastTagDetail(document:SmoresDocument, traceReport:boolean) {
+    const lastRev = document.getLatestRevision(traceReport);
+    return lastRev.detail;
+  }
+  public static async issueDocument(document:SmoresDocument, traceReport:boolean) {
+    const issueTag = VersionController.getLastTag(document, traceReport);
     if(!_open) {
-      await document.duplicateDocumentNodes(issueTag, traceReport);
+      await document.completeDuplication(issueTag);
     } else {
-      await VersionController.tagIssue(issueTag, lastRev.detail);
+      const detail = VersionController.getLastTagDetail(document, traceReport);
+      await VersionController.tagIssue(issueTag, detail);
     }
   }
+  public static async getDiffRecords(document:SmoresDocument, traceReport:boolean) {
+    const tag = VersionController.getLastTag(document, traceReport);
+    var diffResponse;
+    if(_open) {
+      diffResponse = await simpleGit(_gitOptions).raw('diff', '--exit-code', '--numstat', `${tag}..HEAD`);
+    } else {
+      const dataRoot = DoorsSmores.getDataDirectory();
+      const tagRoot = dataRoot.concat(`_${tag}`);
+      const tempRoot = DoorsSmores.getDataTempDirectory();
+      diffResponse = await simpleGit(_gitOptions).raw('diff', '--no-index', '--exit-code', '--numstat', `${tagRoot}`, `${tempRoot}`);
+    }
+    var records:DiffRecord[] = [];
+    if(Array.isArray(diffResponse)) {
+      for(let i=0; i<diffResponse.length; i++) {
+        const parts = diffResponse[i].split("\t");
+        const record:DiffRecord= {
+          filepath:parts[2],
+          insertions:parts[0],
+          deletions:parts[1]
+        };
+        records.push(record);
+      }
+    }
+    return records;
+  }
   private static async tagIssue(tag:string, message:string) {
-    await simpleGit(_gitOptions).addAnnotatedTag(tag, message);
+    clearTimeout(_commitTimer);
+    await VersionController.actOnCommitChanges();
+    _tagTag = tag;
+    _tagMessage = message;
+    clearTimeout(_tagTimer);
+    _tagTimer = setTimeout(VersionController.actOnTagIssue, 500);
+    
+  }
+  private static async actOnTagIssue() {
+    await simpleGit(_gitOptions).addAnnotatedTag(_tagTag, _tagMessage);
   }
 }
   
