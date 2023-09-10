@@ -1,14 +1,14 @@
 import { DocumentNode } from '../../model/documentNode';
 import * as schema from '../../model/schema';
 
-const mdHelp:string = "some helpful instructions about Markdown syntax";
-const mermaidHelp:string = "some helpful instructions about the Mermaid syntax";
-const commentHelp:string = "some helpful instructions about comments";
-const requirementHelp:string = "some helpful instructions about requirements";
-const transRatHelp:string = "some helpful instructions about translation rationale";
-const desConHelp:string = "some helpful instructions about design constraints";
-const testCaseHelp:string = "some helpful instructions about test cases";
-const expResHelp:string = "some helpful instructions about expected results";
+const mdHelp:string = "Doors Smores supports standard markdown syntax and tables. Please avoid adding headings in markdown however as these will not be picked up in the outline.";
+const mermaidHelp:string = "Doors Smores supports diagram rendering via the <a href='https://mermaid.js.org/intro/#diagram-types'>Mermaid syntax</a>";
+const commentHelp:string = "Use comment elements to add supporting and informative text elements to your document.";
+const requirementHelp:string = "TBD";
+const transRatHelp:string = "The translation rationale section can be used to explain the justification or reasoning for why a requirement exists.";
+const desConHelp:string = "Design contrainsts can be used to include rules that a developer of the software must be aware of, but do not define requirements of the software behaviour. Typical examples might be performance requirements, memory constraints, etc. <br>'The system must provide feedback to the user within 100ms of user input'";
+const testCaseHelp:string = "TBD";
+const expResHelp:string = "TBD";
 
 function getEditTextArea(divId:string, divContent:string, contentType:string):string {
   const label = getDataTypeDisplayName(contentType);
