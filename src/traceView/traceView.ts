@@ -96,7 +96,8 @@ export class TraceView {
       {
         enableScripts: true,
         localResourceRoots:[
-          vscode.Uri.joinPath(extensionUri, 'resources')
+          vscode.Uri.joinPath(extensionUri, 'resources'),
+          vscode.Uri.joinPath(extensionUri, 'node_modules', '@vscode', 'codicons', 'dist')
         ]
       }
     );
@@ -135,6 +136,7 @@ export class TraceView {
       webview.asWebviewUri(vscode.Uri.file(stylePaths[1])).toString(),
       webview.asWebviewUri(vscode.Uri.file(stylePaths[2])).toString(),
       webview.asWebviewUri(vscode.Uri.file(stylePaths[3])).toString(),
+      webview.asWebviewUri(vscode.Uri.file(stylePaths[4])).toString(),
       webview.asWebviewUri(vscode.Uri.file(scriptPath)).toString()
     ];
     const bodyHtml = this.getBodyHtml(node);
@@ -149,10 +151,11 @@ export class TraceView {
         <link nonce="${nonce}" href="${webUri[1]}" rel="stylesheet"/>
         <link nonce="${nonce}" href="${webUri[2]}" rel="stylesheet"/>
         <link nonce="${nonce}" href="${webUri[3]}" rel="stylesheet"/>
+        <link nonce="${nonce}" href="${webUri[4]}" rel="stylesheet"/>
         <title>Tracing Id: ${node.data.id}</title>
       </head>
       <body class='tracing'><div class='tracingOuter'>${bodyHtml}</div>
-        <script nonce="${nonce}" src="${webUri[4]}"></script>
+        <script nonce="${nonce}" src="${webUri[5]}"></script>
       </body>    
     </html>`;  
   }

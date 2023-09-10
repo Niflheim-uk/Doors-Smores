@@ -75,7 +75,8 @@ export function getTracingStylePaths(extensionPath:string|undefined):string[]|un
       path.join(extensionPath, 'resources', 'theme.css'),
       path.join(extensionPath, 'resources', 'tracing.css'),
       path.join(extensionPath, 'resources', 'displayStyle.css'),
-      path.join(extensionPath, 'resources', 'pagination.css')
+      path.join(extensionPath, 'resources', 'pagination.css'),
+      path.join(extensionPath, 'node_modules', '@vscode/codicons', 'dist', 'codicon.css')
     ];
     return stylesPaths;
   }

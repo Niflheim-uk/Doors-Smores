@@ -7,18 +7,11 @@ import { getInnerHtmlForRequirement } from '../documentViewer/requirementInnerHt
 import { getInnerHtmlForTest } from '../documentViewer/testInnerHtml';
 import * as schema from '../model/smoresDataSchema';
 
-// var eyeUri:vscode.Uri;
-// var trashUri:vscode.Uri;
-var viewSVG:string;
-var deleteSVG:string;
-var verifiedSVG:string;
-var unverifiedSVG:string;
-var newTraceSVG:string;
-// function getImageUri(webview:vscode.Webview, extensionPath:string, imageName:string) {
-//   const imagePath = path.join(extensionPath, 'resources', imageName);
-//   const imageUri = vscode.Uri.file(imagePath);
-//   return webview.asWebviewUri(imageUri);
-// }
+var viewSVG:string = "<i class='codicon codicon-zoom-in'></i>";
+var deleteSVG:string = "<i class='codicon codicon-trash'></i>";
+var verifiedSVG:string = "<i style='color:#55ba7f;' class='codicon codicon-verified-filled'></i>";
+var unverifiedSVG:string = "<i style='color:#e5e54e;' class='codicon codicon-unverified'></i>";
+var newTraceSVG:string = "<i class='codicon codicon-add'></i>";
 function readImage(extensionPath:string, imageName:string) {
   const imagePath = path.join(extensionPath, 'resources', imageName);
   if (fs.existsSync(imagePath)){
@@ -118,26 +111,6 @@ function getTraceTable(traceArray:number[]|undefined, suspectTraces:number[]|und
     <div class='traceNew'><button class='tracing' ${newButtonDetail}>${newTraceSVG}</button></div> 
   </div>
   `;
-}
-// export function setImageUri(webview:vscode.Webview) {
-//   const extensionPath = SmoresDataFile.getExtensionPath();
-//   if(extensionPath === undefined) {
-//     return;
-//   }
-//   eyeUri = getImageUri(webview, extensionPath, 'eye.svg');
-//   trashUri = getImageUri(webview, extensionPath, 'trash.svg');
-
-// }
-export function loadTraceImages() {
-  const extensionPath = SmoresDataFile.getExtensionPath();
-  if(extensionPath === undefined) {
-    return;
-  }
-  viewSVG = readImage(extensionPath, 'zoom-in.svg');
-  deleteSVG = readImage(extensionPath, 'trash.svg');
-  verifiedSVG = readImage(extensionPath, 'verified-filled.svg');
-  unverifiedSVG = readImage(extensionPath, 'unverified.svg');
-  newTraceSVG = readImage(extensionPath, 'add.svg');
 }
 export function getDownstreamReqTraceHtml(node:SmoresNode):string {
   let html = "";
