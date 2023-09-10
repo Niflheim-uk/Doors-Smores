@@ -4,7 +4,7 @@
   "displayName": "Doors Smores",
   "icon": "resources/smores.png",
   "description": "Requirements simplified",
-  "version": "0.0.9",
+  "version": "0.1.0",
   "engines": {
     "vscode": "^1.79.0"
   },
