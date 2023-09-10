@@ -1,0 +1,19 @@
+/* Table Formatting */
+table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+}
+table, td, th {
+  border: 1px solid;
+}
+.noCellWall {
+  border: none;
+}
+
+col.requirementsC1 {
+  width: 20%;
+}
+col.requirementsC2 {
+  width: 80%;
+}

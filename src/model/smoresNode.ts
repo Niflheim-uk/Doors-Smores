@@ -1,12 +1,12 @@
 import * as vscode from "vscode";
-import * as smoresDataSchema from "./smoresDataSchema";
+import {NodeDataModel} from "./smoresDataSchema";
 import * as fs from "fs";
 import { SmoresProject, getProject } from "./smoresProject";
 import { SmoresDataFile } from "./smoresDataFile";
 
 export class SmoresNode extends SmoresDataFile {
 
-  declare public data:smoresDataSchema.BaseNodeDataModel;
+  declare public data:NodeDataModel;
   constructor(filePath:fs.PathLike) {
     super(filePath);
   }
@@ -230,7 +230,7 @@ export class SmoresNode extends SmoresDataFile {
     }
     return -1;
   }
-  protected newChild(childData:smoresDataSchema.BaseNodeDataModel) {
+  protected newChild(childData:NodeDataModel) {
     const project = getProject();
     if(project === undefined) {
       return;

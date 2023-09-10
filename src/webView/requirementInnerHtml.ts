@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import {RequirementDataModel} from '../model/smoresDataSchema';
+import {NodeDataModel} from '../model/smoresDataSchema';
 import { Converter } from 'showdown';
 import { SmoresNode } from '../model/smoresNode';
 
@@ -8,18 +8,18 @@ export function setImagesUri(imagesUri:vscode.Uri) {
   _imagesUri = imagesUri;
 }
 export function getInnerHtmlForRequirement(node:SmoresNode) {
-  const data:RequirementDataModel = node.data;
+  const data:NodeDataModel = node.data;
   const converter = new Converter();
   const requirementHtml = converter.makeHtml(data.text);
   let translationRationaleHtml = "-";
-  if(data.translationRationale) {
-    translationRationaleHtml = converter.makeHtml(data.translationRationale);
+  if(data.requirementData) {
+    translationRationaleHtml = converter.makeHtml(data.requirementData.translationRationale);
   }
   return `
-  <table class="requirementsTable">
+  <table>
     <colgroup>
-      <col class="requirementsTableCol1">
-      <col class="requirementsTableCol2">
+      <col class="requirementsC1">
+      <col class="requirementsC2">
     </colgroup>
     <tbody>
       <tr>

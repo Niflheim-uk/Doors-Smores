@@ -1,0 +1,34 @@
+/* Heading Formatting */
+body {
+  counter-reset: heading1;
+}
+h1::before {
+  counter-reset: heading2;
+  counter-increment: heading1;
+  content: counter(heading1) ".";
+}
+h2::before {
+  counter-reset: heading3;
+  counter-increment: heading2;
+  content: counter(heading1) "." counter(heading2) ".";
+}
+h3::before {
+  counter-reset: heading4;
+  counter-increment: heading3;
+  content: counter(heading1) "." counter(heading2) "." counter(heading3) ".";
+}
+h4::before {
+  counter-reset: heading5;
+  counter-increment: heading4;
+  content: counter(heading1) "." counter(heading2) "." counter(heading3) "." counter(heading4) ".";
+}
+h5::before {
+  counter-reset: heading6;
+  counter-increment: heading5;
+  content: counter(heading1) "." counter(heading2) "." counter(heading3) "." counter(heading4) "." counter(heading5) ".";
+}
+h6::before {
+  counter-increment: heading6;
+  content: counter(heading1) "." counter(heading2) "." counter(heading3) "." counter(heading4) "." counter(heading5) "." counter(heading6) ".";
+}
+

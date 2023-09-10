@@ -1,17 +1,16 @@
-export interface BaseNodeDataModel {
+interface DocumentData {
+  documentType: string;
+}
+interface RequirementData {
+  translationRationale: string;
+}
+export interface NodeDataModel {
   id: number;
   parent: number;
   category: string;
   text: string;
   children?: number[];
+  documentData?:DocumentData;
+  requirementData?:RequirementData;
+  childData?:NodeDataModel[];
 }
-export interface DocumentDataModel extends BaseNodeDataModel {
-  documentType?: string;
-}
-export interface RequirementDataModel extends BaseNodeDataModel {
-  translationRationale?: string;
-}
-export interface CommentDataModel extends BaseNodeDataModel {}
-export interface HeadingDataModel extends BaseNodeDataModel {}
-export interface ImageDataModel extends BaseNodeDataModel {}
-

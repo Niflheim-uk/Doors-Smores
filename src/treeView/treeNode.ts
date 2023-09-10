@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import * as fs from "fs";
-import * as dataModel from '../model/smoresDataSchema';
+import {NodeDataModel} from '../model/smoresDataSchema';
 import { SmoresNode } from "../model/smoresNode";
 
 export class TreeNode extends vscode.TreeItem {
@@ -24,7 +24,7 @@ export class TreeNode extends vscode.TreeItem {
   }
 }
 
-function getLabelPrefix(nodeData:dataModel.BaseNodeDataModel):string {
+function getLabelPrefix(nodeData:NodeDataModel):string {
   switch(nodeData.category) {
     case "project":
       return "PRJ";
