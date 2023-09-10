@@ -31,10 +31,16 @@ body.tracing {
   margin: 0;
   padding: 0;
 }
+div.tracingOuter {
+  position: relative;
+}
+div.tracingArrow {
+  position: absolute;
+}
 div.tracingGrid {
   display: grid;
   grid-template-columns: 10cm auto;
-  grid-gap:1cm;
+  grid-gap:2cm;
 }
 
 div.traceContainer {

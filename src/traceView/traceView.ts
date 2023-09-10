@@ -138,6 +138,7 @@ export class TraceView {
       webview.asWebviewUri(vscode.Uri.file(scriptPath)).toString()
     ];
     const bodyHtml = this.getBodyHtml(node);
+    console.log(bodyHtml);
     utils.clearNonce();
     return `
     <!DOCTYPE html>
@@ -151,7 +152,7 @@ export class TraceView {
         <link nonce="${nonce}" href="${webUri[3]}" rel="stylesheet"/>
         <title>Tracing Id: ${node.data.id}</title>
       </head>
-      <body class='tracing'>${bodyHtml}
+      <body class='tracing'><div class='tracingOuter'>${bodyHtml}</div>
         <script nonce="${nonce}" src="${webUri[4]}"></script>
       </body>    
     </html>`;  
@@ -177,14 +178,11 @@ export class TraceView {
       }
   }
   private getReqTracingGrid(node:SmoresNode):string {
-    let html = "<div class='tracingGrid'>";
-    html = html.concat('<div>','</div>');
+    let html = "<div class='tracingGrid'><div></div>";
     html = html.concat('<div>', getUpstreamReqTraceHtml(node), '</div>');
     html = html.concat('<div>', getTraceTargetHtml(node),'</div>');
-    html = html.concat('<div>', getDownstreamTestTraceHtml(node),'</div>');
-    html = html.concat('<div>','</div>');
-    html = html.concat('<div>', getDownstreamReqTraceHtml(node)),'</div>';
-    html = html.concat('</div>');
+    html = html.concat('<div>', getDownstreamTestTraceHtml(node),'</div><div></div>');
+    html = html.concat('<div>', getDownstreamReqTraceHtml(node)),'</div></div>';
     return html;
   }
   private getTestTracingGrid(node:SmoresNode):string {

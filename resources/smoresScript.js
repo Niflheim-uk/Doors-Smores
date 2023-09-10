@@ -32,7 +32,69 @@ function initialize() {
   // for (let i = 0; i < elements.length; i++) {
   //   el.addEventListener('click', editOnCancel());
   // }
-  
+  addUpstreamArrow();
+  addDownstreamArrow();
+}
+const arrowGap = 10;
+const arrowMargin = 50;
+function addUpstreamArrow() {
+  const gridDiv = document.getElementsByClassName('tracingGrid')[0];
+  const tracingOuter = document.getElementsByClassName('tracingOuter')[0];
+  if(gridDiv && tracingOuter) {
+    const upstreamRect = gridDiv.children[1].children[0].getBoundingClientRect();
+    const targetRect = gridDiv.children[2].children[0].getBoundingClientRect();
+    const divLeft = targetRect.right - arrowMargin;
+    const divTop = arrowMargin;
+    const width = (upstreamRect.left - arrowGap) - divLeft;
+    const height = targetRect.top - divTop;
+    const arrow = getArrowSVG(width, 0, 0, height, '#8BE9FD');
+    var arrowDiv = document.createElement('div');
+    arrowDiv.className = 'tracingArrow';
+    arrowDiv.innerHTML = arrow;
+    arrowDiv.style.left=`${divLeft}px`;
+    arrowDiv.style.top=`${divTop}px`;
+    tracingOuter.appendChild(arrowDiv);
+  }
+}
+function addDownstreamArrow() {
+  const gridDiv = document.getElementsByClassName('tracingGrid')[0];
+  const tracingOuter = document.getElementsByClassName('tracingOuter')[0];
+  if(gridDiv && tracingOuter) {
+    const targetRect = gridDiv.children[2].children[0].getBoundingClientRect();
+    const downstreamRect = gridDiv.children[5].children[0].getBoundingClientRect();
+    const divLeft = targetRect.right - arrowMargin;
+    const divTop = targetRect.bottom + arrowGap;
+    const width = (downstreamRect.left - arrowGap) - divLeft;
+    const height = (downstreamRect.top + arrowMargin) - divTop;
+    const arrow = getArrowSVG(0, 0,  width, height,'#e18012');
+    var arrowDiv = document.createElement('div');
+    arrowDiv.className = 'tracingArrow';
+    arrowDiv.style['left']=`${divLeft}px`;
+    arrowDiv.style.top=`${divTop}px`;
+    arrowDiv.innerHTML = arrow;
+    tracingOuter.appendChild(arrowDiv);
+  }
+}
+function getArrowSVG(x1, y1, x2, y2, color) {
+  const width = Math.abs(x2 - x1);
+  const height = Math.abs(y2 - y1);
+  const arrowLength = 15;
+  let x3 = x2 - arrowLength;
+  if(x2 < x1) {
+    x3 = x2 + arrowLength;
+  }
+  let y3 = y2 - arrowLength;
+  if(y2 < y1) {
+    y3 = y2 + arrowLength;
+  }
+
+//  <div style='width: ${width}px; height: ${height}px; border: none;'>
+  return `
+  <svg style='width: ${width}px; height: ${height}px;'>
+    <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" style="stroke:${color};stroke-width:2"/>
+    <line x1="${x2}" y1="${y2}" x2="${x3}" y2="${y2}" style="stroke:${color};stroke-width:2"/>
+    <line x1="${x2}" y1="${y2}" x2="${x2}" y2="${y3}" style="stroke:${color};stroke-width:2"/>
+  </svg>`;
 }
 function traceViewOnClick(event) {
 

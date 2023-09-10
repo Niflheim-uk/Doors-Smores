@@ -259,7 +259,7 @@
         },
         {
           "command": "doors-smores.Trace-WebviewNode",
-          "when": "webviewId =~ /smores[A-Z]{3}View/ && webviewSection =~ /Node-/",
+          "when": "webviewId =~ /smores[A-Z]{3}View/ && (webviewSection =~ /Node-[\\S]+Requirement/ || webviewSection =~ /Node-[\\S]+Test/)",
           "group": "smores0@1"
         },
         {
@@ -361,7 +361,7 @@
         },
         {
           "command": "doors-smores.Trace-TreeNode",
-          "when": "view == smoresTreeView",
+          "when": "view == smoresTreeView && (viewItem =~ /Requirement/ || viewItem =~ /Test/ || viewItem =~ /design/)",
           "group": "inline@6"
         },
         {
