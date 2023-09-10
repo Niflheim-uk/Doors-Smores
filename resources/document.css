@@ -29,8 +29,10 @@
 .helpText {
   position: absolute;
   visibility: hidden;
-  color: var(--foreground);
-  background-color: var(--vscode-editor-hoverHighlightBackground);
+  color: var(--vscode-input-foreground);
+  background-color: var(--vscode-input-background);
+  border:solid;
+  border-color: var(--vscode-input-border);
   text-align: center;
   padding: 5px 5px;
   border-radius: 6px;
