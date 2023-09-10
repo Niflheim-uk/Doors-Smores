@@ -142,7 +142,7 @@ export class DocumentView {
         if(this._editNode) {
           this._editNode.update(message);
           this._editNode = undefined;
-          vscode.commands.executeCommand('doors-smores.Update-Views');
+          DoorsSmores.refreshViews();
         }
         DocumentView.refresh();
         return;
