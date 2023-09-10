@@ -13,7 +13,9 @@ export class TreeNodeProvider implements vscode.TreeDataProvider<TreeNode> {
   }
 
   refresh(entry?: TreeNode): void {
-    this._onDidChangeTreeData.fire(entry);
+    if(this) {
+      this._onDidChangeTreeData.fire(entry);
+    }
   }
 
   getTreeItem(element: TreeNode): vscode.TreeItem {

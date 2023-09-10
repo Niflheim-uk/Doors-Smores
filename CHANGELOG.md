@@ -5,4 +5,5 @@ All notable changes to the "doors-smores" extension will be documented in this f
 
 ## [Unreleased]
 
-- Initial release
+- Fixed error if Update-TreeView command was triggered before TreeView was instantiated.
+- 
