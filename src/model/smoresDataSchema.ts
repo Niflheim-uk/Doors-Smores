@@ -6,6 +6,7 @@ export const atpDocType = "Software Acceptance Test Protocol";
 export const stpDocType = "Software System Test Protocol";
 export const itpDocType = "Software Integration Test Protocol";
 export const utpDocType = "Software Unit Test Protocol";
+export const emptyDocType = "Unknown";
 
 
 interface DocumentData {

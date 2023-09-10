@@ -157,6 +157,11 @@ export function getDownstreamReqTraceHtml(node:SmoresNode):string {
     break;
   case schema.ddsDocType:
     break;
+  case schema.emptyDocType:
+    html = html.concat(getTraceTable(downstream?.decompose, suspectTraces, "Decomposes To"));
+    html = html.concat(getTraceTable(downstream?.satisfy, suspectTraces, "Satisfied By"));
+    html = html.concat(getTraceTable(downstream?.detail, suspectTraces, "Detailed By"));
+    break;
   }
   return html;
 }
@@ -173,19 +178,23 @@ export function getUpstreamReqTraceHtml(node:SmoresNode):string {
   const upstream = node.data.traces?.upstream;
   const suspectTraces = node.data.traces?.suspectTrace;
   switch(documentType) {
-    case schema.ursDocType:
-      break;
-    case schema.srsDocType:
-      html = html.concat(getTraceTable(upstream?.decompose, suspectTraces, "Decomposed From"));
-      break;
-    case schema.adsDocType:
-      html = html.concat(getTraceTable(upstream?.satisfy, suspectTraces, "Satisfies"));
-      break;
-    case schema.ddsDocType:
-      html = html.concat(getTraceTable(upstream?.detail, suspectTraces, "Details"));
-      break;
-    }
-    return html;
+  case schema.ursDocType:
+    break;
+  case schema.srsDocType:
+    html = html.concat(getTraceTable(upstream?.decompose, suspectTraces, "Decomposed From"));
+    break;
+  case schema.adsDocType:
+    html = html.concat(getTraceTable(upstream?.satisfy, suspectTraces, "Satisfies"));
+    break;
+  case schema.ddsDocType:
+    html = html.concat(getTraceTable(upstream?.detail, suspectTraces, "Details"));
+    break;
+  case schema.emptyDocType:
+    html = html.concat(getTraceTable(upstream?.decompose, suspectTraces, "Decomposed From"));
+    html = html.concat(getTraceTable(upstream?.satisfy, suspectTraces, "Satisfies"));
+    html = html.concat(getTraceTable(upstream?.detail, suspectTraces, "Details"));
+    break;
+  }
   return html;
 }
 export function getUpstreamTestTraceHtml(node:SmoresNode):string {

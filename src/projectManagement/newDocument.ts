@@ -7,7 +7,6 @@ import { createNodesForURSFull, createNodesForURSMini } from './documentTemplate
 import { createNodesForSTPFull, createNodesForSTPMini } from './documentTemplates/stpTemplate';
 import { VersionController } from '../versionControl/versionController';
 
-const emptyDocType = "Unknown";
 
 async function quickPickDocumentType():Promise<string|undefined> {
   const documentTypes:string[] = [
@@ -36,7 +35,7 @@ async function quickPickDocumentType():Promise<string|undefined> {
 }
 function getDocumentType(typeDescription:string) {
   if(typeDescription === 'Empty document') {
-    return emptyDocType;
+    return smoresDataSchema.emptyDocType;
   } else {
     return typeDescription.replace(' (Full)','').replace(' (Mini)','');
   }
