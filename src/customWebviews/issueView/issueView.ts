@@ -240,7 +240,6 @@ export class IssueView {
     </div>`;
   }
   private async getDeltaHtml() {
-    const tag = VersionController.getLastTag(this.document, this.traceReport);
     const diffRecords = await VersionController.getDiffRecords(this.document, this.traceReport);
     var html='<div class="deltaDiv">';
     for(let i=0; i<diffRecords.length; i++) {

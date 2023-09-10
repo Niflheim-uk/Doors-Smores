@@ -120,19 +120,23 @@ export class VersionController {
   public static async getUserName() {
     return simpleGit(_gitOptions).raw('config', 'user.name').catch(err=>{return "Unknown";});
   }
-  public static async getLastTag(document:SmoresDocument, traceReport:boolean) {
+  public static async getLastTag(document:SmoresDocument, traceReport:boolean, verify:boolean=false) {
     const lastRev = document.getLatestRevision(traceReport);
     var tr = "";
     if(traceReport) {
       tr="TR_";
     }
-    const tag = `${tr}${document.data.id}_${document.data.text}_revision_${lastRev.getIssueString()}`;
-    if(_open) {
+    const docName = document.data.text.split("\n")[0].replace(/\s/g,'_');
+    const tag = `${tr}${document.data.id}_${docName}_revision_${lastRev.getIssueString()}`;
+    if(_open && verify) {
       const tags:TagResult = await simpleGit(_gitOptions).tags();
-      const index = tags.all.findIndex((t)=>{t===tag;});
-      if(index === -1) {
-        return "start";
+      for (let i = 0; i < tags.all.length; i++) {
+        const testTag = tags.all[i];
+        if(testTag === tag) {
+          return tag;
+        }        
       }
+      return "start";
     }
     return tag;
   }
@@ -141,7 +145,7 @@ export class VersionController {
     return lastRev.detail;
   }
   public static async issueDocument(document:SmoresDocument, traceReport:boolean) {
-    const issueTag = await VersionController.getLastTag(document, traceReport);
+    const issueTag = await VersionController.getLastTag(document, traceReport, false);
     if(!_open) {
       await document.completeDuplication(issueTag);
     } else {
@@ -150,7 +154,7 @@ export class VersionController {
     }
   }
   public static async getDiffRecords(document:SmoresDocument, traceReport:boolean) {
-    const tag = await VersionController.getLastTag(document, traceReport);
+    const tag = await VersionController.getLastTag(document, traceReport, true);
     const [numstat, summary] = await VersionController.getIssueChanges(tag);
     var records:DiffRecord[] = [];
     if(Array.isArray(numstat) && Array.isArray(summary)) {
@@ -261,7 +265,10 @@ export class VersionController {
     
   }
   private static async actOnTagIssue() {
-    await simpleGit(_gitOptions).addAnnotatedTag(_tagTag, _tagMessage);
+    await simpleGit(_gitOptions).addAnnotatedTag(_tagTag, _tagMessage).then(
+      val=>{console.log(val);},
+      err=>{console.error(err);}
+    );
   }
 }
   
@@ -293,7 +300,8 @@ function makeRepo() {
   simpleGit(_gitOptions)
   .init()
   .add(`${_pathSpec}/*`)
-  .commit('Initial commit').then(()=>{
+  .commit('Initial commit')
+  .addAnnotatedTag("start","DO NOT REMOVE: Used for diff").then(()=>{
     _open = true;
     console.log("Made new project repo");
     updateProjectNodeWithGitUse();
