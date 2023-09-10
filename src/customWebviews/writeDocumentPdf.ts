@@ -7,9 +7,6 @@ import { generateHeaderFooterHtmlFiles } from "./headerAndFooter";
 
 
 export function writeDocumentPdf(document:SmoresDocument, htmlDocFilepath:string, traceReport:boolean) {
-  generateHeaderFooterHtmlFiles();
-  generateCoverHtmlFile(document, traceReport);
-  generateHistoryFile(document, traceReport);
   const dataPath = DoorsSmores.getDataDirectory();
   const margins = "-T 40 -B 25 -L 25 -R 25";
   const coverPath = join(dataPath, "cover.html");
@@ -17,14 +14,18 @@ export function writeDocumentPdf(document:SmoresDocument, htmlDocFilepath:string
   const footerPath = join(dataPath, "footer.html");
   const historyPath = join(dataPath, "history.html");
   const outputName = basename(htmlDocFilepath, ".html");
-  const outputPath = join(dirname(htmlDocFilepath), `${outputName}.pdf`);
+  const outputFilename = `${outputName}.pdf`;
+  const outputPath = join(dirname(htmlDocFilepath), outputFilename);
   const tocStylePath = join(DoorsSmores.getExtensionPath(), 'resources', 'wkhtmltopdfTOCxsl.xml');
-  const generalOptions = `--dpi 1200 --print-media-type --enable-local-file-access --outline`;
+  const generalOptions = `--dpi 1200 --print-media-type --enable-local-file-access --outline --zoom 2.0`;
   const headerOptions = `--header-html "${headerPath}"`;
   const footerOptions = `--footer-html "${footerPath}"`;
-  const pages = `cover "${coverPath}" "${historyPath}" toc --xsl-style-sheet "${tocStylePath}" "${htmlDocFilepath}" "${outputPath}"`;
+  const pages = `cover "${coverPath}" "${historyPath}" toc --xsl-style-sheet "${tocStylePath}" --zoom 1.25 "${htmlDocFilepath}" "${outputPath}"`;
   const cmd = `wkhtmltopdf ${margins} ${generalOptions} ${headerOptions} ${footerOptions} ${pages}`;
   console.log(cmd);
+  generateHeaderFooterHtmlFiles(outputFilename);
+  generateCoverHtmlFile(document, traceReport);
+  generateHistoryFile(document, traceReport);
   exec(cmd, wkhtmltopdfCallback);
 }
 

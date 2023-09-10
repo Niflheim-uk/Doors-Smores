@@ -4,21 +4,21 @@ import { clearNonce, getNonce } from "./getNonce";
 import { writeFileSync } from "fs";
 import { Uri } from "vscode";
 
-export function generateHeaderFooterHtmlFiles() {
+export function generateHeaderFooterHtmlFiles(saveFilename:string) {
   const projectDir = DoorsSmores.getDataDirectory();
   const filepath1 = join(projectDir, 'header.html');
-  const html1 = getHeaderHtml();
+  const html1 = getHeaderHtml(saveFilename);
   writeFileSync(filepath1, html1);
   const filepath2 = join(projectDir, 'footer.html');
-  const html2 = getFooterHtml();
+  const html2 = getFooterHtml(saveFilename);
   writeFileSync(filepath2, html2);
 }
-function getHeaderHtml() {
-  const content = getHeaderBody();
+function getHeaderHtml(saveFilename:string) {
+  const content = getHeaderBody(saveFilename);
   return getHtml(content);
 }
-function getFooterHtml() {
-  const content = getFooterBody();
+function getFooterHtml(saveFilename:string) {
+  const content = getFooterBody(saveFilename);
   return getHtml(content);
 }
 function getHtml(content:string) {
@@ -41,24 +41,29 @@ function getHtml(content:string) {
 </html>`;
 }
 
-function getHeaderBody() {
-  const projectPath = Uri.file(DoorsSmores.getProjectDirectory());
-  return `
-  <img src="${projectPath}/logo.png" style="height:0.8cm;" />
-  <hr/>
-  <br/>
-  `;
+function getHeaderBody(saveFilename:string) {
+  return getDefaultHeaderHtml();
 }
 
-function getFooterBody() {
-  const projectPath = Uri.file(DoorsSmores.getProjectDirectory());
+function getFooterBody(saveFilename:string) {
+  return getDefaultFooterHtml(saveFilename);
+}
+function getDefaultFooterHtml(saveFilename:string) {
   return `
   <table style="width: 100%; font-family: Arial; font-size: 7pt;">
     <tr>
-      <td class="doctitle"></td>
-      <td style="text-align:center">Confidental</td>
+      <td>${saveFilename}</td>
       <td style="text-align:right">Page <span class="page"></span> of <span class="topage"></span></td>
     </tr>
   </table>
   `;
+}
+
+function getDefaultHeaderHtml() {
+  const extensionPath = DoorsSmores.getExtensionPath();
+  const imagePath = Uri.file(join(extensionPath, 'resources', 'smores.png'));
+  return `
+  <img src="${imagePath}" style="height:0.8cm;" />
+  <hr/>
+  <br/>`;
 }
