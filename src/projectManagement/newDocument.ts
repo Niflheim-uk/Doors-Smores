@@ -1,7 +1,9 @@
 import * as vscode from 'vscode';
 import { getProject } from '../model/smoresProject';
 import { SmoresNode } from '../model/smoresNode';
-import { createTemplateNodesForSRS } from './srsTemplate';
+import { createNodesForSRSFull, createNodesForSRSMini } from './documentTemplates/srsTemplate';
+import { createNodesForURSFull, createNodesForURSMini } from './documentTemplates/ursTemplate';
+import { createNodesForSTPFull, createNodesForSTPMini } from './documentTemplates/stpTemplate';
 
 async function getDocumentType():Promise<string|undefined> {
   const documentTypes:string[] = [
@@ -38,14 +40,21 @@ function createTemplateNodes(docNode:SmoresNode, docType:string) {
   switch(docType) {
     case "Empty Document":
       break;
-    // case "User Requirements Specification":
-    case "Software Requirements Specification":
-      createTemplateNodesForSRS(docNode);
+    case "User Requirements Specification (Mini)":
+      createNodesForURSMini(docNode);
       break;
-    // case "Architecture Design Specification":
+    case "Software Requirements Specification (Full)":
+      createNodesForSRSFull(docNode);
+      break;
+    case "Software Requirements Specification (Mini)":
+      createNodesForSRSMini(docNode);
+      break;
+      // case "Architecture Design Specification":
     // case "Detailed Design Specification":
     // case "Software Acceptance Test Protocol":
-    // case "Software System Test Protocol":
+    case "Software System Test Protocol (Mini)":
+      createNodesForSTPMini(docNode);
+      break;
     // case "Software Integration Test Protocol":
     // case "Software Unit Test Protocol":
 

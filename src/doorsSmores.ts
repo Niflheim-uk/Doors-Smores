@@ -8,6 +8,14 @@ import { newProjectWorkspace } from "./projectManagement/newProject";
 import { openProjectWorkspace } from "./projectManagement/openProject";
 import { closeProjectWorkspace } from "./projectManagement/closeProject";
 import { deleteNodeWithConfirmation } from "./projectManagement/deleteNode";
+import { 
+  newComment, 
+  newFunctionalRequirement, 
+  newHeading, 
+  newImage, 
+  newMermaidImage 
+} from "./projectManagement/newNode";
+import { promoteNode, demoteNode, moveNodeDown, moveNodeUp } from './projectManagement/moveNode';
 
 
 export class DoorsSmores {
@@ -78,28 +86,28 @@ export class DoorsSmores {
       vscode.commands.registerCommand("doors-smores.New-Heading", async (node:TreeNode) => {
         const heading = await vscode.window.showInputBox({ placeHolder: 'new heading?' });
         if(heading) {
-          node.smoresNode.newHeading(heading);
+          newHeading(node.smoresNode, heading);
           this.versionController.commitChanges(`New heading added`);
           this.refreshViews();
         }
       }),
       vscode.commands.registerCommand("doors-smores.New-Comment", (node:TreeNode) => {
-        node.smoresNode.newComment();
+        newComment(node.smoresNode);
         this.versionController.commitChanges(`New comment added`);
         this.refreshViews();
       }),
       vscode.commands.registerCommand("doors-smores.New-Functional-Requirement", (node:TreeNode) => {
-        node.smoresNode.newFunctionalRequirement();
+        newFunctionalRequirement(node.smoresNode);
         this.versionController.commitChanges(`New functional requirement added`);
         this.refreshViews();
       }),
       vscode.commands.registerCommand("doors-smores.New-Image", (node:TreeNode) => {
-        node.smoresNode.newImage();
+        newImage(node.smoresNode);
         this.versionController.commitChanges(`New image added`);
         this.refreshViews();
       }),
       vscode.commands.registerCommand("doors-smores.New-MermaidImage", (node:TreeNode) => {
-        node.smoresNode.newMermaidImage();
+        newMermaidImage(node.smoresNode);
         this.versionController.commitChanges(`New mermaid image added`);
         this.refreshViews();
       })
@@ -109,25 +117,25 @@ export class DoorsSmores {
   private registerNodeManipulationCommands():vscode.Disposable[] {
     const registrations = [
       vscode.commands.registerCommand("doors-smores.Move-Node-Up", (node:TreeNode) => {
-        node.smoresNode.moveUp();
+        moveNodeUp(node.smoresNode);
         node.contextValue = node.smoresNode.getContextString();
         this.versionController.commitChanges(`Node ${node.smoresNode.data.id} document order decreased`);
         this.refreshViews();
       }),
       vscode.commands.registerCommand("doors-smores.Move-Node-Down", (node:TreeNode) => {
-        node.smoresNode.moveDown();
+        moveNodeDown(node.smoresNode);
         node.contextValue = node.smoresNode.getContextString();
         this.versionController.commitChanges(`Node ${node.smoresNode.data.id} document order increased`);
         this.refreshViews();
       }),
       vscode.commands.registerCommand("doors-smores.Promote-Node", (node:TreeNode) => {
-        node.smoresNode.promote();
+        promoteNode(node.smoresNode);
         node.contextValue = node.smoresNode.getContextString();
         this.versionController.commitChanges(`Node ${node.smoresNode.data.id} document level decreased`);
         this.refreshViews();
       }),
       vscode.commands.registerCommand("doors-smores.Demote-Node", (node:TreeNode) => {
-        node.smoresNode.demote();
+        demoteNode(node.smoresNode);
         node.contextValue = node.smoresNode.getContextString();
         this.versionController.commitChanges(`Node ${node.smoresNode.data.id} document level increased`);
         this.refreshViews();

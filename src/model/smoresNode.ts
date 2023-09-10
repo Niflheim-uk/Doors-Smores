@@ -43,27 +43,6 @@ export class SmoresNode extends SmoresDataFile {
     context = this.setContextAddPromoteStatus(context);
     return `${this.data.category}${context}`;
   }
-  newHeading(title:string) {
-    return this.newItem("heading", title);
-  }
-  newComment(content?:string) {
-    if(content === undefined) {
-      content = "new comment";
-    }
-    return this.newItem("comment", content);
-  }
-  newFunctionalRequirement() {
-    return this.newItem("functionalRequirement", "new functional requirement");
-  }
-  newImage() {
-    return this.newItem("image", "../defaultImage.jpg");
-  }
-  newMermaidImage() {
-    return this.newItem("mermaid", `sequenceDiagram
-  Alice->>John: Hello John, how are you?
-  John-->>Alice: Great!
-  Alice-)John: See you later!`);
-  }
   delete() {
     const parent = this.getParentNode();
     const children = this.getChildNodes();
@@ -82,50 +61,6 @@ export class SmoresNode extends SmoresDataFile {
     }
     // Todo: remove traces when implemented
     this.deleteDataFile();
-  }
-  promote() {
-    const parent = this.getParentNode();
-    if(!this.canPromoteNode() || parent === null) {
-      return;
-    }
-    const grandparent = parent.getParentNode();
-    if(grandparent) {
-      const parentPos = grandparent.getChildPosition(parent.data.id);
-      grandparent.addChildAt(this.data.id, parentPos+1);
-      parent.removeChild(this.data.id);
-      this.data.parent = grandparent.data.id;
-      this.write();
-    }
-  }
-  demote() {
-    const parent = this.getParentNode();
-    if(!this.canDemoteNode() || parent === null) {
-      return;
-    }
-    const idPos = parent.getChildPosition(this.data.id);
-    // idPos is greater than 0 or couldnt demote
-    const prevSiblingPos = idPos -1;
-    const siblings = parent.getChildNodes();
-    siblings[prevSiblingPos].addChild(this.data.id);
-    parent.removeChild(this.data.id);
-    this.data.parent = siblings[prevSiblingPos].data.id;
-    this.write();
-  }
-  moveUp() {
-    const parent = this.getParentNode();
-    if(parent === null) {
-      return;
-    }
-    const index = parent.getChildPosition(this.data.id);
-    parent.swapChildIndex(index, index-1);
-  }
-  moveDown() {
-    const parent = this.getParentNode();
-    if(parent === null) {
-      return;
-    }
-    const index = parent.getChildPosition(this.data.id);
-    parent.swapChildIndex(index, index+1);
   }
   swapChildIndex(a:number,b:number) {
     if(this.data.children === undefined) {
@@ -161,10 +96,7 @@ export class SmoresNode extends SmoresDataFile {
     });
     this.write();
   }
-  ///////////////////////////////////////////
-  // Private methods
-  ///////////////////////////////////////////
-  private newItem(category:string,defaultText:string):string|undefined {
+  public newItem(category:string,defaultText:string):string|undefined {
     console.log(`New ${category} called`);
     const newData = {
       id:0,
@@ -174,6 +106,75 @@ export class SmoresNode extends SmoresDataFile {
     };
     return this.newChild(newData);
   }  
+  public canDemoteNode():boolean {
+    const parent = this.getParentNode();
+    if(parent !== null) {
+      const idPos = parent.getChildPosition(this.data.id);
+      if(parent.data.children && idPos > 0) {
+        const prevSiblingId = parent.data.children[idPos-1];
+        const prevSiblingPath = SmoresNode.getNodeFilepath(prevSiblingId);
+        if(prevSiblingPath === undefined) {
+          return false;
+        }
+        const prevSibling = new SmoresNode(prevSiblingPath);
+        if(prevSibling.data.category === "heading") {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+  public canPromoteNode():boolean {
+    switch(this.data.category) {
+      case "project":
+      case "document":
+      case "unknown":
+        return false;
+      case "heading":
+        return this.canPromoteHeading();
+      default:
+        return this.canPromoteOther();
+    }
+  }
+  public removeChild(id:number){
+    const idPos = this.getChildPosition(id);
+    if((this.data.children !== undefined) && (idPos >= 0)){
+      this.data.children.splice(idPos,1);
+      this.write();
+    }
+  }
+  public getChildPosition(childId:number|undefined):number {
+    if(this.data.children !== undefined) {
+      let siblings:number[] = this.data.children;
+      const idPos = siblings.findIndex(id => childId === id);
+      return idPos;
+    }
+    return -1;
+  }
+  public addChild(childId:number) {
+    if(this.data.children === undefined) {
+      this.data.children = [childId];
+    } else {
+      this.data.children.push(childId);
+    }
+    this.write();
+  }
+  public addChildAt(childId:number, insertPos:number) {
+    if(childId) {
+      if(this.data.children === undefined) {
+        if(insertPos !== 0) {
+          throw new Error("insert position out of range");
+        }
+        this.data.children = [childId];
+      } else {
+        this.data.children.splice(insertPos, 0, childId);
+      }
+      this.write();  
+    }
+  }
+  ///////////////////////////////////////////
+  // Private methods
+  ///////////////////////////////////////////
   private setContextAddOrderStatus(context:string) :string {
     const parent = this.getParentNode();
     if((parent !== null) && (parent.data.children !== undefined)){
@@ -199,36 +200,6 @@ export class SmoresNode extends SmoresDataFile {
     }
     return context;
   }
-  private canDemoteNode():boolean {
-    const parent = this.getParentNode();
-    if(parent !== null) {
-      const idPos = parent.getChildPosition(this.data.id);
-      if(parent.data.children && idPos > 0) {
-        const prevSiblingId = parent.data.children[idPos-1];
-        const prevSiblingPath = SmoresNode.getNodeFilepath(prevSiblingId);
-        if(prevSiblingPath === undefined) {
-          return false;
-        }
-        const prevSibling = new SmoresNode(prevSiblingPath);
-        if(prevSibling.data.category === "heading") {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-  private canPromoteNode():boolean {
-    switch(this.data.category) {
-      case "project":
-      case "document":
-      case "unknown":
-        return false;
-      case "heading":
-        return this.canPromoteHeading();
-      default:
-        return this.canPromoteOther();
-    }
-  }
   private canPromoteHeading():boolean {
     const parent = this.getParentNode();
     if(parent !== null && parent.data.category === "heading") {
@@ -242,21 +213,6 @@ export class SmoresNode extends SmoresDataFile {
       return true;
     }
     return false;
-  }
-  private removeChild(id:number){
-    const idPos = this.getChildPosition(id);
-    if((this.data.children !== undefined) && (idPos >= 0)){
-      this.data.children.splice(idPos,1);
-      this.write();
-    }
-  }
-  private getChildPosition(childId:number|undefined):number {
-    if(this.data.children !== undefined) {
-      let siblings:number[] = this.data.children;
-      const idPos = siblings.findIndex(id => childId === id);
-      return idPos;
-    }
-    return -1;
   }
   protected newChild(childData:NodeDataModel):string|undefined {
     const project = getProject();
@@ -275,26 +231,5 @@ export class SmoresNode extends SmoresDataFile {
     this.addChild(newId);
     this.write();
     return newNodePath;
-  }
-  protected addChild(childId:number) {
-    if(this.data.children === undefined) {
-      this.data.children = [childId];
-    } else {
-      this.data.children.push(childId);
-    }
-    this.write();
-  }
-  protected addChildAt(childId:number, insertPos:number) {
-    if(childId) {
-      if(this.data.children === undefined) {
-        if(insertPos !== 0) {
-          throw new Error("insert position out of range");
-        }
-        this.data.children = [childId];
-      } else {
-        this.data.children.splice(insertPos, 0, childId);
-      }
-      this.write();  
-    }
   }
 }
