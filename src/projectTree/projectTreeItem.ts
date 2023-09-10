@@ -2,26 +2,28 @@ import * as vscode from "vscode";
 import { DoorsSmores, ProjectInfo } from "../doorsSmores";
 import { DocumentNode } from "../model/documentNode";
 import { SmoresProject } from "../model/smoresProject";
-import { basename, dirname } from "path";
-import { SmoresFile } from "../model/smoresFile";
 import { getNodeIcon } from "../utils/gui";
 
 export class ProjectTreeItem extends vscode.TreeItem {
-
+  private isActive:boolean;
   constructor(readonly info:ProjectInfo, private isProject:boolean) {
     const activeProject:SmoresProject|undefined = DoorsSmores.getActiveProject();
     var state = vscode.TreeItemCollapsibleState.None;
-    let isActive = false;
+    let active = false;
     if(info.path === activeProject?.filepath) {
       state = vscode.TreeItemCollapsibleState.Expanded;
-      isActive = true;
+      active = true;
     }
     super(info.name, state);
+    this.isActive = active;
     var icon:vscode.ThemeIcon;
     if(isProject) {
       icon = vscode.ThemeIcon.Folder;
-      if(isActive === false) {
+      if(this.isActive === false) {
         this.contextValue = 'recentProject';
+      } else {
+        const iconColour = new vscode.ThemeColor('foreground');
+        icon = new vscode.ThemeIcon('folder-opened', iconColour);    
       }
     } else {
       const item = new DocumentNode(info.path);
@@ -61,7 +63,11 @@ export class ProjectTreeItem extends vscode.TreeItem {
   }
   public onClick() {
     if(this.isProject) {
-      DoorsSmores.openProjectPath(this.info.path);
+      if(this.isActive) {
+        DoorsSmores.closeActiveProject();
+      } else {
+        DoorsSmores.openProjectPath(this.info.path);
+      }
     } else {
       const node = new DocumentNode(this.info.path);
       DoorsSmores.openDocument(node);

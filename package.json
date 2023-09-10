@@ -84,6 +84,12 @@
         "icon": "$(folder)"
       },
       {
+        "command": "doors-smores.NewProject",
+        "category": "Smores",
+        "title": "New Project",
+        "icon": "$(new-folder)"
+      },
+      {
         "command": "doors-smores.NewDocument",
         "category": "Smores",
         "title": "New Document",
@@ -258,8 +264,13 @@
       "view/title": [
         {
           "command": "doors-smores.NewDocument",
-          "when": "view == doors-smores.documentTree || view == doors-smores.projectTree",
+          "when": "(view == doors-smores.documentTree || view == doors-smores.projectTree) && doors-smores.projectOpen",
           "group": "navigation@1"
+        },
+        {
+          "command": "doors-smores.NewProject",
+          "when": "view == doors-smores.projectTree",
+          "group": "navigation@2"
         },
         {
           "command": "doors-smores.OpenProject",
