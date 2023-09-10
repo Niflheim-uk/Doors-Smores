@@ -1,9 +1,11 @@
 import { TraceReportView } from "../customWebviews/traceReportView/traceReportView";
 import { getTraceCategoryLabels, isDownstreamTraceMissing, isTestTraceMissing, isUpstreamTraceMissing } from "./traceSorting";
 import { DocumentNode, RevisionHistoryItem } from "./documentNode";
-import { window } from "vscode";
+import { FileType, Uri, window, workspace } from "vscode";
 import { VersionController } from "../versionControl/versionController";
 import { DocumentView } from "../customWebviews/documentView/documentView";
+import { DoorsSmores } from "../doorsSmores";
+import { join, relative } from "path";
 
 
 export class SmoresDocument extends DocumentNode {
@@ -40,26 +42,54 @@ export class SmoresDocument extends DocumentNode {
       if(detail) {
         await this.addRevisionHistory(nextRev, [detail], false);
         this.exportDocument();
-        VersionController.issueProject(nextRev.major, nextRev.minor, detail);
+        VersionController.issueDocument(this, false);
       }
     }
   }
 
-  private getBlankRevisionHistoryItem() {
-    return {
-      day: 0,
-      month: 0,
-      year: 0,
-      major: 0,
-      minor: 0,
-      detail:[""],
-      author:"",
-      isMajor:false    
-    };
+  public async duplicateDocumentNodes(stubName:string, includeTracedNodes:boolean) {
+    const srcRoot = DoorsSmores.getDataDirectory();
+    const destRoot = srcRoot.concat(`_${stubName}`);
+    await workspace.fs.createDirectory(Uri.file(destRoot));
+    await this.copyNodeFiles(this, includeTracedNodes, srcRoot, destRoot);
+  }
+  
+  private async copyNodeFiles(node:DocumentNode, includeTracedNodes:boolean, srcRoot:string, destRoot:string) {
+    const thisNodeDir = node.getDirPath();
+    const destDirStub = relative(srcRoot, thisNodeDir);
+    const destPath = join(destRoot, destDirStub);
+    await workspace.fs.createDirectory(Uri.file(destPath));
+    await this.duplicateDirectory(thisNodeDir, destPath);
+    for(let i=0; i<node.data.children.length; i++) {
+      const child = DocumentNode.createFromId(node.data.children[i]);
+      await this.copyNodeFiles(child, includeTracedNodes, srcRoot, destRoot);
+    }
+    if(includeTracedNodes) {
+      for(let i=0; i<node.data.traces.traceIds.length; i++) {
+        const trace = DocumentNode.createFromId(node.data.traces.traceIds[i]);
+        await this.copyNodeFiles(trace, false, srcRoot, destRoot);
+      }  
+    }
+  }
+  private async duplicateDirectory(src:string, dest:string) {
+    const srcContents = await workspace.fs.readDirectory(Uri.file(src));
+    for(let i=0; i < srcContents.length; i++) {
+      const [name, type] = srcContents[i];
+      const srcPath = join(src, name);
+      const destPath = join(dest, name);
+      if (type === FileType.File) {
+        await workspace.fs.copy(Uri.file(srcPath),Uri.file(destPath));
+      } else if (type === FileType.Directory) {
+        await workspace.fs.createDirectory(Uri.file(destPath));
+        await this.duplicateDirectory(srcPath, destPath);
+      } else {
+        window.showErrorMessage(`Unexpected file type found during directory duplication: ${destPath}`);
+      }
+    }
   }
 
   private async getNextRevision(lastRevision:RevisionHistoryItem) {
-    var nextRev = this.getBlankRevisionHistoryItem();
+    var nextRev = new RevisionHistoryItem();
     const majorForMajor = String(lastRevision.major+1).padStart(2, '0');
     const majorForMinor = String(lastRevision.major).padStart(2, '0');
     const minorForMinor = String(lastRevision.minor+1).padStart(2, '0');
@@ -110,7 +140,7 @@ export class SmoresDocument extends DocumentNode {
     });
   }
   
-  private getLatestRevision(traceReport:boolean) {
+  public getLatestRevision(traceReport:boolean) {
     var revisionHistory:RevisionHistoryItem[];
     if(traceReport) {
       revisionHistory = this.data.documentData!.traceReportRevisionHistory;
@@ -120,7 +150,7 @@ export class SmoresDocument extends DocumentNode {
     if(revisionHistory.length > 0) {
       return revisionHistory[revisionHistory.length-1];
     } else {
-      return this.getBlankRevisionHistoryItem();
+      return new RevisionHistoryItem();
     }
   }
   private getNumberNodeTraces(node:DocumentNode):number {

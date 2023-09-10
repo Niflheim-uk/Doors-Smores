@@ -5,15 +5,23 @@ import { VersionController } from "../versionControl/versionController";
 import { basename, join } from "path";
 import { rmSync } from "fs";
 
-export type RevisionHistoryItem = {
-  day:number;
-  month:number;
-  year:number;
-  major:number;
-  minor:number;
-  detail:string[];
-  author:string;
-  isMajor:boolean;
+export class RevisionHistoryItem {
+  public day:number = 0;
+  public month:number = 0;
+  public year:number = 0;
+  public major:number = 0;
+  public minor:number = 0;
+  public detail:string[] =[""];
+  public author:string = "";
+  public isMajor:boolean = false;
+  constructor() {};
+  public getIssueString(major:number=this.major, minor:number=this.minor) {
+    return `${String(major).padStart(2, '0')}-${String(minor).padStart(2, '0')}`;
+  }
+  public getDateString() {
+    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    return `${this.day} ${months[this.month]} ${this.year}`;
+  }
 };
 interface DocumentData {
   documentType: string;
