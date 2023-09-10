@@ -49,20 +49,31 @@ Requirement analysis software doesn't have to be that complicated... right?
 ### 0.6 
 ![n](https://www.iconfinder.com/icons/1891023/download/png/16) Document cover page \
 ![n](https://www.iconfinder.com/icons/1891023/download/png/16) Document table of contents \
-![n](https://www.iconfinder.com/icons/1891023/download/png/16) All templates
+![n](https://www.iconfinder.com/icons/1891023/download/png/16) All templates fleshed out
 
 ### Future
 - Risk management
-- Document level diff
+  - Define types of harm with severity
+  - Define risks that result in harm
+  - Define risk controls that mitigate risks
+  - Trace types of harm to the risks that cause it.
+  - Trace risks to the risk control that mitigate it
+  - Trace risk control to the requirement that implements it.
+  - Produce risk analysis reports.
+- Document level diff 
+  - Already in place via document export in markdown on changes and committed to Git, but a solution is planned for those not using version control.
 - Auto sync with remote repository
-- Header/footer templates
-- User document styles
-- Script to protocol interfaces - Will allow test frameworks and test protocols to remain in sync.
+  - Keeps the team in sync.
+- User defined header & footer to allow document branding.
+- User defined document styles
+- Script to protocol interfaces 
+   - Will allow test protocols to be consumed by test frameworks (formal documentation and scripted tests remain in sync).
 
 ## Release Notes
 
-- Beta testing only
+- Alpha testing only
 
 ## Known issues
 
 - Many (apply DDT liberally to all surfaces)
+  - Hopefully less than earlier
