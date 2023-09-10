@@ -6,6 +6,9 @@ import { SmoresDataFile } from "./smoresDataFile";
 
 export interface ProjectDataModel {
   idBase: number;
+  gitInUse: boolean;
+  repoRoot?: string;
+  repoPathspec?: string;
   maxContributors: number;
   knownContributors: string[];
   uniqueIds: number[];
@@ -41,9 +44,12 @@ export class SmoresProject extends SmoresDataFile {
   }
   private setDefaults():boolean {
     let change = false;
-      if(this.data.idBase === undefined) {
+    if(this.data.idBase === undefined) {
       this.data.idBase = 10000;
       change = true;
+    }
+    if(this.data.gitInUse === undefined) {
+      this.data.gitInUse = false;
     }
     if(this.data.maxContributors === undefined) {
       this.data.maxContributors = 100;
