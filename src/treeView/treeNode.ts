@@ -20,6 +20,7 @@ export class TreeNode extends vscode.TreeItem {
     this.description = node.data.text;
     this.tooltip = this.description;
     this.iconPath = vscode.ThemeIcon.Folder;
+    this.contextValue = node.getContextString();
   }
 }
 
@@ -33,6 +34,8 @@ function getLabelPrefix(nodeData:dataModel.BaseNodeDataModel):string {
       return "H";
     case "comment":
       return "C";
+    case "functionalRequirement":
+      return "FR";
     default:
       return "X";
   }

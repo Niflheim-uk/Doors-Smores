@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import * as showdown from "showdown";
+import { TreeNode } from "../treeView/treeNode";
 import { SmoresNode } from "../model/smoresNode";
 const test: vscode.MarkdownString = new vscode.MarkdownString("# Hello World");
 
@@ -16,8 +17,8 @@ export class NodeViewer {
     const registrations = (
       vscode.commands.registerCommand(
         "doors-smores.View-TreeNode",
-        (node: SmoresNode) => {
-          this.showNode(node);
+        (node: TreeNode) => {
+          this.showNode(node.smoresNode);
         }
       ),
       vscode.commands.registerCommand(
@@ -33,8 +34,8 @@ export class NodeViewer {
       const webviewSection:string = context.webviewSection;
       const nodeId:number = Number(webviewSection.replace("Node-",""));
       const nodeFilepath = this.referenceNode.getNodeFilepath(nodeId);
-      this.nodeToEdit = new SmoresNode(nodeFilepath);
-      this.updatePanel();
+      const node = new SmoresNode(nodeFilepath);
+      this.editSingleOrMultilineNode(node);
     }
   }
   showNode(node: SmoresNode) {
@@ -56,12 +57,13 @@ export class NodeViewer {
               this.nodeToEdit.write();
               this.nodeToEdit = undefined;
               vscode.commands.executeCommand('doors-smores.Update-TreeView');
-              this.updatePanel();
             }
+            this.updatePanel();
             vscode.window.showErrorMessage(message.text);
             return;
           case 'cancel':
             this.nodeToEdit=undefined;
+            this.updatePanel();
             return;
           }
       });
@@ -74,16 +76,50 @@ export class NodeViewer {
     }
     this.updatePanel();
   }
+  private async editSingleOrMultilineNode(node: SmoresNode) {
+    if(node.data.category === "heading") {
+      const currentValue = node.data.text.split("\n")[0];
+      const newValue = await vscode.window.showInputBox({ value: `${currentValue}` });
+      if(newValue) {
+        node.data.text = newValue;
+        node.write();
+        vscode.commands.executeCommand('doors-smores.Update-TreeView');
+        this.updatePanel();
+      }
+    } else {
+      this.nodeToEdit = node;
+      this.updatePanel();
+    }
+  }
   private getHtmlForNode(node: SmoresNode):string {
     let html:string = "";
     html = html.concat(this.getHtmlForNodeType(node));
     html = html.concat(this.getHtmlForNodeChildren(node));
     return html;
   }
+  private getHtmlForEditor(nodeId:number, content:string, helpText:string) {
+    const outerHtml = `<div class="editContainer">
+      <textarea id='textarea-${nodeId}' class="editBox"
+        data-vscode-context='{"webviewSection": "textarea-${nodeId}", 
+      "preventDefaultContextMenuItems": false}'>${content}</textarea>
+      <div class="editHelp">${helpText}</div>
+    </div>
+    <button class="editOk" onclick="onSubmit('textarea-${nodeId}')">Submit</button>
+    <button class="editCancel" onclick="onCancel()">Cancel</button>`;
+    return outerHtml;
+  }
+  private getHtmlForViewing(nodeId:number, innerHtml:string, tooltip:string) {
+    const outerHtml = `<div class="tooltip">
+        <div class="tooltiptext">${tooltip}</div>
+        <div class="viewDiv" data-vscode-context='{"webviewSection": "Node-${nodeId}",
+          "preventDefaultContextMenuItems": true}'>${innerHtml}</div>
+      </div>`;
+    return outerHtml;
+  
+  }
   private getHtmlForNodeType(node:SmoresNode):string {
     let mdString:string = "";
-    let textDisplay:string="none";
-    let editDisplay:string="none";
+    let helpText:string = "some helpful instructions";
     switch(node.data.category) {
       case "document":
         return "";
@@ -93,32 +129,14 @@ export class NodeViewer {
       default:
         mdString = node.data.text;
     }
-    if(node.data.id === this.nodeToEdit?.data.id) {
-      editDisplay = "block";
-    } else {
-      textDisplay = "block";
-    }
-
     const converter = new showdown.Converter();
     const innerHtml =  converter.makeHtml(mdString);
-    const sectionId = `Node-${node.data.id}`;
-    const reference = `category:${node.data.category} id:${node.data.id}`;
-    const outerHtml = `
-      <div class="refMarker">${reference}</div>
-      <div class="main" style='display:${textDisplay}' 
-        data-vscode-context='{"webviewSection": "${sectionId}",
-        "preventDefaultContextMenuItems": true}'>
-        ${innerHtml}
-      </div>
-      <div style='display:${editDisplay}'>
-        <textarea id='textarea-${node.data.id}' class="editArea" data-vscode-context='{"webviewSection": "${sectionId}", 
-          "preventDefaultContextMenuItems": true}'>${node.data.text}</textarea>
-        <div>
-          <button onclick="onSubmit('textarea-${node.data.id}')">Submit</button>
-          <button onclick="onCancel()">Cancel</button>
-        </div>
-      </div>`;
-    return outerHtml;
+    const tooltip = `<b>category</b>: ${node.data.category}<br/><b>id</b>: ${node.data.id}`;
+    if(node.data.id === this.nodeToEdit?.data.id) {
+      return this.getHtmlForEditor(node.data.id, node.data.text, helpText);
+    } else {
+      return this.getHtmlForViewing(node.data.id, innerHtml, tooltip);
+    }
   }
   private getHtmlForNodeChildren(node:SmoresNode):string {
     let html:string = "";
@@ -133,13 +151,13 @@ export class NodeViewer {
   }
   private getMdForHeading(node:SmoresNode):string {
     let parent = node.getParentNode();
-    let depth = 1;
+    let depth = 0;
     while(parent !== null) {
       parent = parent.getParentNode();
       depth++;
     }
     let mdString = "";
-    while(depth > 2) {
+    while(depth > 0) {
       mdString = mdString.concat("#");
       depth--;
     }

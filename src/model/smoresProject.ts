@@ -71,7 +71,7 @@ export class SmoresProject extends SmoresDataFile {
   private getUserId():string {
     return vscode.env.machineId;
   }
-  private getUserIndex() : number {
+  private getUserIndex():number {
     const userId = this.getUserId();
     if((this.data.knownContributors === undefined) || (this.data.knownContributors.length === 0)) {
       this.data.knownContributors = [userId];
@@ -110,11 +110,15 @@ export class SmoresProject extends SmoresDataFile {
       id:newId,
       category:"document",
       text:documentName,
-      parent:null
+      parent:0
     };
     newDocument.data = newDocumentData;
     newDocument.write();
-    this.data.documentIds.push(newId);
+    if(this.data.documentIds && this.data.documentIds.length > 0) {
+      this.data.documentIds.push(newId);
+    } else {
+      this.data.documentIds = [newId];
+    }
     this.write();
   }
 

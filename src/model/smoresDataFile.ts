@@ -20,17 +20,13 @@ export class SmoresDataFile {
   constructor(readonly filePath:fs.PathLike) {
     this.read();
   }
-  write():void {
+  write() {
+    let jsonString = JSON.stringify(this.data, null, 4);
     try {
-      let jsonString = JSON.stringify(this.data);
       const directoryPath = path.dirname(this.filePath.toString());
       if (!fs.existsSync(directoryPath)){
         fs.mkdirSync(directoryPath, { recursive: true });
       }    
-      jsonString = jsonString.replace(/\{/g, "{\n");
-      jsonString = jsonString.replace(/\",/g, '",\n');
-      jsonString = jsonString.replace(/\],/g, '],\n');
-
       fs.writeFileSync(this.filePath, jsonString);
     } catch (err) {
       console.error(err);

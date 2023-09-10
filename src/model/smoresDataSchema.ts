@@ -1,6 +1,6 @@
 export interface BaseNodeDataModel {
   id: number;
-  parent: number | null;
+  parent: number;
   category: string;
   text: string;
   children?: number[];
