@@ -1,14 +1,14 @@
 import { DocumentNode } from '../../model/documentNode';
 import * as schema from '../../model/schema';
 
-const mdHelp:string = "Doors Smores supports standard markdown syntax and tables. Please avoid adding headings in markdown however as these will not be picked up in the outline.";
-const mermaidHelp:string = "Doors Smores supports diagram rendering via the <a href='https://mermaid.js.org/intro/#diagram-types'>Mermaid syntax</a>";
-const commentHelp:string = "Use comment elements to add supporting and informative text elements to your document.";
-const requirementHelp:string = "TBD";
-const transRatHelp:string = "The translation rationale section can be used to explain the justification or reasoning for why a requirement exists.";
-const desConHelp:string = "Design contrainsts can be used to include rules that a developer of the software must be aware of, but do not define requirements of the software behaviour. Typical examples might be performance requirements, memory constraints, etc. <br>'The system must provide feedback to the user within 100ms of user input'";
-const testCaseHelp:string = "TBD";
-const expResHelp:string = "TBD";
+const mdHelp:string = "Doors Smores supports <a href='https://www.markdownguide.org/basic-syntax/#emphasis'>standard markdown</a> syntax and <a href='https://www.markdownguide.org/extended-syntax/#tables'>tables</a>.<br>Please avoid adding headings in markdown however as these will not be picked up in the outline.<br>";
+const mermaidHelp:string = "Doors Smores supports diagram rendering via the <a href='https://mermaid.js.org/intro/#diagram-types'>Mermaid syntax</a><br>";
+const commentHelp:string = "Use comment elements to add supporting and informative text elements to your document.<br>";
+const requirementHelp:string = "TBD<br>";
+const transRatHelp:string = "The translation rationale section can be used to explain the justification or reasoning for why a requirement exists.<br>";
+const desConHelp:string = "Design contrainsts can be used to include rules that a developer of the software must be aware of, but do not define requirements of the software behaviour. Typical examples might be performance requirements, memory constraints, etc. <br>'The system must provide feedback to the user within 100ms of user input'<br>";
+const testCaseHelp:string = "TBD<br>";
+const expResHelp:string = "TBD<br>";
 
 function getEditTextArea(divId:string, divContent:string, contentType:string):string {
   const label = getDataTypeDisplayName(contentType);
