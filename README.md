@@ -12,6 +12,9 @@ Requirement analysis software doesn't have to be that complicated... right?
 # Pre-requisites
 - Requires Git to be installed for version control features. See [this page](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) for instructions on installing Git.
 
+# Documentation
+- Instructions on how to use Doors Smores can be found [here](https://github.com/Niflheim-uk/Doors-Smores-Docs)
+
 # Current Features
 - Can create and edit documents.
   - 8 document types are supported
@@ -40,14 +43,6 @@ Requirement analysis software doesn't have to be that complicated... right?
   - Missing traces may be highlighted within primary documents to aid review
 
 # Planned release schedule
-### 0.5
-![y](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/complete_icon.png?raw=true) Markdown export on export all \
-![y](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/complete_icon.png?raw=true) Auto export all on change to support document level diff \
-![y](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/complete_icon.png?raw=true) Tracing reports \
-![y](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/complete_icon.png?raw=true) Option to include tracing information in primary documents \
-![y](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/complete_icon.png?raw=true) Option to highlight missing traces \
-![n](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/incomplete_icon.png?raw=true) Some instructions \
-![y](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/complete_icon.png?raw=true) Convert multi-line fields to external file references (easier for diff/merge)
 
 ### 0.6 
 ![n](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/incomplete_icon.png?raw=true) Document cover page \
