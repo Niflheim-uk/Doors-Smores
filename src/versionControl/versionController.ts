@@ -64,40 +64,41 @@ export class VersionController {
       const remotes = await simpleGit(VersionController.gitOptions).getRemotes(true);
       if(VersionController.confirmRemoteExists(remotes, VersionController.remoteName)) {
         StatusBar.updateRemoteUse(true);
-        await simpleGit(VersionController.gitOptions)
-        .pull(VersionController.remoteName, branchName).then(async (result:PullResult)=>{
-          console.log(result);
+        const git = simpleGit(VersionController.gitOptions);
+        console.log("Sync Pull");
+        await git.pull(VersionController.remoteName, branchName,['--no-rebase']).then(async (result:PullResult)=>{
           if(result.summary.changes || result.summary.deletions || result.summary.deletions) {
             DoorsSmores.refreshViews();
           }
-          await simpleGit(VersionController.gitOptions)
-          .fetch(VersionController.remoteName,branchName,['--tags']).then(async (result:FetchResult)=>{
+          console.log(result);
+          console.log("Sync Fetch Tags");
+          await git.fetch(VersionController.remoteName,branchName,['--tags']).then(async (result:FetchResult)=>{
             console.log(result);
-            await simpleGit(VersionController.gitOptions)
-            .raw('push', '--set-upstream', VersionController.remoteName, branchName).then(async (result:string)=>{
+            console.log("Sync Push");
+            await git.push(VersionController.remoteName, branchName).then(async (result:PushResult)=>{
               console.log(result);
-              await simpleGit(VersionController.gitOptions)
-              .pushTags(VersionController.remoteName).then(async (result:PushResult)=>{
+              console.log("Sync Push Tags");
+              await git.pushTags(VersionController.remoteName).then(async (result:PushResult)=>{
                 console.log(result);
                 StatusBar.updateHealthy(true);
               },(reason:any)=>{
-                console.error("pushTags failed with following reason");
+                console.error("Push tags failed with following reason");
                 console.error(reason);
                 StatusBar.updateHealthy(false);
               });
             },(reason:any)=>{
-              console.error("push failed with following reason");
+              console.error("Push failed with following reason");
               console.error(reason);
               StatusBar.updateHealthy(false);
             });
           },(reason:any)=>{
-            console.error("pull tags failed with following reason");
+            console.error("Pull tags failed with following reason");
             console.error(reason);
             StatusBar.updateHealthy(false);
           });           
         },(reason:any)=>{
-          console.error("pull failed with following reason");
-          console.error(reason);
+          console.error("Pull failed with following reason");
+          VersionController.errorCheck(reason);
           StatusBar.updateHealthy(false);
         });
       } else {
@@ -107,6 +108,68 @@ export class VersionController {
       StatusBar.updateRemoteUse(false);
     }
     VersionController.syncTimer = setTimeout(VersionController.syncWithRemote, VersionController.syncPeriod);
+  }
+  private static async errorCheck(reason:any) {
+    if(reason.message === undefined) {
+      vscode.window.showErrorMessage("Git command failed, but reason does not contain expected properties");
+      return;
+    }
+    var remotePath = VersionController.getRemotePath();
+    if(remotePath === undefined) {
+      remotePath = "";
+    }
+    if(remotePath[remotePath.length-1] === "/") {
+      remotePath = remotePath.slice(0, remotePath.length-1);
+    }
+    const msgLines = reason.message.replace(/\t/g,"").split("\n");
+    const previousConflictPattern =  "Exiting because of an unresolved conflict.";
+    const autoMergePattern = "Auto-merging (.*)"; /* take no action */
+    const mergeConflictPattern = "CONFLICT \\(content\\): Merge conflict in (.*)$";
+    const instructionPattern1 = "Automatic merge failed; fix conflicts and then commit the result.";
+    const instructionPattern2 = `From ${remotePath}`;
+    const instructionPattern3 = ".*branch\\s+master\\s+-> FETCH_HEAD";
+    const instructionPattern4 = ".*master\\s+-> smores-remote.*";
+    var conflicts:string[] = [];
+    for(let i=0; i<msgLines.length; i++) {
+      if(msgLines[i] === previousConflictPattern) {
+        conflicts = await VersionController.getUnresolvedConflicts();
+      } else if(msgLines[i].match(autoMergePattern) !== null) {
+        /* do nothing */
+      } else {
+        const matches = msgLines[i].match(mergeConflictPattern);
+        if(matches !== null) {
+          conflicts.push(matches[1]);
+        } else if(msgLines[i] === instructionPattern1) {
+          /* do nothing */
+        } else if(msgLines[i] === instructionPattern2) {
+          /* do nothing */
+        } else if(msgLines[i].match(instructionPattern3) !== null) {
+          /* do nothing */
+        } else if(msgLines[i].match(instructionPattern4) !== null) {
+          /* do nothing */
+        } else if(msgLines[i] === '') {
+          /* do nothing */
+        } else {
+          console.error(`unexpected line: ${msgLines[i]}`);
+        }
+      }
+    }
+    if(conflicts.length > 0) {
+      VersionController.resolveConflicts(conflicts);
+    }
+  }
+  private static async getUnresolvedConflicts() {
+    const git = simpleGit(VersionController.gitOptions);
+    const result = await git.status([pathspec(VersionController.pathSpec)]);
+    return result.conflicted;
+  }
+  private static resolveConflicts(filepaths:string[]) {
+    var msg = "";
+    for(let i=0; i<filepaths.length; i++) {
+      msg = msg.concat(`Merge conflict on ${filepaths[i]}\n\n`);
+    }
+    msg = msg.concat(`Fix conflicts then commit the result`);
+    vscode.window.showErrorMessage(msg, { modal: true });
   }
   private static getRemotePath():string|undefined {
     const projectNode = DoorsSmores.getActiveProject();
