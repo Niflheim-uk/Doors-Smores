@@ -9,6 +9,8 @@ import {
   getInnerHtmlForConstraint, 
   getInnerHtmlForTest 
 } from '../contentInnerHtml';
+import { getPageBreak } from '../getPageBreak';
+import { getTableOfContents } from '../getTableOfContents';
 
 function getViewDivHtml(node:DocumentNode, exporting:boolean, innerHtml:string) {
   if(exporting) {
@@ -16,11 +18,17 @@ function getViewDivHtml(node:DocumentNode, exporting:boolean, innerHtml:string) 
   }
   const categoryShort = schema.getLabelPrefix(node.data.category);
   const tooltip = `<b>category</b>: ${node.data.category}<br/><b>id</b>: ${node.data.id}`;
-  const outerHtml = `<div class="tooltip">
-      <div class="toolTipText">${tooltip}</div>
-      <div class="viewDiv" data-vscode-context='{"webviewSection": "Node-${categoryShort}", "nodeId": "${node.data.id}",
-        "preventDefaultContextMenuItems": true}'>${innerHtml}</div>
-    </div>`;
+  const outerHtml = `
+<div class="tooltip">
+  <div class="toolTipText">${tooltip}</div>
+  <div class="viewDiv" data-vscode-context='{
+    "webviewSection": "Node-${categoryShort}", 
+    "nodeId": "${node.data.id}", 
+    "preventDefaultContextMenuItems": true
+  }'>
+    ${innerHtml}
+  </div>
+</div>`;
   return outerHtml;
 }
 
@@ -39,12 +47,12 @@ function getMarkdownParagraphs(originalText:string):string {
 }
 
 function getViewHtmlForNodeType(node:DocumentNode, exporting:boolean):string {
-  const pageBreak = `<hr class="hr-text pageBreak" data-content="Page Break">`;
+  const pageBreak = getPageBreak();;
   let innerHtml:string = "";
   let insertPageBreak = false;
   switch(node.data.category) {
   case schema.documentCategory:
-    return `<h1>WIP:Front Page</h1>${pageBreak}<h1>WIP:TOC</h1>${pageBreak}`;
+    return ``;
   case schema.headingCategory:
     [innerHtml, insertPageBreak] = heading.getHeadingHtml(node);
     if(insertPageBreak) {
@@ -82,7 +90,7 @@ function getViewHtmlForNodeType(node:DocumentNode, exporting:boolean):string {
     innerHtml = getInnerHtmlForImage(node, exporting);
     return getViewDivHtml(node, exporting, innerHtml);
   case schema.mermaidCategory:
-    innerHtml = `<span class="tabStop"><pre class='mermaid'>${node.data.text}</pre></span>(node)`;
+    innerHtml = `<div class="imageHolder"><pre class="mermaid">${node.data.text}</pre></div>`;
     return getViewDivHtml(node, exporting, innerHtml);
   default:
     innerHtml = "<H1>ERROR - Unknown Category</H1>";
@@ -108,8 +116,18 @@ function getHtmlForNode(node: DocumentNode, exporting:boolean, editNode?: Docume
   html = html.concat(getHtmlForNodeChildren(node, exporting, editNode));
   return html;
 }
-
+function getDocumentCover(documentType:string, documentName:string) {
+  return `<h1>${documentType} - ${documentName}</h1>`;
+}
 export function getBodyHtml(node: DocumentNode, exporting:boolean, editNode?: DocumentNode):string {
   heading.resetHeaderDepth();
-  return getHtmlForNode(node, exporting, editNode);
+  if(node.data.documentData) {
+    const documentType = node.data.documentData.documentType;
+    const body = getHtmlForNode(node, exporting, editNode);
+    const cover = getDocumentCover(documentType, node.data.text);
+    const TOC = getTableOfContents(body, 2);
+    return `${cover}${TOC}${body}`;
+  } else {
+    return getHtmlForNode(node, exporting, editNode);
+  }
 }

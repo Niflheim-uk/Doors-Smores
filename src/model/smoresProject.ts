@@ -1,11 +1,11 @@
 import * as vscode from "vscode";
-import * as schema from "./schema"
+import * as schema from "./schema";
 import { SmoresFile } from "./smoresFile";
 import { DoorsSmores } from "../doorsSmores";
 import { DocumentNode, DocumentNodeData } from "./documentNode";
 import { documentCategory } from "./schema";
 import { VersionController } from "../versionControl/versionController";
-import { join } from "path";
+import { basename, join } from "path";
 import { getMdForDocument } from "../customWebviews/markdownExport";
 import { writeFileSync } from "fs";
 import { SmoresDocument } from "./smoresDocument";

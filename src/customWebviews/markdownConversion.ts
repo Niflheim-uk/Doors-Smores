@@ -41,3 +41,4 @@ export function getTableTextHtmlFromMd(mdString:string):string {
   const converter = new Converter(options);
   return converter.makeHtml(mdString);  
 }
+

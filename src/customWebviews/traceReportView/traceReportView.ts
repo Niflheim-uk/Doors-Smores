@@ -11,6 +11,9 @@ import { getIdLabel, getTableRow } from "../contentInnerHtml";
 import { getTableTextHtmlFromMd } from "../markdownConversion";
 import { getTraceReportDownstreamContent, getTraceReportTestsContent, getTraceReportUpstreamContent } from "./traceReportContent";
 import { SmoresDocument } from "../../model/smoresDocument";
+import { getPageBreak } from "../getPageBreak";
+import { getTableOfContents } from "../getTableOfContents";
+import { getTraceReportIntroFromTemplate } from "./traceReportIntroTemplate";
 
 export class TraceReportView {
   public static currentPanel: TraceReportView | undefined;
@@ -162,7 +165,11 @@ export class TraceReportView {
       return "";
     }
     const documentType = node.data.documentData.documentType;
-    return TraceReportView.getHtmlForNode(documentType, node);
+    const body = TraceReportView.getHtmlForNode(documentType, node);
+    const cover = TraceReportView.getTraceReportCover(documentType, node.data.text);
+    const TOC = getTableOfContents(body, 2);
+    const intro = TraceReportView.getTraceReportIntro(documentType, node);
+    return `${cover}${TOC}${intro}${body}`;
   }
   private static getHtmlForNode(documentType:string, node: DocumentNode):string {
     let html:string = "";
@@ -185,10 +192,8 @@ export class TraceReportView {
   }
 
   private static getHtmlForNodeType(documentType:string, node:DocumentNode):string {
-    const pageBreak = `<hr class="hr-text pageBreak" data-content="Page Break">`;
-    if(node.data.category === schema.documentCategory) {
-      return `<h1>WIP:Front Page</h1>${pageBreak}<h1>WIP:TOC</h1>${pageBreak}`;
-    } else if(schema.isFuncReqCategory(node.data.category)) {
+    const pageBreak = getPageBreak();
+    if(schema.isFuncReqCategory(node.data.category)) {
       return TraceReportView.getTraceReportItem(documentType, node);
     } else if(schema.isNonFuncReqCategory(node.data.category)) {
       return TraceReportView.getTraceReportItem(documentType, node);
@@ -198,6 +203,12 @@ export class TraceReportView {
       return TraceReportView.getTraceReportItem(documentType, node);
     }
     return "";
+  }
+  private static getTraceReportCover(documentType:string, documentName:string) {
+    return `<h1>Trace Report: ${documentType} - ${documentName}</h1>`;
+  }
+  private static getTraceReportIntro(documentType:string, node:DocumentNode) {
+    return getTraceReportIntroFromTemplate(documentType, node.data.text);
   }
   private static getTraceReportItem(documentType:string, node:DocumentNode) {
     const c1 = getIdLabel(node);

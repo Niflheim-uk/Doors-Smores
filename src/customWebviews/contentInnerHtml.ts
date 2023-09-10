@@ -5,7 +5,6 @@ import { Uri } from 'vscode';
 import * as schema from '../model/schema';
 import { DoorsSmores } from '../doorsSmores';
 import { DocumentView } from './documentView/documentView';
-import {getDecomposedFromTraceType, getDecomposesToTraceType, getDetailedByTraceType, getDetailsTraceType, getSatisfiedByTraceType, getSatisfiesTraceType, getTraceCategoryLabels, getVerifiedByTraceType, getVerifiesTraceType} from '../model/traceSorting';
 import { getTraceReportDownstreamContent, getTraceReportTestsContent, getTraceReportUpstreamContent } from './traceReportView/traceReportContent';
 
 export function getIdLabel(node:DocumentNode) {
@@ -94,44 +93,3 @@ export function getTableRow(c1:string, c2:string) {
   return `<tr><td class="tableSmall">${c1}</td><td>${c2}</td></tr>`;
 }
 
-function getTraceRow(label:string, traceIds:number[]) {
-  if(traceIds.length === 0) {
-    return "";
-  }
-  let c2="";
-  for(let i=0;i<traceIds.length;i++) {
-    const traceNode = DocumentNode.createFromId(traceIds[i]);
-    if(traceNode) {
-      c2 = c2.concat(getTableTextHtmlFromMd(`${traceNode.data.id}: ${traceNode.data.text.split('\n')[0]}`));
-    }
-  }
-  return getTableRow(label,c2);
-}
-function getTraceRows(node:DocumentNode, tracingRequired:boolean):string {
-  const originCategory = node.data.category;
-  const originCategoryLabel = schema.getLabelPrefix(originCategory);
-  const traces = node.data.traces.traceIds;
-  const traceCategoryLabels = getTraceCategoryLabels(traces);
-  let traceRows="";
-  if(schema.isTestCategory(node.data.category)) {
-    const verifies = getVerifiesTraceType(originCategoryLabel, traces, traceCategoryLabels);
-    traceRows = traceRows.concat(getTraceRow("Verifies", verifies));
-  } else {
-
-    const decomposedFrom = getDecomposedFromTraceType(originCategoryLabel, traces, traceCategoryLabels);
-    const satisfies = getSatisfiesTraceType(originCategoryLabel, traces, traceCategoryLabels);
-    const details = getDetailsTraceType(originCategoryLabel, traces, traceCategoryLabels);
-    const decomposesTo = getDecomposesToTraceType(originCategoryLabel, traces, traceCategoryLabels);
-    const satisfiedBy = getSatisfiedByTraceType(originCategoryLabel, traces, traceCategoryLabels);
-    const detailedBy = getDetailedByTraceType(originCategoryLabel, traces, traceCategoryLabels);
-    const verifiedBy = getVerifiedByTraceType(originCategoryLabel, traces, traceCategoryLabels);
-    traceRows = traceRows.concat(getTraceRow("Decomposed<br/>from", decomposedFrom));
-    traceRows = traceRows.concat(getTraceRow("Satisfies", satisfies));
-    traceRows = traceRows.concat(getTraceRow("Details", details));
-    traceRows = traceRows.concat(getTraceRow("Decomposes<br/>to", decomposesTo));
-    traceRows = traceRows.concat(getTraceRow("Satisfied<br/>by", satisfiedBy));
-    traceRows = traceRows.concat(getTraceRow("Detailed<br/>by", detailedBy));
-    traceRows = traceRows.concat(getTraceRow("Verified<br/>by", verifiedBy));  
-  }
-  return traceRows;
-}

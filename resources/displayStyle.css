@@ -67,6 +67,12 @@ li, ol, ul {
   margin-left: 1.5cm;
   width: 14.5cm;
 }
+.imageHolder {
+  margin-left: 1.5cm;
+  width: 14.5cm;
+  text-align: center;
+  position: relative;
+}
 h1 {
   font-size: 12pt;
 }
