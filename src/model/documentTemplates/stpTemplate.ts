@@ -8,9 +8,5 @@ import {
 
 export async function createNodesForSTPFull(docNode:DocumentNode) {
   await documentStart(docNode);
-}
-
-export async function createNodesForSTPMini(docNode:DocumentNode) {
-  await documentStart(docNode);
   await testProtocolStart(docNode);
 }

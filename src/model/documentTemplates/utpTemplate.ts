@@ -8,9 +8,6 @@ import {
 
 export async function createNodesForUTPFull(docNode:DocumentNode) {
   await documentStart(docNode);
-}
-
-export async function createNodesForUTPMini(docNode:DocumentNode) {
-  await documentStart(docNode);
   await testProtocolStart(docNode);
 }
+

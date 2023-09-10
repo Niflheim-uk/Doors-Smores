@@ -146,13 +146,18 @@ export function newImage(source:any) {
     return node;
   }
 }
-export function newMermaidImage(source:any) {
+export function newMermaidImage(source:any, content?:string) {
   const [parent, insertPos] = getInsertionNodeAndPosition(source);
   if(parent) {
-    const mermaid = `sequenceDiagram
+    var mermaid;
+    if(content === undefined) {
+      mermaid = `sequenceDiagram
     Alice->>John: Hello John, how are you?
     John-->>Alice: Great!
     Alice-)John: See you later!`;
+    } else {
+      mermaid = content;
+    }
     return DocumentNode.createNewDocumentNode(parent, schema.mermaidCategory, mermaid, insertPos);
   }
 }

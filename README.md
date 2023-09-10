@@ -51,15 +51,6 @@ Requirement analysis software doesn't have to be that complicated... right?
 
 # Planned release schedule
 
-### 0.6 
-![y](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/complete_icon.png?raw=true) Document cover page \
-![y](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/complete_icon.png?raw=true) Document table of contents \
-![y](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/complete_icon.png?raw=true) Revision history \
-![n](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/incomplete_icon.png?raw=true) All templates fleshed out \
-![y](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/complete_icon.png?raw=true) Auto sync with remote repository to keep a team in sync \
-![y](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/complete_icon.png?raw=true) Release tagging \
-![y](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/complete_icon.png?raw=true) Automatic document revision numbering
-
 ### 0.7
 ![n](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/incomplete_icon.png?raw=true) User defined header & footer to allow document branding. \
 ![n](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/incomplete_icon.png?raw=true) User defined document styles

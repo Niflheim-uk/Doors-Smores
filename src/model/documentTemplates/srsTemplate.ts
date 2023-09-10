@@ -3,7 +3,6 @@ import { DocumentNode } from "../documentNode";
 import { newComment, newHeading } from "../newContext";
 
 import { 
-  createHistoryTable,
   createReferenceTable,
   createGlossaryTable,
   createIntroduction,
@@ -12,7 +11,6 @@ import {
  } from "./documentParts";
 
 export async function createNodesForSRSFull(docNode:DocumentNode) {
-  await createHistoryTable(docNode);
   const node_1 = await createIntroduction(docNode);
   await createGlossaryTable(node_1!);
   await createReferenceTable(node_1!);

@@ -91,7 +91,7 @@ export class ProjectTreeItem extends vscode.TreeItem {
       if(this.isActive) {
         DoorsSmores.closeActiveProject();
       } else {
-        DoorsSmores.openProjectPath(this.info.path);
+        DoorsSmores.openProjectPath(this.info.path, true);
       }
     } else {
       const node = new SmoresDocument(this.info.path);

@@ -7,9 +7,5 @@ import {
 
 export async function createNodesForITPFull(docNode:DocumentNode) {
   await documentStart(docNode);
-}
-
-export async function createNodesForITPMini(docNode:DocumentNode) {
-  await documentStart(docNode);
   await testProtocolStart(docNode);
 }

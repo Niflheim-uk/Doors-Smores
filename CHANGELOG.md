@@ -2,7 +2,7 @@
 
 All notable changes to the "doors-smores" extension will be documented in this file.
 
-### 0.5 patches (0.6 Coming Soon)
+## 0.6
 - Releasing documents
   - Documents may be issued as major or minor releases, with a summary of changes. 
   - Revision numbers auto increment accordingly.
@@ -19,6 +19,8 @@ All notable changes to the "doors-smores" extension will be documented in this f
   - Commits are auto-pushed to the remote.
   - A status bar icon shows when the remote synchronization takes place.
   - The status bar item turns red while communication is lost with the remote.
+- Fixed up document templates
+- Fixed bug where image src was not enclosed in quotes
 
 ## 0.5
 - Converted multi-line fields to use external files instead of JSON to allow easier diff/merge between versions.

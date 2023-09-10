@@ -126,7 +126,7 @@ export class DoorsSmores {
       });
       if(projectName) {
         const projectUri = vscode.Uri.joinPath(directory[0], `${projectName}`, `${projectName}.${SmoresFile.projectExtension}`);
-        DoorsSmores.openProjectPath(projectUri.fsPath);
+        DoorsSmores.openProjectPath(projectUri.fsPath, false);
         await VersionController.startRepoUse();
       }
     }
@@ -147,10 +147,10 @@ export class DoorsSmores {
       defaultUri
     });
     if(uri) {
-      DoorsSmores.openProjectPath(uri[0].fsPath);
+      DoorsSmores.openProjectPath(uri[0].fsPath, true);
     }
   }
-  public static openProjectPath(path:string) {
+  public static openProjectPath(path:string, initRepo:boolean) {
     DoorsSmores.app.activeProject = new SmoresProject(path);
     const remoteRepositoryPath = DoorsSmores.app.activeProject.data.repoRemote;
     const settings = vscode.workspace.getConfiguration('repository');
@@ -160,7 +160,9 @@ export class DoorsSmores {
       settings.update("remoteRepositoryPath", "", true);
     }
     vscode.commands.executeCommand('setContext', 'doors-smores.projectOpen', true);
-    VersionController.initialise();
+    if(initRepo) {
+      VersionController.initialise();
+    }
     DoorsSmores.updateRecentProjects();
     const projectDocuments = DoorsSmores.getDocuments();
     if(projectDocuments.length > 0) {

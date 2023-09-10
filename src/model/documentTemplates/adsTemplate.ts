@@ -3,18 +3,14 @@ import { DocumentNode } from "../documentNode";
 import { newComment, newHeading } from "../newContext";
 
 import { 
+  createOverallDescription,
   documentStart
  } from "./documentParts";
 
 export async function createNodesForADSFull(docNode:DocumentNode) {
   await documentStart(docNode);
+  await createOverallDescription(docNode);
+  const hNode2 = await newHeading(docNode, "Architechture Design");
+  newComment(hNode2, "If you plan on breaking requirements down into categories, explain that. Then get down to it.");
 }
 
-export async function createNodesForADSMini(docNode:DocumentNode) {
-  await documentStart(docNode);
-
-  const ODNode = await newHeading(docNode, "Overall description");
-  newComment(ODNode, "Give an overview of **WRITE MORE WORDS**");
-  const URNode = await newHeading(docNode, "User Requirements");
-  newComment(URNode, "If you plan on breaking requirements down into categories, explain that. Then get down to it.");
-}

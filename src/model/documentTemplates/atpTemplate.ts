@@ -7,9 +7,5 @@ import {
 
 export async function createNodesForATPFull(docNode:DocumentNode) {
   await documentStart(docNode);
-}
-
-export async function createNodesForATPMini(docNode:DocumentNode) {
-  await documentStart(docNode);
   await testProtocolStart(docNode);
 }

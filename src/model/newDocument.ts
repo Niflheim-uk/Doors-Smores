@@ -1,14 +1,14 @@
 import * as vscode from 'vscode';
 import { DocumentNode } from './documentNode';
 import * as schema from './schema';
-import { createNodesForURSFull, createNodesForURSMini } from './documentTemplates/ursTemplate';
+import { createNodesForURSFull} from './documentTemplates/ursTemplate';
 import { createNodesForSRSFull, createNodesForSRSMini } from './documentTemplates/srsTemplate';
-import { createNodesForADSFull, createNodesForADSMini } from './documentTemplates/adsTemplate';
-import { createNodesForDDSFull, createNodesForDDSMini } from './documentTemplates/ddsTemplate';
-import { createNodesForATPFull, createNodesForATPMini } from './documentTemplates/atpTemplate';
-import { createNodesForSTPFull, createNodesForSTPMini } from './documentTemplates/stpTemplate';
-import { createNodesForITPFull, createNodesForITPMini } from './documentTemplates/itpTemplate';
-import { createNodesForUTPFull, createNodesForUTPMini } from './documentTemplates/utpTemplate';
+import { createNodesForADSFull} from './documentTemplates/adsTemplate';
+import { createNodesForDDSFull} from './documentTemplates/ddsTemplate';
+import { createNodesForATPFull} from './documentTemplates/atpTemplate';
+import { createNodesForSTPFull} from './documentTemplates/stpTemplate';
+import { createNodesForITPFull} from './documentTemplates/itpTemplate';
+import { createNodesForUTPFull} from './documentTemplates/utpTemplate';
 import { VersionController } from '../versionControl/versionController';
 import { DoorsSmores } from '../doorsSmores';
 import { SmoresDocument } from './smoresDocument';
@@ -17,22 +17,15 @@ import { SmoresDocument } from './smoresDocument';
 async function quickPickDocumentType():Promise<string|undefined> {
   const documentTypes:string[] = [
     `Empty document`,
-    `${schema.ursDocType} (Mini)`,
-    `${schema.ursDocType} (Full)`,
+    `${schema.ursDocType}`,
     `${schema.srsDocType} (Mini)`,
     `${schema.srsDocType} (Full)`,
-    `${schema.adsDocType} (Mini)`,
-    `${schema.adsDocType} (Full)`,
-    `${schema.ddsDocType} (Mini)`,
-    `${schema.ddsDocType} (Full)`,
-    `${schema.atpDocType} (Mini)`,
-    `${schema.atpDocType} (Full)`,
-    `${schema.stpDocType} (Mini)`,
-    `${schema.stpDocType} (Full)`,
-    `${schema.itpDocType} (Mini)`,
-    `${schema.itpDocType} (Full)`,
-    `${schema.utpDocType} (Mini)`,
-    `${schema.utpDocType} (Full)`,
+    `${schema.adsDocType}`,
+    `${schema.ddsDocType}`,
+    `${schema.atpDocType}`,
+    `${schema.stpDocType}`,
+    `${schema.itpDocType}`,
+    `${schema.utpDocType}`,
   ];
 
   return await vscode.window.showQuickPick(documentTypes,{
@@ -62,10 +55,7 @@ function createDocument(title:string, docType:string):SmoresDocument|undefined {
 
 function createTemplateNodes(docNode:DocumentNode, docType:string) {
   switch(docType) {
-    case `${schema.ursDocType} (Mini)`:
-      createNodesForURSMini(docNode);
-      break;
-    case `${schema.ursDocType} (Full)`:
+    case `${schema.ursDocType}`:
       createNodesForURSFull(docNode);
       break;
     case `${schema.srsDocType} (Mini)`:
@@ -74,40 +64,22 @@ function createTemplateNodes(docNode:DocumentNode, docType:string) {
     case `${schema.srsDocType} (Full)`:
       createNodesForSRSFull(docNode);
       break;
-    case `${schema.adsDocType} (Mini)`:
-      createNodesForADSMini(docNode);
-      break;
-    case `${schema.adsDocType} (Full)`:
+    case `${schema.adsDocType}`:
       createNodesForADSFull(docNode);
       break;
-    case `${schema.ddsDocType} (Mini)`:
-      createNodesForDDSMini(docNode);
-      break;
-    case `${schema.ddsDocType} (Full)`:
+    case `${schema.ddsDocType}`:
       createNodesForDDSFull(docNode);
       break;
-    case `${schema.atpDocType} (Mini)`:
-      createNodesForATPMini(docNode);
-      break;
-    case `${schema.atpDocType} (Full)`:
+    case `${schema.atpDocType}`:
       createNodesForATPFull(docNode);
       break;
-    case `${schema.stpDocType} (Mini)`:
-      createNodesForSTPMini(docNode);
-      break;
-    case `${schema.stpDocType} (Full)`:
+    case `${schema.stpDocType}`:
       createNodesForSTPFull(docNode);
       break;
-    case `${schema.itpDocType} (Mini)`:
-      createNodesForITPMini(docNode);
-      break;
-    case `${schema.itpDocType} (Full)`:
+    case `${schema.itpDocType}`:
       createNodesForITPFull(docNode);
       break;
-    case `${schema.utpDocType} (Mini)`:
-      createNodesForUTPMini(docNode);
-      break;
-    case `${schema.utpDocType} (Full)`:
+    case `${schema.utpDocType}`:
       createNodesForUTPFull(docNode);
       break;
     default:
