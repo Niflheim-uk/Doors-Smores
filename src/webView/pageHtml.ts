@@ -26,11 +26,11 @@ if(_extension) {
   _scriptJs = fs.readFileSync(scriptPath);
 }
 
-export function getPageHtml(node:SmoresNode, showScripts:boolean, editNode?:SmoresNode):string {
+export function getPageHtml(node:SmoresNode, exporting:boolean, editNode?:SmoresNode):string {
 
-  const bodyHtml = getBodyHtml(node, editNode);
+  const bodyHtml = getBodyHtml(node, exporting, editNode);
   let scripts = "";
-  if(showScripts) {
+  if(exporting===false) {
     scripts = `<script>${_scriptJs}</script>`;
   }
   return `
