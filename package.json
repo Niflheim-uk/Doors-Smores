@@ -257,6 +257,7 @@
   },
   "dependencies": {
     "showdown": "^2.1.0",
+    "simple-git": "^3.19.1",
     "xss": "^1.0.14"
   }
 }

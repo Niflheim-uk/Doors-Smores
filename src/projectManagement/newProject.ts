@@ -40,19 +40,20 @@ function createNewWorkspace(parentPath:string, projName:string) {
   SmoresDataFile.setProjectFilepath(projPath);
   return new SmoresProject(projPath);
 }
-export async function newProjectWorkspace():Promise<SmoresProject|undefined> {
+export async function newProjectWorkspace():Promise<boolean> {
   const projName = await getProjectName();
   if(projName === undefined) {
-    return;
+    return false;
   }
   const projParentPath = await getProjectParent();
   if(projParentPath === undefined) {
-    return;
+    return false;
   }
   if(isNewProjectUnique(projParentPath, projName) === false) {
     vscode.window.showErrorMessage("A folder already exists at that location");
-    return;
+    return false;
   }
   createNewWorkspace(projParentPath, projName);
   vscode.commands.executeCommand('setContext', 'doors-smores.projectOpen', true);
+  return true;
 }
