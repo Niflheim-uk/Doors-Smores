@@ -17,14 +17,14 @@ function getViewDivHtml(node:SmoresNode, innerHtml:string) {
   return outerHtml;
 }
 
-function getHtmlForNodeType(node:SmoresNode, editNode?:SmoresNode):string {
+function getHtmlForNodeType(node:SmoresNode, exporting:boolean, editNode?:SmoresNode):string {
   if(node.data.id === editNode?.data.id) {
     return getEditHtmlForNodeType(node);
   } else {
-    return getViewHtmlForNodeType(node);
+    return getViewHtmlForNodeType(node, exporting);
   }
 }
-function getViewHtmlForNodeType(node:SmoresNode):string {
+function getViewHtmlForNodeType(node:SmoresNode, exporting:boolean):string {
   const pageBreak = `<hr class="hr-text pageBreak" data-content="Page Break">`;
   let mdString:string = "";
   let innerHtml:string = "";
@@ -50,31 +50,31 @@ function getViewHtmlForNodeType(node:SmoresNode):string {
       innerHtml = setWebviewSection(innerHtml, `text-${node.data.id}`);
       return getViewDivHtml(node, innerHtml);
     case "image":
-      innerHtml = getInnerHtmlForImage(node);
+      innerHtml = getInnerHtmlForImage(node, exporting);
       return getViewDivHtml(node, innerHtml);
     default:
       innerHtml =  "<H1>ERROR - Unknown Category</H1>";
       return getViewDivHtml(node, innerHtml);
   }
 }
-function getHtmlForNodeChildren(node:SmoresNode, editNode?:SmoresNode):string {
+function getHtmlForNodeChildren(node:SmoresNode, exporting:boolean, editNode?:SmoresNode):string {
   let html:string = "";
   if(node.data.children && node.data.children.length > 0) {
     const childNodes = node.getChildNodes();
     for (let index = 0; index < childNodes.length; index++) {
       const child = childNodes[index];
-      html = html.concat(getHtmlForNode(child, editNode));
+      html = html.concat(getHtmlForNode(child, exporting, editNode));
     }
   }
   return html;
 }
-function getHtmlForNode(node: SmoresNode, editNode?: SmoresNode):string {
+function getHtmlForNode(node: SmoresNode, exporting:boolean, editNode?: SmoresNode):string {
   let html:string = "";
-  html = html.concat(getHtmlForNodeType(node, editNode));
-  html = html.concat(getHtmlForNodeChildren(node, editNode));
+  html = html.concat(getHtmlForNodeType(node, exporting, editNode));
+  html = html.concat(getHtmlForNodeChildren(node, exporting, editNode));
   return html;
 }
 
-export function getBodyHtml(node: SmoresNode, editNode?: SmoresNode):string {
-  return getHtmlForNode(node, editNode);
+export function getBodyHtml(node: SmoresNode, exporting:boolean, editNode?: SmoresNode):string {
+  return getHtmlForNode(node, exporting, editNode);
 }
