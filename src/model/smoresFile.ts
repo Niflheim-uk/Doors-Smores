@@ -5,8 +5,8 @@ import { DoorsSmores } from "../doorsSmores";
 export class SmoresFile {
   static dataSubDirName = '.smoresData';
   static imagesSubDirName = 'images';
-  static nodeExtension = '.smores';
-  static projectExtension = '.smores-project';
+  static nodeExtension = 'smores';
+  static projectExtension = 'smores-project';
   public data:any;
   constructor(readonly filepath:string) {
     this.read();

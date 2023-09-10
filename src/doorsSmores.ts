@@ -78,7 +78,7 @@ export class DoorsSmores {
     return join(dataDirectory, SmoresFile.imagesSubDirName);
   }
   public static getNodeFilepath(id:number):string {
-    const nodeFilename = `${id}${SmoresFile.nodeExtension}`;
+    const nodeFilename = `${id}.${SmoresFile.nodeExtension}`;
     const dataDirectory = DoorsSmores.getDataDirectory();
     return join(dataDirectory, nodeFilename);
   }
@@ -107,7 +107,7 @@ export class DoorsSmores {
         title:"Enter project name",
       });
       if(projectName) {
-        const projectUri = vscode.Uri.joinPath(directory[0], `${projectName}${SmoresFile.projectExtension}`);
+        const projectUri = vscode.Uri.joinPath(directory[0], `${projectName}.${SmoresFile.projectExtension}`);
         DoorsSmores.openProjectPath(projectUri.fsPath);
         if(await VersionController.repoExists()) {
           VersionController.queryExistingRepoUse();
@@ -167,7 +167,7 @@ export class DoorsSmores {
   public static updateRecentProjects() {
     if(DoorsSmores.app.activeProject) {
       const activeProjectInfo:ProjectInfo = {
-        name:basename(DoorsSmores.app.activeProject.filepath, SmoresFile.projectExtension),
+        name:basename(DoorsSmores.app.activeProject.filepath, `.${SmoresFile.projectExtension}`),
         path:DoorsSmores.app.activeProject.filepath
       };
       var recentProjects = DoorsSmores.getRecentProjects();
