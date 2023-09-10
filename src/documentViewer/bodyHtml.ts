@@ -1,6 +1,7 @@
 import { SmoresNode } from '../model/smoresNode';
 import { getInnerHtmlForImage } from './imageInnerHtml';
 import { getInnerHtmlForRequirement } from './requirementInnerHtml';
+import { getInnerHtmlForTest } from './testInnerHtml';
 import { getInnerHtmlForMermaid } from './mermaidImageHtml';
 import * as heading from './headingInnerHtml';
 import { getMarkdownParagraphs } from '../utils/utils';
@@ -36,7 +37,7 @@ function getViewHtmlForNodeType(node:SmoresNode, exporting:boolean):string {
     case "document":
       return innerHtml;
     case "heading":
-      [innerHtml, insertPageBreak] =  heading.getHeadingHtml(node);
+      [innerHtml, insertPageBreak] = heading.getHeadingHtml(node);
       if(insertPageBreak) {
         return pageBreak.concat(getViewDivHtml(node, exporting, innerHtml));
       } else {
@@ -47,13 +48,22 @@ function getViewHtmlForNodeType(node:SmoresNode, exporting:boolean):string {
       innerHtml = markdown.getIndentedHtmlFromMd(comment);
       return getViewDivHtml(node, exporting, innerHtml);
     case "userRequirement":
-      innerHtml =  getInnerHtmlForRequirement(node);
+      innerHtml = getInnerHtmlForRequirement(node);
       return getViewDivHtml(node, exporting, innerHtml);
     case "functionalRequirement":
-      innerHtml =  getInnerHtmlForRequirement(node);
+      innerHtml = getInnerHtmlForRequirement(node);
       return getViewDivHtml(node, exporting, innerHtml);
     case "nonFunctionalRequirement":
-      innerHtml =  getInnerHtmlForRequirement(node);
+      innerHtml = getInnerHtmlForRequirement(node);
+      return getViewDivHtml(node, exporting, innerHtml);
+    case "nonSoftwareSystemTest":
+      innerHtml = getInnerHtmlForTest(node);
+      return getViewDivHtml(node, exporting, innerHtml);
+    case "nonSoftwareIntegrationTest":
+      innerHtml = getInnerHtmlForTest(node);
+      return getViewDivHtml(node, exporting, innerHtml);
+    case "nonSoftwareUnitTest":
+      innerHtml = getInnerHtmlForTest(node);
       return getViewDivHtml(node, exporting, innerHtml);
     case "image":
       innerHtml = getInnerHtmlForImage(node, exporting);
@@ -62,7 +72,7 @@ function getViewHtmlForNodeType(node:SmoresNode, exporting:boolean):string {
       innerHtml = getInnerHtmlForMermaid(node);
       return getViewDivHtml(node, exporting, innerHtml);
     default:
-      innerHtml =  "<H1>ERROR - Unknown Category</H1>";
+      innerHtml = "<H1>ERROR - Unknown Category</H1>";
       return getViewDivHtml(node, exporting, innerHtml);
   }
 }

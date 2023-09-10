@@ -4,6 +4,9 @@ interface DocumentData {
 interface RequirementData {
   translationRationale: string;
 }
+interface TestData {
+  expectedResults: string;
+}
 export interface NodeDataModel {
   id: number;
   parent: number;
@@ -12,5 +15,6 @@ export interface NodeDataModel {
   children?: number[];
   documentData?:DocumentData;
   requirementData?:RequirementData;
+  testData?:TestData;
   childData?:NodeDataModel[];
 }

@@ -134,7 +134,6 @@ export class DocumentViewer {
 
     this._viewPanel.onDidDispose((e) => {
       console.log("closed panel");
-      vscode.commands.executeCommand('doors-smores.Stop-Viewing');
       this._viewPanel = undefined;
       utils.clearWebview();
     });
