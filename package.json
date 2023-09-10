@@ -2,8 +2,9 @@
   "name": "doors-smores",
   "publisher": "Niflheim",
   "displayName": "Doors Smores",
+  "icon": "resources/smores.png",
   "description": "Requirements simplified",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "engines": {
     "vscode": "^1.79.0"
   },
