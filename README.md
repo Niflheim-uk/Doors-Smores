@@ -1,6 +1,6 @@
 # doors-smores README
 
-Dont use me. I dont work
+Dont use me. I dont work (but I might soon)
 
 ## Release Notes
 
