@@ -27,7 +27,7 @@
   line-height: 1.5em;
 }
 
-h1 {
+.pageBreak {
   page-break-before:always;
   break-before: page;
 }

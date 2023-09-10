@@ -9,7 +9,6 @@ import { DocumentNode } from "../../model/documentNode";
 import { DoorsSmores } from "../../doorsSmores";
 import { SmoresFile } from "../../model/smoresFile";
 import { VersionController } from "../../versionControl/versionController";
-import { exec } from "child_process";
 import { writeDocumentPdf } from "../writeDocumentPdf";
 import { SmoresDocument } from "../../model/smoresDocument";
 
