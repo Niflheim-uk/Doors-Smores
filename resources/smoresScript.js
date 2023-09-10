@@ -34,39 +34,52 @@ function initialize() {
   // }
   addUpstreamArrow();
   addDownstreamArrow();
+  addTestArrow();
 }
 const arrowGap = 10;
 const arrowMargin = 50;
 function addUpstreamArrow() {
   const gridDiv = document.getElementsByClassName('tracingGrid')[0];
-  const tracingOuter = document.getElementsByClassName('tracingOuter')[0];
-  if(gridDiv && tracingOuter) {
+  if(gridDiv) {
     const upstreamRect = gridDiv.children[1].children[0].getBoundingClientRect();
     const targetRect = gridDiv.children[2].children[0].getBoundingClientRect();
     const divLeft = targetRect.right - arrowMargin;
     const divTop = arrowMargin;
     const width = (upstreamRect.left - arrowGap) - divLeft;
     const height = targetRect.top - divTop;
-    const arrow = getArrowSVG(width, 0, 0, height, '#8BE9FD');
-    var arrowDiv = document.createElement('div');
-    arrowDiv.className = 'tracingArrow';
-    arrowDiv.innerHTML = arrow;
-    arrowDiv.style.left=`${divLeft}px`;
-    arrowDiv.style.top=`${divTop}px`;
-    tracingOuter.appendChild(arrowDiv);
+    const arrow = getArrowSVG(width, 0, 0, height, '#518be2');
+    addArrow(arrow, divLeft, divTop);
   }
 }
 function addDownstreamArrow() {
   const gridDiv = document.getElementsByClassName('tracingGrid')[0];
-  const tracingOuter = document.getElementsByClassName('tracingOuter')[0];
-  if(gridDiv && tracingOuter) {
+  if(gridDiv) {
     const targetRect = gridDiv.children[2].children[0].getBoundingClientRect();
     const downstreamRect = gridDiv.children[5].children[0].getBoundingClientRect();
     const divLeft = targetRect.right - arrowMargin;
     const divTop = targetRect.bottom + arrowGap;
     const width = (downstreamRect.left - arrowGap) - divLeft;
     const height = (downstreamRect.top + arrowMargin) - divTop;
-    const arrow = getArrowSVG(0, 0,  width, height,'#e18012');
+    const arrow = getArrowSVG(0, 0,  width, height,'#e5e54e');
+    addArrow(arrow, divLeft, divTop);
+  }
+}
+function addTestArrow() {
+  const gridDiv = document.getElementsByClassName('tracingGrid')[0];
+  if(gridDiv) {
+    const targetRect = gridDiv.children[2].children[0].getBoundingClientRect();
+    const testRect = gridDiv.children[3].children[0].getBoundingClientRect();
+    const divLeft = targetRect.right + arrowGap;
+    const divTop = targetRect.top + arrowMargin;
+    const width = (testRect.left - divLeft) - (2 * arrowGap);
+    const height = 1;
+    const arrow = getArrowSVG(0, 0,  width, height,'#55ba7f');
+    addArrow(arrow, divLeft, divTop);
+  }
+}
+function addArrow(arrow, divLeft, divTop) {
+  const tracingOuter = document.getElementsByClassName('tracingOuter')[0];
+  if(tracingOuter) {
     var arrowDiv = document.createElement('div');
     arrowDiv.className = 'tracingArrow';
     arrowDiv.style['left']=`${divLeft}px`;

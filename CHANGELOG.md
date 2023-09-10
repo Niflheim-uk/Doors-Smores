@@ -2,6 +2,9 @@
 
 All notable changes to the "doors-smores" extension will be documented in this file.
 
+## 0.2.2
+- 3 of 3 tracing lines/arrows
+
 ## 0.2.1
 - Filtered the type of tracing allowed by document type
 - Filtered the availability of the trace command by node type
