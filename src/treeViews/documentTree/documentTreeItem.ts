@@ -27,7 +27,7 @@ export class DocumentTreeItem extends vscode.TreeItem {
     var children:DocumentTreeItem[] = [];
     const childNodes = this.node.getChildren();
     for(let i=0; i< childNodes.length; i++) {
-      const item = new DocumentTreeItem(childNodes[i].filepath);
+      const item = new DocumentTreeItem(childNodes[i].getFilepath());
       children.push(item);
     }
     return children;
@@ -37,7 +37,10 @@ export class DocumentTreeItem extends vscode.TreeItem {
     VersionController.commitChanges(`Node ${this.node.data.id} and child nodes deleted`);
   }
   public static isDocumentTreeItem(item:DocumentTreeItem) {
-    return DocumentNode.isDocumentNode(item.node);
+    if(item.node) {
+      return DocumentNode.isDocumentNode(item.node);
+    } 
+    return false;
   }
 
   private setContextString() {

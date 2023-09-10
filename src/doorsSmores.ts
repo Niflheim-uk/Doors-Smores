@@ -69,8 +69,7 @@ export class DoorsSmores {
   }
   public static getProjectDirectory():string {
     if(DoorsSmores.app.activeProject) {
-      const projectFilepath = DoorsSmores.app.activeProject.getFilepath();
-      return dirname(projectFilepath);
+      return DoorsSmores.app.activeProject.getDirPath();
     } else {
       return "";
     }
@@ -79,14 +78,14 @@ export class DoorsSmores {
     const projectDirectory = DoorsSmores.getProjectDirectory();
     return join(projectDirectory, SmoresFile.dataSubDirName);
   }
-  public static getImagesDirectory():string {
+  public static getNodeDirectory(id:number):string {
     const dataDirectory = DoorsSmores.getDataDirectory();
-    return join(dataDirectory, SmoresFile.imagesSubDirName);
+    return join(dataDirectory, `${id}`);
   }
   public static getNodeFilepath(id:number):string {
     const nodeFilename = `${id}.${SmoresFile.nodeExtension}`;
-    const dataDirectory = DoorsSmores.getDataDirectory();
-    return join(dataDirectory, nodeFilename);
+    const nodeDirectory = DoorsSmores.getNodeDirectory(id);
+    return join(nodeDirectory, nodeFilename);
   }
 
   public static getActiveProject() {
@@ -113,7 +112,7 @@ export class DoorsSmores {
         title:"Enter project name",
       });
       if(projectName) {
-        const projectUri = vscode.Uri.joinPath(directory[0], `${projectName}.${SmoresFile.projectExtension}`);
+        const projectUri = vscode.Uri.joinPath(directory[0], `${projectName}`, `${projectName}.${SmoresFile.projectExtension}`);
         DoorsSmores.openProjectPath(projectUri.fsPath);
         if(await VersionController.repoExists()) {
           VersionController.queryExistingRepoUse();
@@ -173,8 +172,8 @@ export class DoorsSmores {
   public static updateRecentProjects() {
     if(DoorsSmores.app.activeProject) {
       const activeProjectInfo:ProjectInfo = {
-        name:basename(DoorsSmores.app.activeProject.filepath, `.${SmoresFile.projectExtension}`),
-        path:DoorsSmores.app.activeProject.filepath
+        name:DoorsSmores.app.activeProject.getFilenameNoExt(),
+        path:DoorsSmores.app.activeProject.getFilepath()
       };
       var recentProjects = DoorsSmores.getRecentProjects();
       recentProjects = DoorsSmores.stripProjectInfoFromArray(activeProjectInfo, recentProjects);

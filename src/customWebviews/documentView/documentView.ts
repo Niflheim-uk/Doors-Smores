@@ -7,6 +7,8 @@ import { getBodyHtml } from "./bodyHtml";
 import { getMermaidBlock, getScriptBlock, getStyleBlock } from "./pageHtml";
 import { DocumentNode } from "../../model/documentNode";
 import { DoorsSmores } from "../../doorsSmores";
+import { SmoresFile } from "../../model/smoresFile";
+import { VersionController } from "../../versionControl/versionController";
 
 export class DocumentView {
   public static currentPanel: DocumentView | undefined;
@@ -20,7 +22,7 @@ export class DocumentView {
     this._viewNode = node;
     // Assign event handlers
     this._panel.webview.onDidReceiveMessage((message) => {
-      this._handleMessageFromPanel(message);
+      this.handleMessageFromPanel(message);
     });
     this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
   }
@@ -83,9 +85,9 @@ export class DocumentView {
       const nodeId:number = Number(context.nodeId);
       const node = DocumentNode.createFromId(nodeId);
       if(node.data.category === schema.headingCategory) {
-        DocumentView.currentPanel._editHeadingText(node);
+        DocumentView.currentPanel.editHeadingText(node);
       } else if (node.data.category === schema.imageCategory) {
-        DocumentView.currentPanel._editImageSource(node);
+        DocumentView.currentPanel.editImageSource(node);
       } else {
         DocumentView.currentPanel._editNode = node;
         DocumentView.refresh();
@@ -115,8 +117,7 @@ export class DocumentView {
     fs.writeFileSync(filePath,html);
   }
   private static createPanel(viewId:string, title:string) {
-    const imagesUri = vscode.Uri.file(DoorsSmores.getImagesDirectory());    
-    const nodeUri = vscode.Uri.file(DoorsSmores.getDataDirectory());    
+    const projUri = vscode.Uri.file(DoorsSmores.getProjectDirectory());    
     const extensionUri = vscode.Uri.file(DoorsSmores.getExtensionPath());
     const panel = vscode.window.createWebviewPanel(
       viewId, // Identifies the type of the webview. Used internally
@@ -126,14 +127,13 @@ export class DocumentView {
         enableScripts: true,
         localResourceRoots:[
           vscode.Uri.joinPath(extensionUri, 'resources'),
-          nodeUri,
-          imagesUri
+          projUri,
         ]
       }  
     );
     return panel;
   }
-  private _handleMessageFromPanel(message:any) {
+  private handleMessageFromPanel(message:any) {
     switch (message.command) {
       case 'edit':
         DocumentView.editNode(message.context);
@@ -165,32 +165,39 @@ export class DocumentView {
       default: return "smoresNodeView";
     }
   }
-  private async _editHeadingText(node: DocumentNode) {
+  private async editHeadingText(node: DocumentNode) {
     const currentValue = node.data.text.split("\n")[0];
     const newValue = await vscode.window.showInputBox({ value: `${currentValue}` });
     if(newValue) {
       node.data.text = newValue;
       node.write();
+      VersionController.commitChanges(`Updated heading ${node.data.id}\n`);  
       DoorsSmores.refreshViews();
     }
   }
-  private async _editImageSource(node: DocumentNode) {
-    const imagesPath = DoorsSmores.getImagesDirectory();
-    if(imagesPath === undefined) {
-      return;
-    }
-    const imagesUri = vscode.Uri.file(imagesPath);    
+  private async editImageSource(node: DocumentNode) {
+    const searchRoot = DoorsSmores.getProjectDirectory();
+    const searchRootUri = vscode.Uri.file(searchRoot);    
     const uri = await vscode.window.showOpenDialog({
       canSelectMany:false,
       /* eslint-disable  @typescript-eslint/naming-convention */
       filters:{'Image source':['jpg','jpeg','png','gif','tif']},
       openLabel:"Select New Image Source",
       canSelectFolders:false,
-      defaultUri:imagesUri
+      defaultUri:searchRootUri
     });
     if(uri) {
-      node.data.text = path.relative(imagesUri.path, uri[0].path);
+      const ext = path.extname(uri[0].fsPath);
+      const previousImage = node.data.text;
+      const dest = path.join(node.getDirPath(), `${SmoresFile.imageFilename}${ext}`);
+      vscode.workspace.fs.copy(uri[0], vscode.Uri.file(dest), {overwrite:true});
+      node.data.text = `${SmoresFile.imageFilename}${ext}`;
       node.write();
+      if(node.data.text !== previousImage) {
+        const prevUri = vscode.Uri.file(path.join(node.getDirPath(), previousImage));
+        vscode.workspace.fs.delete(prevUri);
+      }
+      VersionController.commitChanges(`Updated image source on ${node.data.id}\n`);  
       DoorsSmores.refreshViews();
     }  
   }
@@ -218,7 +225,7 @@ export class DocumentView {
         ${styleBlock}
         <title>${viewNode.data.text}</title>
       </head>
-      <body>${bodyHtml}${mermaidBlock}${scriptBlock}</body>    
+      <body data-vscode-context='{"preventDefaultContextMenuItems": true}'>${bodyHtml}${mermaidBlock}${scriptBlock}</body>    
     </html>`;  
   }
 }

@@ -2,6 +2,10 @@ import * as vscode from 'vscode';
 import * as schema from '../model/schema';
 import { DocumentTreeItem } from "../treeViews/documentTree/documentTreeItem";
 import { DocumentNode } from './documentNode';
+import { copyFileSync } from 'fs';
+import { DoorsSmores } from '../doorsSmores';
+import { SmoresFile } from './smoresFile';
+import { extname, join } from 'path';
 
 function getNodeFromContext(context:any):DocumentNode|undefined {
   if(context.nodeId === undefined) {
@@ -133,7 +137,13 @@ export function newTest(source:any) {
 export function newImage(source:any) {
   const [parent, insertPos] = getInsertionNodeAndPosition(source);
   if(parent) {
-    return DocumentNode.createNewDocumentNode(parent, schema.imageCategory, "../defaultImage.jpg", insertPos);
+    const imageExt = extname(SmoresFile.defaultImage);
+    const imageName = `${SmoresFile.imageFilename}${imageExt}`;
+    const node = DocumentNode.createNewDocumentNode(parent, schema.imageCategory, imageName, insertPos);
+    const src = join(DoorsSmores.getDataDirectory(), SmoresFile.defaultImage);
+    const dest = join(DoorsSmores.getNodeDirectory(node.data.id), imageName);
+    copyFileSync(src,dest);
+    return node;
   }
 }
 export function newMermaidImage(source:any) {

@@ -39,8 +39,8 @@ export function getIdLabel(node:DocumentNode) {
 }
 
 export function getInnerHtmlForImage(node:DocumentNode, exporting:boolean) {
-  const imagesPath = DoorsSmores.getImagesDirectory();
-  const imageFilePath = join(imagesPath, `${node.data.text}`);
+  const nodePath = DoorsSmores.getNodeDirectory(node.data.id);
+  const imageFilePath = join(nodePath, `${node.data.text}`);
   let imageFileUri = Uri.file(imageFilePath);
   if(exporting===false) {
     imageFileUri = DocumentView.getWebviewUri(imageFileUri);

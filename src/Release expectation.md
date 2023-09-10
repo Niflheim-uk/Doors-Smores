@@ -7,3 +7,4 @@
 - [ ] Tracing reports
 - [ ] Options to include tracing information in primary documents
 - [ ] Some instructions
+- [x] Convert multi-line fields to external file references (easier for diff/merge)

@@ -31,7 +31,7 @@ const defaultData:DocumentNodeData = {
   id: -1,
   parent: -1,
   category: "",
-  text: "",
+  text: "TBD",
   traces: {traceIds:[],suspectIds:[]},
   children: []
 };
@@ -52,6 +52,7 @@ export class DocumentNode extends SmoresFile {
     super(filepath);
     if(this.data.id === undefined) {
       this.data = defaultData;
+      this.write();
     }
     this.data = fixData(this.data);
   }

@@ -25,7 +25,7 @@ export class DocumentTreeProvider implements vscode.TreeDataProvider<DocumentTre
 		} else {
       const activeDocument = DoorsSmores.getActiveDocument();
       if(activeDocument) {
-        const documentTreeItem = new DocumentTreeItem(activeDocument.filepath);
+        const documentTreeItem = new DocumentTreeItem(activeDocument.getFilepath());
         return Promise.resolve([documentTreeItem]);
 		  } else {
         return Promise.resolve([]);

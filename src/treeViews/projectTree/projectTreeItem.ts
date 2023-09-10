@@ -10,7 +10,7 @@ export class ProjectTreeItem extends vscode.TreeItem {
     const activeProject:SmoresProject|undefined = DoorsSmores.getActiveProject();
     var state = vscode.TreeItemCollapsibleState.None;
     let active = false;
-    if(info.path === activeProject?.filepath) {
+    if(activeProject && info.path === activeProject.getFilepath()) {
       state = vscode.TreeItemCollapsibleState.Expanded;
       active = true;
     }
@@ -46,14 +46,14 @@ export class ProjectTreeItem extends vscode.TreeItem {
     return true;
   }
   public getChildren() {
-    const project = DoorsSmores.getActiveProject();
+    const activeProject = DoorsSmores.getActiveProject();
     var children:ProjectTreeItem[] = [];
-    if(this.info.path === project?.filepath) {
-      const childDocNodes = project.getDocuments();
+    if(activeProject && this.info.path === activeProject.getFilepath()) {
+      const childDocNodes = activeProject.getDocuments();
       for(let i=0; i< childDocNodes.length; i++) {
         const info:ProjectInfo = {
           name:childDocNodes[i].data.text,
-          path:childDocNodes[i].filepath
+          path:childDocNodes[i].getFilepath()
         };
         const item = new ProjectTreeItem(info, false);
         children.push(item);

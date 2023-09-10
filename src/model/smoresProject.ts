@@ -4,6 +4,7 @@ import { DoorsSmores } from "../doorsSmores";
 import { DocumentNode, DocumentNodeData } from "./documentNode";
 import { documentCategory } from "./schema";
 import { VersionController } from "../versionControl/versionController";
+import { join } from "path";
 
 export interface ProjectDataModel {
   idBase: number;
@@ -86,12 +87,18 @@ export class SmoresProject extends SmoresFile {
   }
 
 
-
-  private setDefaultImage() {
-    // const imageSrcUri = getExtensionBasedUri(['resources', 'defaultImage.jpg']);
-    // const projectDataUri = vscode.Uri.file(SmoresDataFile.getDataFilepath());
-    // const imageDestUri = vscode.Uri.joinPath(projectDataUri, 'defaultImage.jpg');
-    // vscode.workspace.fs.copy(imageSrcUri, imageDestUri, {overwrite:true});
+  private async createDataDir() {
+    const dataPath = join(this.getDirPath(), SmoresFile.dataSubDirName);
+    const dataUri = vscode.Uri.file(dataPath);
+    await vscode.workspace.fs.createDirectory(dataUri);
+  }
+  private async setDefaultImage() {
+    await this.createDataDir();
+    const srcPath = join(DoorsSmores.getExtensionPath(), 'resources', SmoresFile.defaultImage);
+    const srcUri = vscode.Uri.file(srcPath);
+    const destPath = join(this.getDirPath(), SmoresFile.dataSubDirName, SmoresFile.defaultImage);
+    const destUri = vscode.Uri.file(destPath);
+    vscode.workspace.fs.copy(srcUri, destUri, {overwrite:true});
   }
   private setDefaults():boolean {
     let change = false;
