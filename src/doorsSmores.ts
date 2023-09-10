@@ -151,6 +151,7 @@ export class DoorsSmores {
   public static openProjectPath(path:string) {
     DoorsSmores.app.activeProject = new SmoresProject(path);
     vscode.commands.executeCommand('setContext', 'doors-smores.projectOpen', true);
+    VersionController.initialise();
     DoorsSmores.updateRecentProjects();
     const projectDocuments = DoorsSmores.getDocuments();
     if(projectDocuments.length > 0) {

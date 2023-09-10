@@ -55,6 +55,7 @@ export class VersionController {
   }
 
   public static async initialise() {
+    _open = false;
     const projectNode = DoorsSmores.getActiveProject();
     if(projectNode === undefined || !projectNode.data.gitInUse) {
       console.log("Repo not in use");
