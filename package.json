@@ -39,7 +39,7 @@
         {
           "id": "smoresTreeView",
           "title": "Doors Smores",
-          "icon": "$(book)"
+          "icon": "$(flame)"
         }
       ]
     },
@@ -48,7 +48,7 @@
         {
           "id": "smoresTreeView",
           "name": "Smores Document Tree",
-          "icon": "$(book)",
+          "icon": "$(flame)",
           "contextualTitle": "Doors Smores"
         }
       ]
@@ -102,7 +102,7 @@
         "command": "doors-smores.Trace-WebviewNode",
         "category": "Smores",
         "title": "Trace document item",
-        "icon": "$(hierarchy)"
+        "icon": "$(link)"
       },
       {
         "command": "doors-smores.Delete-TreeNode",
@@ -167,7 +167,7 @@
       {
         "command": "doors-smores.New-TreeDesCon",
         "category": "Smores",
-        "title": "New Functional Requirement"
+        "title": "New Design Constraint"
       },
       {
         "command": "doors-smores.New-TreeSysTest",
@@ -254,67 +254,67 @@
       "webview/context": [
         {
           "command": "doors-smores.Edit-Section",
-          "when": "webviewId =~ /smores[A-Z]{3}View/ && webviewSection =~ /Node-/",
+          "when": "webviewId =~ /smores[A-Z]{3,4}View/ && webviewSection =~ /Node-/",
           "group": "smores0@1"
         },
         {
           "command": "doors-smores.Trace-WebviewNode",
-          "when": "webviewId =~ /smores[A-Z]{3}View/ && (webviewSection =~ /Node-[\\S]+Requirement/ || webviewSection =~ /Node-[\\S]+Test/)",
+          "when": "webviewId =~ /smores[A-Z]{3,4}View/ && (webviewSection =~ /Node-[\\S]+Requirement/ || webviewSection =~ /Node-[\\S]+Test/)",
           "group": "smores0@1"
         },
         {
           "command": "doors-smores.New-WebHeading",
-          "when": "webviewId =~ /smores[A-Z]{3}View/ && webviewSection =~ /Node-/",
+          "when": "webviewId =~ /smores[A-Z]{3,4}View/ && webviewSection =~ /Node-/",
           "group": "smores1@1"
         },
         {
           "command": "doors-smores.New-WebComment",
-          "when": "webviewId =~ /smores[A-Z]{3}View/ && webviewSection =~ /Node-/",
+          "when": "webviewId =~ /smores[A-Z]{3,4}View/ && webviewSection =~ /Node-/",
           "group": "smores1@2"
         },
         {
           "command": "doors-smores.New-WebUserReq",
-          "when": "webviewId =~ /smoresUSRView/ && (webviewSection =~ /Node-/)",
+          "when": "webviewId =~ /smores((USR)|(Node))View/ && (webviewSection =~ /Node-/)",
           "group": "smores2@1"
         },
         {
           "command": "doors-smores.New-WebFuncReq",
-          "when": "webviewId =~ /smoresSRSView/ && (webviewSection =~ /Node-/)",
+          "when": "webviewId =~ /smores((SRS)|(Node))View/ && (webviewSection =~ /Node-/)",
           "group": "smores2@2"
         },
         {
           "command": "doors-smores.New-WebNonFuncReq",
-          "when": "webviewId =~ /smoresSRSView/ && (webviewSection =~ /Node-/)",
+          "when": "webviewId =~ /smores((SRS)|(Node))View/ && (webviewSection =~ /Node-/)",
           "group": "smores2@3"
         },
         {
           "command": "doors-smores.New-WebDesCon",
-          "when": "webviewId =~ /smoresSRSView/ && (webviewSection =~ /Node-/)",
+          "when": "webviewId =~ /smores((SRS)|(Node))View/ && (webviewSection =~ /Node-/)",
           "group": "smores2@4"
         },
         {
           "command": "doors-smores.New-WebSysTest",
-          "when": "webviewId =~ /smoresSTPView/ && (webviewSection =~ /Node-/)",
+          "when": "webviewId =~ /smores((STP)|(Node))View/ && (webviewSection =~ /Node-/)",
           "group": "smores3@1"
         },
         {
           "command": "doors-smores.New-WebIntTest",
-          "when": "webviewId =~ /smoresSTPView/ && (webviewSection =~ /Node-/)",
+          "when": "webviewId =~ /smores((ITP)|(Node))View/ && (webviewSection =~ /Node-/)",
           "group": "smores3@2"
         },
         {
           "command": "doors-smores.New-WebUnitTest",
-          "when": "webviewId =~ /smoresSTPView/ && (webviewSection =~ /Node-/)",
+          "when": "webviewId =~ /smores((UTP)|(Node))View/ && (webviewSection =~ /Node-/)",
           "group": "smores3@3"
         },
         {
           "command": "doors-smores.New-WebImage",
-          "when": "webviewId =~ /smores[A-Z]{3}View/ && webviewSection =~ /Node-/",
+          "when": "webviewId =~ /smores[A-Z]{3,4}View/ && webviewSection =~ /Node-/",
           "group": "smores4@1"
         },
         {
           "command": "doors-smores.New-WebMermaidImage",
-          "when": "webviewId =~ /smores[A-Z]{3}View/ && (webviewSection =~ /Node-/)",
+          "when": "webviewId =~ /smores[A-Z]{3,4}View/ && (webviewSection =~ /Node-/)",
           "group": "smores4@2"
         }
       ],
@@ -386,37 +386,37 @@
         },
         {
           "command": "doors-smores.New-TreeUserReq",
-          "when": "view == smoresTreeView && (viewItem =~ /USR/)",
+          "when": "view == smoresTreeView && (viewItem =~ /((USR)|(EMPTY))/)",
           "group": "smores2@1"
         },
         {
           "command": "doors-smores.New-TreeFuncReq",
-          "when": "view == smoresTreeView && (viewItem =~ /SRS/)",
+          "when": "view == smoresTreeView && (viewItem =~ /((SRS)|(EMPTY))/)",
           "group": "smores2@2"
         },
         {
           "command": "doors-smores.New-TreeNonFuncReq",
-          "when": "view == smoresTreeView && (viewItem =~ /SRS/)",
+          "when": "view == smoresTreeView && (viewItem =~ /((SRS)|(EMPTY))/)",
           "group": "smores2@3"
         },
         {
           "command": "doors-smores.New-TreeDesCon",
-          "when": "view == smoresTreeView && (viewItem =~ /SRS/)",
+          "when": "view == smoresTreeView && (viewItem =~ /((SRS)|(EMPTY))/)",
           "group": "smores2@4"
         },
         {
           "command": "doors-smores.New-TreeSysTest",
-          "when": "view == smoresTreeView && (viewItem =~ /STP/)",
+          "when": "view == smoresTreeView && (viewItem =~ /((STP)|(EMPTY))/)",
           "group": "smores3@1"
         },
         {
           "command": "doors-smores.New-TreeIntTest",
-          "when": "view == smoresTreeView && (viewItem =~ /ITP/)",
+          "when": "view == smoresTreeView && (viewItem =~ /((ITP)|(EMPTY))/)",
           "group": "smores3@2"
         },
         {
           "command": "doors-smores.New-TreeUnitTest",
-          "when": "view == smoresTreeView && (viewItem =~ /UTP/)",
+          "when": "view == smoresTreeView && (viewItem =~ /((UTP)|(EMPTY))/)",
           "group": "smores3@3"
         },
         {
