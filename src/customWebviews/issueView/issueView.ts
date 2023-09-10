@@ -4,7 +4,7 @@ import { DoorsSmores } from "../../doorsSmores";
 import { join } from "path";
 import { getCoverStylePaths } from "../resources";
 import { SmoresDocument } from "../../model/smoresDocument";
-import { Disposable, Uri, ViewColumn, WebviewPanel, commands, window } from "vscode";
+import { Disposable, Uri, ViewColumn, WebviewPanel, commands, window, workspace } from "vscode";
 import { VersionController } from "../../versionControl/versionController";
 
 export class IssueView {
@@ -290,18 +290,29 @@ export class IssueView {
 
   private getHistoricSections(revisionHistory:RevisionHistoryItem[]):string {
     var html = "";
+    var draft="";
+    var draftComplete = false;
+    const settings = workspace.getConfiguration('documentRelease');
+    if(settings.get("rollUpMinorReleasesIntoMajor") === false) {
+      draftComplete = true;
+    }
+
     if(revisionHistory.length > 0) {
       for(let i=revisionHistory.length-1; i >= 0; i--) {
         const item = RevisionHistoryItem.make(revisionHistory[i]);
-        const row = `${item.getTableRow()}
-      `;
-        html = html.concat(row);
+        if(item.minor === 0) {
+          draftComplete = true;
+        }
+        if(!draftComplete) {
+          draft = draft.concat(item.detail.replace(/"/g,"&#34;"), "\n");
+        }
+        html = html.concat(item.getTableRow(), "\n", "        ");
       }
     }
     return `
     <br><br>
     <h1>Previous issues</h1>
-    <table class="history">
+    <table class="history" id="historyTable" data-draft="${draft}">
       <thead>
         <tr><th>Date</th><th>Issue</th><th>Summary</th><th>Author</th></tr>
       </thead>

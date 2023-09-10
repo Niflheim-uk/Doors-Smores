@@ -11,8 +11,20 @@ function initialize() {
   }
   const detailButton = document.getElementById('detailButton');
   detailButton.addEventListener('click', detailReturnOnClick);
+  const majorRadio = document.getElementById('majorIssue');
+  majorRadio.addEventListener('change', radioOnChange);
+  
 }
-
+function radioOnChange() {
+  const detailArea = document.getElementById('issueSummary');
+  if(document.getElementById('majorIssue').checked) {
+    const historyTable = document.getElementById('historyTable');
+    const draft = historyTable.dataset["draft"];
+    detailArea.value = draft;
+  } else {
+    detailArea.value = "";
+  }
+}
 function issueDocumentOnClick() {
   var issueRadio;
   var isMajor = true;

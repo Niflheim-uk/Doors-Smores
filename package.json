@@ -59,6 +59,11 @@
             "type": "string",
             "default": "",
             "description": "(WIP) This setting should provide the path to a file containing the html snippet to be included in the footer."
+          },
+          "documentRelease.rollUpMinorReleasesIntoMajor": {
+            "type": "boolean",
+            "default": true,
+            "description": "If set, the revision history will only show major revisions and minor revisions since last major.\nIf not set, major and minor releases are treated equally in the revision history."
           }
         }
       }

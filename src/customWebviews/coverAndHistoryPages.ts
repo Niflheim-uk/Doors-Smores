@@ -4,6 +4,7 @@ import { writeFileSync } from 'fs';
 import { getCoverStylePaths } from './resources';
 import { SmoresDocument } from '../model/smoresDocument';
 import { RevisionHistoryItem } from '../model/documentNode';
+import { workspace } from 'vscode';
 
 const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
@@ -89,6 +90,7 @@ export function getHistoryHtml(document:SmoresDocument, traceReport:boolean) {
 
 function getHistoryTable(document:SmoresDocument, traceReport:boolean) {
   var historyItems:RevisionHistoryItem[];
+  const lastRev:RevisionHistoryItem = document.getLatestRevision(traceReport);
   if(document.data.documentData === undefined) {
     return "";
   }
@@ -100,11 +102,17 @@ function getHistoryTable(document:SmoresDocument, traceReport:boolean) {
   if(historyItems === undefined) {
     return "";
   }
+  const settings = workspace.getConfiguration('documentRelease');
+  const includeAllMinor = !settings.get("rollUpMinorReleasesIntoMajor");
+  var reachedLastMajor = false;
   var rows:string = "";
   for(let i=0; i<historyItems.length; i++) {
     const item = RevisionHistoryItem.make(historyItems[i]);
-    rows = rows.concat(`
+    if(item.major === lastRev.major) { reachedLastMajor = true; }
+    if(item.isMajor || includeAllMinor || reachedLastMajor) {
+      rows = rows.concat(`
             ${item.getTableRow()}`);
+    }
   }
   if(rows.length === 0) {
     rows = `<tr><td>TBD</td><td>00-01</td><td>TBD</td><td>TBD</td></tr>`;

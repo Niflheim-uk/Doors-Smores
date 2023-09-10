@@ -1,8 +1,7 @@
 import * as vscode from 'vscode';
-import { basename, dirname, join } from 'path';
+import { join } from 'path';
 import { SmoresFile } from './model/smoresFile';
 import { SmoresProject } from './model/smoresProject';
-import { DocumentNode } from './model/documentNode';
 import { ProjectTreeProvider } from './treeViews/projectTree/projectTreeProvider';
 import { DocumentTreeProvider } from './treeViews/documentTree/documentTreeProvider';
 import { registerNewContentCommands } from './model/newContext';
