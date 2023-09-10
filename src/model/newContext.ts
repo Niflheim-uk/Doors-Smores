@@ -21,9 +21,9 @@ function getInsertionNodeAndPosition(source:any):[DocumentNode|undefined, number
     originNode = item.node;
   } else {
     originNode = getNodeFromContext(source);
-    if(originNode === undefined) {
-      return [undefined,-1];
-    }
+  }
+  if(originNode === undefined) {
+    return [undefined,-1];
   }
   if(originNode.data.category === schema.headingCategory || originNode.data.category === schema.documentCategory) {
     return [originNode, -1];
@@ -113,17 +113,18 @@ export function newTest(source:any) {
   if(parent) {
     var content:string;
     content = "New user acceptance test.";
-    switch(parent.getDocumentType()) {
-    case schema.ursDocType:
+    const docType = parent.getDocumentType();
+    switch(docType) {
+    case schema.atpDocType:
       content = "New user acceptance test.";
       return DocumentNode.createNewDocumentNode(parent, schema.userTestCategory, content, insertPos);
-    case schema.srsDocType:
+    case schema.stpDocType:
       content = "New software system test.";
       return DocumentNode.createNewDocumentNode(parent, schema.softTestCategory, content, insertPos);
-    case schema.adsDocType:
+    case schema.itpDocType:
       content = "New software integration test.";
       return DocumentNode.createNewDocumentNode(parent, schema.archTestCategory, content, insertPos);
-    case schema.ddsDocType:
+    case schema.utpDocType:
       content = "New unit test.";
       return DocumentNode.createNewDocumentNode(parent, schema.desTestCategory, content, insertPos);
     }

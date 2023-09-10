@@ -150,7 +150,7 @@ export class TraceView {
           font-src ${this._panel.webview.cspSource} 'nonce-${nonce}';
           img-src ${this._panel.webview.cspSource} 'nonce-${nonce}';
           script-src ${this._panel.webview.cspSource} 'nonce-${nonce}';
-          style-src ${this._panel.webview.cspSource} 'nonce-${nonce}';
+          style-src ${this._panel.webview.cspSource} 'unsafe-inline';
         "/>
         <link nonce="${nonce}" href="${webUri[0]}" rel="stylesheet"/>
         <link nonce="${nonce}" href="${webUri[1]}" rel="stylesheet"/>

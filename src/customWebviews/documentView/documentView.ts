@@ -51,21 +51,19 @@ export class DocumentView {
     }
     return uri;
   }
-  public static render(node:DocumentNode|undefined, exporting:boolean = false) {
+  public static async render(node:DocumentNode|undefined, exporting:boolean = false) {
     if(node === undefined) {
       return;
     }
     if (DocumentView.currentPanel) {
-      const docType = node.getDocumentType();
-      DocumentView.currentPanel.setViewNode(node);
-      DocumentView.currentPanel._panel.title = docType;
       DocumentView.currentPanel._panel.reveal(vscode.ViewColumn.One);
-    } else {
-      const docType = node.getDocumentType();
-      const viewId = DocumentView.getViewIdByDocumentType(docType);
-      const panel = DocumentView.createPanel(viewId, docType);
-      DocumentView.currentPanel = new DocumentView(panel, node);
+      await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+      DocumentView.currentPanel = undefined;
     }
+    const docType = node.getDocumentType();
+    const viewId = DocumentView.getViewIdByDocumentType(docType);
+    const panel = DocumentView.createPanel(viewId, docType);
+    DocumentView.currentPanel = new DocumentView(panel, node);
     return DocumentView.refresh(exporting);
   }
   public static refresh(exporting:boolean = false) {
