@@ -225,7 +225,7 @@ export class DocumentView {
           font-src ${webview.cspSource} 'nonce-${nonce}';
           img-src ${webview.cspSource} 'nonce-${nonce}';
           script-src ${webview.cspSource} 'nonce-${nonce}';
-          style-src ${webview.cspSource} 'nonce-${nonce}';
+          style-src ${webview.cspSource} 'unsafe-inline';
         "/>
         ${styleBlock}
         <title>${viewNode.data.text}</title>
