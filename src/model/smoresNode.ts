@@ -18,6 +18,16 @@ export class SmoresNode extends SmoresDataFile {
   declare public data:schema.NodeDataModel;
   constructor(filePath:fs.PathLike) {
     super(filePath);
+    if(this.data.traces === undefined ) {
+      this.data.traces = {traceIds:[],suspectIds:[]};
+    } else {
+      if(this.data.traces.traceIds === undefined) {
+        this.data.traces.traceIds = [];
+      }
+      if(this.data.traces.suspectIds === undefined) {
+        this.data.traces.suspectIds = [];
+      }
+    }
   }
   getChildNodes():SmoresNode[] {
     let childNodes = undefined;

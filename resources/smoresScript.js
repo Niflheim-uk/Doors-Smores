@@ -23,6 +23,11 @@ function initialize() {
       el.addEventListener('click', traceDeleteOnClick);
     }
   }
+  var elements = document.getElementsByClassName('viewDiv');
+  for (let i = 0; i < elements.length; i++) {
+    var el = elements[i];
+    el.addEventListener('click', viewDivOnClick);
+  }
   el = document.getElementById('NewTrace');
   if(el !== null) {
     el.addEventListener('click', traceAddOnClick);
@@ -135,6 +140,11 @@ function traceDeleteOnClick(event) {
 }
 function traceAddOnClick(event) {
   vscode.postMessage({command: 'addTrace'});
+}
+function viewDivOnClick(event) {
+  const context = event.currentTarget.dataset["vscodeContext"];
+  const json = JSON.parse(context);
+  vscode.postMessage({command: 'edit', context:json});
 }
 function editOnSubmit() {
   const textAreas = document.getElementsByTagName('textarea');

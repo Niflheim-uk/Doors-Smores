@@ -9,6 +9,7 @@ import { getExtensionUri } from "../utils/getExtension";
 import { getBodyHtml } from "./bodyHtml";
 import { getMermaidBlock, getScriptBlock, getStyleBlock } from "./pageHtml";
 import { getWorkspaceRoot } from "../utils/getWorkspaceRoot";
+import { DoorsSmores } from "../doorsSmores";
 
 export class DocumentViewer {
   public static currentPanel: DocumentViewer | undefined;
@@ -112,6 +113,9 @@ export class DocumentViewer {
   }
   private _handleMessageFromPanel(message:any) {
     switch (message.command) {
+      case 'edit':
+        this.editNode(message.context);
+        break;
       case 'submit':
         if(this._editNode) {
           this._editNode.setNewData(message);
