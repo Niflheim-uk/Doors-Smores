@@ -1,9 +1,10 @@
-import { pathspec, SimpleGitOptions, simpleGit, TagResult, TaskOptions, RemoteWithRefs } from 'simple-git';
+import { pathspec, SimpleGitOptions, simpleGit, TagResult, TaskOptions, RemoteWithRefs, PullResult, PushResult, FetchResult } from 'simple-git';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { DoorsSmores } from '../doorsSmores';
 import { SmoresDocument } from '../model/smoresDocument';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
+import { StatusBar } from '../customWebviews/statusBar';
 
 export type DiffRecord = {
   filepath:string;
@@ -30,7 +31,7 @@ export class VersionController {
   };
   private static readonly firstTag:string = "start";
   private static readonly firstTagMessage:string = "DO NOT REMOVE: Used for diff";
-  private static readonly syncPeriod:number = (1000 * 60 * 5);
+  private static readonly syncPeriod:number = (1000 * 3 * 5);
   private static readonly remoteName:string = "smores-remote";
   public static isOpen() {
     return VersionController.open;
@@ -58,15 +59,52 @@ export class VersionController {
     clearTimeout(VersionController.syncTimer);
     // If a remote path has been defined
     if(VersionController.getRemotePath()) {
+      StatusBar.syncStart();
       const branchName = await simpleGit(VersionController.gitOptions).revparse(['--abbrev-ref', 'HEAD']);
       const remotes = await simpleGit(VersionController.gitOptions).getRemotes(true);
       if(VersionController.confirmRemoteExists(remotes, VersionController.remoteName)) {
+        StatusBar.updateRemoteUse(true);
         await simpleGit(VersionController.gitOptions)
-        .pull(VersionController.remoteName)
-        .raw('pull', '--tags')
-        .raw('push', '--set-upstream', VersionController.remoteName, branchName)
-        .pushTags(VersionController.remoteName);
+        .pull(VersionController.remoteName).then(async (result:PullResult)=>{
+          console.log(result);
+          if(result.summary.changes || result.summary.deletions || result.summary.deletions) {
+            DoorsSmores.refreshViews();
+          }
+          await simpleGit(VersionController.gitOptions)
+          .fetch(VersionController.remoteName,branchName,['--tags']).then(async (result:FetchResult)=>{
+            console.log(result);
+            await simpleGit(VersionController.gitOptions)
+            .raw('push', '--set-upstream', VersionController.remoteName, branchName).then(async (result:string)=>{
+              console.log(result);
+              await simpleGit(VersionController.gitOptions)
+              .pushTags(VersionController.remoteName).then(async (result:PushResult)=>{
+                console.log(result);
+                StatusBar.updateHealthy(true);
+              },(reason:any)=>{
+                console.error("pushTags failed with following reason");
+                console.error(reason);
+                StatusBar.updateHealthy(false);
+              });
+            },(reason:any)=>{
+              console.error("push failed with following reason");
+              console.error(reason);
+              StatusBar.updateHealthy(false);
+            });
+          },(reason:any)=>{
+            console.error("pull tags failed with following reason");
+            console.error(reason);
+            StatusBar.updateHealthy(false);
+          });           
+        },(reason:any)=>{
+          console.error("pull failed with following reason");
+          console.error(reason);
+          StatusBar.updateHealthy(false);
+        });
+      } else {
+        StatusBar.updateRemoteUse(false);
       }
+    } else {
+      StatusBar.updateRemoteUse(false);
     }
     VersionController.syncTimer = setTimeout(VersionController.syncWithRemote, VersionController.syncPeriod);
   }

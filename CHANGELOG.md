@@ -14,6 +14,11 @@ All notable changes to the "doors-smores" extension will be documented in this f
   - Insertion of a history page, based on the known revision history.
   - Auto-generation of a Table of Contents page.
   - Insertion of header/footer html. NB: Groundwork for user-defined header/footers is in place.
+- Added (per project) remote repository setting
+  - If set, changes and tags are auto-pulled from the remote periodically.
+  - Commits are auto-pushed to the remote.
+  - A status bar icon shows when the remote synchronization takes place.
+  - The status bar item turns red while communication is lost with the remote.
 
 ## 0.5
 - Converted multi-line fields to use external files instead of JSON to allow easier diff/merge between versions.

@@ -10,6 +10,7 @@ import { TraceView } from './customWebviews/traceView/traceView';
 import { newDocument } from './model/newDocument';
 import { VersionController } from './versionControl/versionController';
 import { SmoresDocument } from './model/smoresDocument';
+import { StatusBar } from './customWebviews/statusBar';
 
 export async function activate(context: vscode.ExtensionContext) {
   vscode.commands.executeCommand('setContext', 'doors-smores.projectOpen', false);
@@ -28,7 +29,6 @@ export class DoorsSmores {
   private activeProject:SmoresProject|undefined;
   private activeDocument:SmoresDocument|undefined;
   private static app:DoorsSmores;
-  private statusBarItem: vscode.StatusBarItem;
   constructor(context:vscode.ExtensionContext) {
     this.extensionContext = context;
     const jsonString:string|undefined = context.globalState.get(recentProjectsKey);
@@ -38,7 +38,7 @@ export class DoorsSmores {
       this.recentProjects = [];
     }
     DoorsSmores.app = this;
-  	this.statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
+    StatusBar.register(context);
     DoorsSmores.refreshViews();
     vscode.workspace.onDidChangeConfiguration(event => {
       if(event.affectsConfiguration("repository.remoteRepositoryPath")) {
@@ -48,7 +48,6 @@ export class DoorsSmores {
     const registrations = [
       vscode.commands.registerCommand('doors-smores.RefreshViews', DoorsSmores.refreshViews),
       vscode.commands.registerCommand('doors-smores.ExportTraceReport', DoorsSmores.exportTraceReport),
-      this.statusBarItem
     ];
     context.subscriptions.push(...registrations);
     registerNewContentCommands(context);
@@ -64,7 +63,7 @@ export class DoorsSmores {
     ProjectTreeProvider.refresh();
     DocumentView.refresh();
     TraceView.refresh();
-    DoorsSmores.updateStatusBar();
+    StatusBar.update();
 }
   public static getWorkspaceDirectory() {
     const rootPath =
@@ -268,20 +267,6 @@ export class DoorsSmores {
     DoorsSmores.refreshViews(); 
   }
 
-  public static updateStatusBar() {
-    if(DoorsSmores.app ) {
-      if(DoorsSmores.app.activeDocument) {
-        const activeDoc = DoorsSmores.app.activeDocument;
-        const numTraces = activeDoc.getNumberTraces();
-        const numMissing = activeDoc.getNumberMissingTraces();
-        DoorsSmores.app.statusBarItem.text = `$(link): ${numTraces}$(thumbsup) ${numMissing}$(thumbsdown)`;
-        DoorsSmores.app.statusBarItem.show();
-        DoorsSmores.app.statusBarItem.command = {title:'Get Trace Report',command:'doors-smores.ExportTraceReport',arguments:[activeDoc]};
-      } else {
-        DoorsSmores.app.statusBarItem.hide();
-      }
-    }
-  }
   public static exportTraceReport(document:SmoresDocument) {
     if(document) {
       document.viewTraceReport();
@@ -300,6 +285,7 @@ export class DoorsSmores {
         project.data.repoRemote = undefined;
       } else {
         project.data.repoRemote = remoteRepositoryPath;
+        VersionController.updateRemote();
       }
       project.write();
     }
