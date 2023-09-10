@@ -9,7 +9,7 @@
     "type": ""
   },
   "preview": true,
-  "version": "0.4.9",
+  "version": "0.4.10",
   "engines": {
     "vscode": "^1.79.0"
   },
