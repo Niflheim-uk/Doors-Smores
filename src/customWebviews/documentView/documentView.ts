@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import { clearNonce, getNonce } from "../getNonce";
 import * as schema from '../../model/schema';
 import { getBodyHtml } from "./bodyHtml";
-import { getMermaidBlock, getScriptBlock, getStyleBlock } from "./pageHtml";
+import { getScriptBlock, getStyleBlock } from "./pageHtml";
 import { DocumentNode } from "../../model/documentNode";
 import { DoorsSmores } from "../../doorsSmores";
 import { SmoresFile } from "../../model/smoresFile";
@@ -211,7 +211,6 @@ export class DocumentView {
     const bodyHtml = getBodyHtml(viewNode, exporting, editNode);
     const styleBlock = getStyleBlock(webview, exporting);
     const scriptBlock = getScriptBlock(webview, exporting);
-    const mermaidBlock = getMermaidBlock(webview, exporting);
     clearNonce();
     
     return `
@@ -230,7 +229,7 @@ export class DocumentView {
         ${styleBlock}
         <title>${viewNode.data.text}</title>
       </head>
-      <body data-vscode-context='{"preventDefaultContextMenuItems": true}'>${bodyHtml}${mermaidBlock}${scriptBlock}</body>    
+      <body data-vscode-context='{"preventDefaultContextMenuItems": true}'>${bodyHtml}${scriptBlock}</body>    
     </html>`;  
   }
 

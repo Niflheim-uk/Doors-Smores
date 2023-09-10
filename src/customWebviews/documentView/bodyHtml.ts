@@ -7,7 +7,8 @@ import {
   getInnerHtmlForImage,
   getInnerHtmlForRequirement, 
   getInnerHtmlForConstraint, 
-  getInnerHtmlForTest 
+  getInnerHtmlForTest, 
+  getInnerHtmlForGeneratedSVG
 } from '../contentInnerHtml';
 import { getPageBreak } from '../getPageBreak';
 import { getTableOfContents } from '../getTableOfContents';
@@ -90,7 +91,7 @@ function getViewHtmlForNodeType(node:DocumentNode, exporting:boolean):string {
     innerHtml = getInnerHtmlForImage(node, exporting);
     return getViewDivHtml(node, exporting, innerHtml);
   case schema.mermaidCategory:
-    innerHtml = `<div class="imageHolder"><pre class="mermaid">${node.data.text}</pre></div>`;
+    innerHtml = getInnerHtmlForGeneratedSVG(node, exporting);
     return getViewDivHtml(node, exporting, innerHtml);
   default:
     innerHtml = "<H1>ERROR - Unknown Category</H1>";

@@ -165,12 +165,13 @@ export class DocumentNode extends SmoresFile {
     if(updateMermaid) {
       const inputFile = this.getTextFilepath();
       const outputFile = join(this.getDirPath(), `${this.data.id}.svg`);
-      exec(`mmdc -i ${inputFile} -o ${outputFile}`,(err, stdout, stderr) => {
+      exec(`mmdc -i ${inputFile} -o ${outputFile}`,async (err, stdout, stderr) => {
         if(stdout) {console.log(stdout);}
         if(stderr) {console.error(stderr);}
         if(err) {console.error(err);}
         if(commitMessage !== "") {
-          VersionController.commitChanges(commitMessage);
+          await VersionController.commitChanges(commitMessage);
+          DoorsSmores.refreshViews();
         }
       });
     } else {
