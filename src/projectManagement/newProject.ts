@@ -22,10 +22,10 @@ async function getProjectParent():Promise<string|undefined> {
     openLabel:"Select root directory",
     canSelectFolders:true,
     canSelectFiles:false,
-    defaultUri:vscode.Uri.parse(workspaceRoot)
+    defaultUri:vscode.Uri.file(workspaceRoot)
   });
   if(uri) {
-    return uri[0].path;
+    return uri[0].fsPath;
   }
   return undefined;  
 }
