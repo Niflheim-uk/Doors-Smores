@@ -1,5 +1,6 @@
-import { DocumentNode } from '../model/documentNode';
-import * as schema from '../model/schema';
+import { DocumentNode } from './documentNode';
+import * as schema from './schema';
+import { SmoresProject } from './smoresProject';
 
 const ursReqPattern = /^U((FR)|(NFR)|(DC))$/;
 const srsReqPattern = /^S((FR)|(NFR)|(DC))$/;
@@ -216,4 +217,166 @@ export function getVerifiesTraceType(originCategoryLabel:string, traces:number[]
     ...desLevelMatches,
     ...desLevelMatches2
   ];
+}
+
+export function isUpstreamTraceMissing(documentType:string, node:DocumentNode) {
+  const traces = node.data.traces.traceIds;
+  const traceCategoryLabels = getTraceCategoryLabels(traces);
+  switch(documentType) {
+  case schema.ursDocType:
+  case schema.atpDocType:
+  case schema.stpDocType:
+  case schema.itpDocType:
+  case schema.utpDocType:
+    return false;
+  case schema.srsDocType:
+    if(node.data.category === schema.softFRCategory) {
+      if(!traceCategoryLabels.includes(schema.userFRPrefix)) {
+        return true;
+      }
+    }
+    return false;
+  case schema.adsDocType:
+    if(node.data.category === schema.archFRCategory) {
+      if(!traceCategoryLabels.includes(schema.softFRPrefix)) {
+        return true;
+      }
+    }
+    return false;
+  case schema.ddsDocType:
+    if(node.data.category === schema.desFRCategory) {
+      if(!traceCategoryLabels.includes(schema.softFRPrefix) && !traceCategoryLabels.includes(schema.archFRPrefix)) {
+        return true;
+      }
+    }
+    return false;
+  }
+  return false;
+}
+export function isDownstreamTraceMissing(documentType:string, node:DocumentNode) {
+  const traces = node.data.traces.traceIds;
+  const traceCategoryLabels = getTraceCategoryLabels(traces);
+  switch(documentType) {
+  case schema.ursDocType:
+    if(node.data.category === schema.userFRCategory) {
+      if(!SmoresProject.srsExists()) {
+        return false;
+      } else if(!traceCategoryLabels.includes(schema.softFRPrefix)) {
+        return true;
+      }
+    }
+    return false;
+  case schema.srsDocType:
+    if(node.data.category === schema.softFRCategory) {
+      if(!SmoresProject.adsExists() && !SmoresProject.ddsExists()) {
+        return false;
+      } else if(!traceCategoryLabels.includes(schema.archFRPrefix) && !traceCategoryLabels.includes(schema.desFRPrefix)) {
+        return true;
+      }
+    }
+    return false;
+  case schema.adsDocType:
+    if(node.data.category === schema.archFRCategory) {
+      if(!SmoresProject.ddsExists()) {
+        return false;
+      } else if(!traceCategoryLabels.includes(schema.desFRPrefix)) {
+        return true;
+      }
+    }
+    return false;
+  case schema.ddsDocType:
+  case schema.atpDocType:
+  case schema.stpDocType:
+  case schema.itpDocType:
+  case schema.utpDocType:
+    return false;
+  }
+  return false;
+}
+export function isTestTraceMissing(documentType:string, node:DocumentNode) {
+  const traces = node.data.traces.traceIds;
+  const traceCategoryLabels = getTraceCategoryLabels(traces);
+  switch(documentType) {
+  case schema.ursDocType:
+    if(node.data.category === schema.userFRCategory || node.data.category === schema.userNFRCategory) {
+      if(!SmoresProject.atpExists()) {
+        return false;
+      } else if(!traceCategoryLabels.includes(schema.userTestPrefix)) {
+        return true;
+      }
+    }
+    return false;
+  case schema.srsDocType:
+    if(node.data.category === schema.softFRCategory || node.data.category === schema.softNFRCategory) {
+      if(!SmoresProject.stpExists() && !SmoresProject.itpExists()) {
+        return false;
+      } else if(!traceCategoryLabels.includes(schema.softTestPrefix) && !traceCategoryLabels.includes(schema.archTestPrefix)) {
+        return true;
+      }
+    }
+    return false;
+  case schema.adsDocType:
+    if(node.data.category === schema.archFRCategory || node.data.category === schema.archNFRCategory) {
+      if(!SmoresProject.itpExists() && !SmoresProject.utpExists()) {
+        return false;
+      } else if(!traceCategoryLabels.includes(schema.archTestPrefix) && !traceCategoryLabels.includes(schema.desTestPrefix)) {
+        return true;
+      }
+    }
+    return false;
+  case schema.ddsDocType:
+    if(node.data.category === schema.desFRCategory || node.data.category === schema.desNFRCategory) {
+      if(!SmoresProject.itpExists() && !SmoresProject.utpExists()) {
+        return false;
+      } else if(!traceCategoryLabels.includes(schema.archTestPrefix) && !traceCategoryLabels.includes(schema.desTestPrefix)) {
+        return true;
+      }
+    }
+    return false;
+  case schema.atpDocType:
+    if(node.data.category === schema.userTestCategory) {
+      if(!SmoresProject.ursExists()) {
+        return false;
+      } else if(!traceCategoryLabels.includes(schema.userFRPrefix) && !traceCategoryLabels.includes(schema.userNFRPrefix)) {
+        return true;
+      }
+    }
+    return false;
+  case schema.stpDocType:
+    if(node.data.category === schema.softTestCategory) {
+      if(!SmoresProject.srsExists()) {
+        return false;
+      } else if(!traceCategoryLabels.includes(schema.softFRPrefix) && !traceCategoryLabels.includes(schema.softNFRPrefix)) {
+        return true;
+      }
+    }
+    return false;
+  case schema.itpDocType:
+    if(node.data.category === schema.archTestCategory) {
+      if(!SmoresProject.srsExists() && !SmoresProject.adsExists() && !SmoresProject.ddsExists()) {
+        return false;
+      } else if(!traceCategoryLabels.includes(schema.softFRPrefix) && 
+        !traceCategoryLabels.includes(schema.softNFRPrefix) &&
+        !traceCategoryLabels.includes(schema.archFRPrefix) &&
+        !traceCategoryLabels.includes(schema.archNFRPrefix) &&
+        !traceCategoryLabels.includes(schema.desFRPrefix) &&
+        !traceCategoryLabels.includes(schema.desNFRPrefix)) {
+        return true;
+      }
+    }
+    return false;
+  case schema.utpDocType:
+    if(node.data.category === schema.desTestCategory) {
+      if(!SmoresProject.adsExists() && !SmoresProject.ddsExists()) {
+        return false;
+      } else if(!traceCategoryLabels.includes(schema.archFRPrefix) && 
+        !traceCategoryLabels.includes(schema.archNFRPrefix) &&
+        !traceCategoryLabels.includes(schema.desFRPrefix) &&
+        !traceCategoryLabels.includes(schema.desNFRPrefix)) {
+        return true;
+      }
+    }
+    return false;
+  }
+  return false;
 }

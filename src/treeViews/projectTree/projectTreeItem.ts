@@ -3,6 +3,7 @@ import { DoorsSmores, ProjectInfo } from "../../doorsSmores";
 import { DocumentNode } from "../../model/documentNode";
 import { SmoresProject } from "../../model/smoresProject";
 import { getNodeIcon } from "../treeIcons";
+import { SmoresDocument } from "../../model/smoresDocument";
 
 export class ProjectTreeItem extends vscode.TreeItem {
   private isActive:boolean;
@@ -69,7 +70,7 @@ export class ProjectTreeItem extends vscode.TreeItem {
         DoorsSmores.openProjectPath(this.info.path);
       }
     } else {
-      const node = new DocumentNode(this.info.path);
+      const node = new SmoresDocument(this.info.path);
       DoorsSmores.openDocument(node);
     }
   }

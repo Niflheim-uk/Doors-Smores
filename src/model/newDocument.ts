@@ -10,7 +10,8 @@ import { createNodesForSTPFull, createNodesForSTPMini } from './documentTemplate
 import { createNodesForITPFull, createNodesForITPMini } from './documentTemplates/itpTemplate';
 import { createNodesForUTPFull, createNodesForUTPMini } from './documentTemplates/utpTemplate';
 import { VersionController } from '../versionControl/versionController';
-import { DoorsSmores, ProjectInfo } from '../doorsSmores';
+import { DoorsSmores } from '../doorsSmores';
+import { SmoresDocument } from './smoresDocument';
 
 
 async function quickPickDocumentType():Promise<string|undefined> {
@@ -51,7 +52,7 @@ async function getDocumentTitle():Promise<string|undefined> {
     placeHolder:"Document title"
   });
 }
-function createDocument(title:string, docType:string):DocumentNode|undefined {
+function createDocument(title:string, docType:string):SmoresDocument|undefined {
   const project = DoorsSmores.getActiveProject();
   if(project) {
     return project.newDocument(title, docType);
@@ -114,7 +115,7 @@ function createTemplateNodes(docNode:DocumentNode, docType:string) {
   }
 }
 
-export async function newDocument():Promise<DocumentNode|undefined> {
+export async function newDocument():Promise<SmoresDocument|undefined> {
   const title = await getDocumentTitle();
   if(title === undefined) {
     return;

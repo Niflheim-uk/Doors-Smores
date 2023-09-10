@@ -16,7 +16,7 @@ import {
   getTraceCategoryLabels, 
   getVerifiedByTraceType, 
   getVerifiesTraceType 
-} from "../traceSorting";
+} from "../../model/traceSorting";
 
 var viewSVG:string = "<i class='tracing codicon codicon-zoom-in'></i>";
 var deleteSVG:string = "<i class='tracing codicon codicon-trash'></i>";

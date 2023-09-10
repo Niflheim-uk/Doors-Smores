@@ -10,6 +10,7 @@ import { DocumentView } from './customWebviews/documentView/documentView';
 import { TraceView } from './customWebviews/traceView/traceView';
 import { newDocument } from './model/newDocument';
 import { VersionController } from './versionControl/versionController';
+import { SmoresDocument } from './model/smoresDocument';
 
 export function activate(context: vscode.ExtensionContext) {
   vscode.commands.executeCommand('setContext', 'doors-smores.projectOpen', false);
@@ -26,8 +27,9 @@ export class DoorsSmores {
   private extensionContext:vscode.ExtensionContext;
   private recentProjects:ProjectInfo[];
   private activeProject:SmoresProject|undefined;
-  private activeDocument:DocumentNode|undefined;
+  private activeDocument:SmoresDocument|undefined;
   private static app:DoorsSmores;
+  private statusBarItem: vscode.StatusBarItem;
   constructor(context:vscode.ExtensionContext) {
     this.extensionContext = context;
     const jsonString:string|undefined = context.globalState.get(recentProjectsKey);
@@ -37,9 +39,13 @@ export class DoorsSmores {
       this.recentProjects = [];
     }
     DoorsSmores.app = this;
+  	this.statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
     DoorsSmores.refreshViews();
+
     const registrations = [
       vscode.commands.registerCommand('doors-smores.RefreshViews', DoorsSmores.refreshViews),
+      vscode.commands.registerCommand('doors-smores.GetTraceReport', DoorsSmores.getTraceReport),
+      this.statusBarItem
     ];
     context.subscriptions.push(...registrations);
     registerNewContentCommands(context);
@@ -55,6 +61,7 @@ export class DoorsSmores {
     ProjectTreeProvider.refresh();
     DocumentView.refresh();
     TraceView.refresh();
+    DoorsSmores.updateStatusBar();
   }
   public static getWorkspaceDirectory() {
     const rootPath =
@@ -188,14 +195,14 @@ export class DoorsSmores {
       return undefined;
     }
   }
-  public static getDocuments():DocumentNode[] {
+  public static getDocuments():SmoresDocument[] {
     if(DoorsSmores.app.activeProject) {
       return DoorsSmores.app.activeProject.getDocuments();
     } else {
       return [];
     }
   }
-  public static openDocument(document:DocumentNode) {
+  public static openDocument(document:SmoresDocument) {
     DoorsSmores.app.activeDocument = document;
     DoorsSmores.refreshViews();  
   }
@@ -246,10 +253,36 @@ export class DoorsSmores {
     DoorsSmores.app.recentProjects = newList;
     DoorsSmores.refreshViews(); 
   }
+
+  public static updateStatusBar() {
+    if(DoorsSmores.app ) {
+      if(DoorsSmores.app.activeDocument) {
+        const activeDoc = DoorsSmores.app.activeDocument;
+        const numTraces = activeDoc.getNumberTraces();
+        const numMissing = activeDoc.getNumberMissingTraces();
+        DoorsSmores.app.statusBarItem.text = `$(link): ${numTraces}$(thumbsup) ${numMissing}$(thumbsdown)`;
+        DoorsSmores.app.statusBarItem.show();
+        DoorsSmores.app.statusBarItem.command = {title:'Get Trace Report',command:'doors-smores.GetTraceReport',arguments:[activeDoc]};
+      } else {
+        DoorsSmores.app.statusBarItem.hide();
+      }
+    }
+  }
+  public static getTraceReport(document:SmoresDocument) {
+    if(document) {
+      document.getTraceReport();
+    } else {
+      if(DoorsSmores.app.activeDocument) {
+        DoorsSmores.app.activeDocument.exportTraceReport();
+      }
+    }
+  }
+
   private static matchProjectData(project1:ProjectInfo, project2:ProjectInfo):boolean {
     if(project1.name !== project2.name) {return false;}
     if(project1.path !== project2.path) {return false;}
     return true;
   } 
+
 }
 

@@ -5,7 +5,7 @@ import { Uri } from 'vscode';
 import * as schema from '../model/schema';
 import { DoorsSmores } from '../doorsSmores';
 import { DocumentView } from './documentView/documentView';
-import {getDecomposedFromTraceType, getDecomposesToTraceType, getDetailedByTraceType, getDetailsTraceType, getSatisfiedByTraceType, getSatisfiesTraceType, getTraceCategoryLabels, getVerifiedByTraceType, getVerifiesTraceType} from './traceSorting';
+import {getDecomposedFromTraceType, getDecomposesToTraceType, getDetailedByTraceType, getDetailsTraceType, getSatisfiedByTraceType, getSatisfiesTraceType, getTraceCategoryLabels, getVerifiedByTraceType, getVerifiesTraceType} from '../model/traceSorting';
 
 export function getIdLabel(node:DocumentNode) {
   if(node.data.category === schema.headingCategory) {

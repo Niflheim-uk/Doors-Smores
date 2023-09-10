@@ -10,14 +10,15 @@ import { getDocumentStylePaths, getScriptPath } from "../resources";
 import { getIdLabel, getTableRow } from "../contentInnerHtml";
 import { getTableTextHtmlFromMd } from "../markdownConversion";
 import { getTraceReportDownstreamContent, getTraceReportTestsContent, getTraceReportUpstreamContent } from "./traceReportContent";
+import { SmoresDocument } from "../../model/smoresDocument";
 
 export class TraceReportView {
   public static currentPanel: TraceReportView | undefined;
   private readonly _panel: vscode.WebviewPanel;
   private _disposables: vscode.Disposable[] = [];
-  private _viewNode:DocumentNode;
+  private _viewNode:SmoresDocument;
 
-  private constructor(panel: vscode.WebviewPanel, node:DocumentNode) {
+  private constructor(panel: vscode.WebviewPanel, node:SmoresDocument) {
     this._panel = panel;
     this._viewNode = node;
     this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
@@ -33,11 +34,7 @@ export class TraceReportView {
     }
   }
 
-  public setViewNode(node:DocumentNode) {
-    this._viewNode = node;
-  }
-
-  public static async render(node:DocumentNode|undefined) {
+  public static async render(node:SmoresDocument|undefined) {
     if(node === undefined) {
       return;
     }
@@ -47,8 +44,7 @@ export class TraceReportView {
       TraceReportView.currentPanel = undefined;
     }
     const docType = node.getDocumentType();
-    const viewId = TraceReportView.getViewIdByDocumentType(docType);
-    const panel = TraceReportView.createPanel(viewId, docType);
+    const panel = TraceReportView.createPanel('smoresTraceReport', docType);
     TraceReportView.currentPanel = new TraceReportView(panel, node);
     return TraceReportView.refresh();
   }
@@ -63,25 +59,21 @@ export class TraceReportView {
     }
   }
   
-  public static async exportDocument(node:DocumentNode|undefined) {
+  public static async exportDocument(node:SmoresDocument|undefined) {
     if(node=== undefined) {
       return;
     }
-    let documentNode:DocumentNode|null = node;
-    while(documentNode!== null && documentNode.getParent() !== null) {
-      documentNode = documentNode.getParent();
-    }
     var filePath:string;
     var content:string;
-    const defaultFilename = `${documentNode!.data.text}.html`;
+    const defaultFilename = `${node.data.text} - Trace Report.html`;
     const projectRoot = DoorsSmores.getProjectDirectory();
     const filename = await vscode.window.showInputBox({value:defaultFilename});
     if(filename === undefined) {
       return;
     }
     filePath = join(projectRoot, filename);
-    const panel = TraceReportView.createPanel('smoresNodeView', 'Exporting');
-    content = TraceReportView.getPageHtml(panel.webview, documentNode!, true);
+    const panel = TraceReportView.createPanel('smoresTraceReport', 'Exporting');
+    content = TraceReportView.getPageHtml(panel.webview, node, true);
     vscode.commands.executeCommand('workbench.action.closeActiveEditor');
     writeFileSync(filePath, content);
   }
@@ -115,7 +107,7 @@ export class TraceReportView {
       default: return "smoresNodeView";
     }
   }
-  private static getPageHtml(webview:vscode.Webview, viewNode:DocumentNode, exporting:boolean):string {
+  private static getPageHtml(webview:vscode.Webview, viewNode:SmoresDocument, exporting:boolean):string {
     if(webview === undefined || viewNode === undefined) {
       return "";
     }
@@ -164,44 +156,46 @@ export class TraceReportView {
       <body data-vscode-context='{"preventDefaultContextMenuItems": true}'>${bodyHtml}${scriptBlock}</body>    
     </html>`;  
   }
-  private static getBodyHtml(node: DocumentNode):string {
+  private static getBodyHtml(node: SmoresDocument):string {
     heading.resetHeaderDepth();
-    return TraceReportView.getHtmlForNode(node);
+    if(node.data.documentData === undefined) {
+      return "";
+    }
+    const documentType = node.data.documentData.documentType;
+    return TraceReportView.getHtmlForNode(documentType, node);
   }
-  private static getHtmlForNode(node: DocumentNode):string {
+  private static getHtmlForNode(documentType:string, node: DocumentNode):string {
     let html:string = "";
-    html = html.concat(TraceReportView.getHtmlForNodeType(node));
-    html = html.concat(TraceReportView.getHtmlForNodeChildren(node));
+    html = html.concat(TraceReportView.getHtmlForNodeType(documentType, node));
+    html = html.concat(TraceReportView.getHtmlForNodeChildren(documentType, node));
     return html;
   }
-  private static getHtmlForNodeChildren(node:DocumentNode):string {
+  private static getHtmlForNodeChildren(documentType:string, node:DocumentNode):string {
     let html:string = "";
     if(node.data.children && node.data.children.length > 0) {
       heading.increaseHeaderDepth();
       const childNodes = node.getChildren();
       for (let index = 0; index < childNodes.length; index++) {
         const child = childNodes[index];
-        html = html.concat(TraceReportView.getHtmlForNode(child));
+        html = html.concat(TraceReportView.getHtmlForNode(documentType, child));
       }
       heading.decreaseHeaderDepth();
     }
     return html;
   }
 
-  private static getHtmlForNodeType(node:DocumentNode):string {
+  private static getHtmlForNodeType(documentType:string, node:DocumentNode):string {
     const pageBreak = `<hr class="hr-text pageBreak" data-content="Page Break">`;
     if(node.data.category === schema.documentCategory) {
       return `<h1>WIP:Front Page</h1>${pageBreak}<h1>WIP:TOC</h1>${pageBreak}`;
-    } else if(node.data.category === schema.headingCategory) {
-      return TraceReportView.getTraceReportHeading(node, pageBreak);
     } else if(schema.isFuncReqCategory(node.data.category)) {
-      return TraceReportView.getTraceReportItem(node);
+      return TraceReportView.getTraceReportItem(documentType, node);
     } else if(schema.isNonFuncReqCategory(node.data.category)) {
-      return TraceReportView.getTraceReportItem(node);
+      return TraceReportView.getTraceReportItem(documentType, node);
     } else if(schema.isConstraintCategory(node.data.category)) {
-      return TraceReportView.getTraceReportItem(node);
+      return TraceReportView.getTraceReportItem(documentType, node);
     } else if(schema.isTestCategory(node.data.category)) {
-      return TraceReportView.getTraceReportItem(node);
+      return TraceReportView.getTraceReportItem(documentType, node);
     }
     return "";
   }
@@ -215,13 +209,13 @@ export class TraceReportView {
       return TraceReportView.getViewDivHtml(node, innerHtml);
     }
   }
-  private static getTraceReportItem(node:DocumentNode) {
+  private static getTraceReportItem(documentType:string, node:DocumentNode) {
     const c1 = getIdLabel(node);
     const c2 = getTableTextHtmlFromMd(node.data.text.split('\n')[0]);
     const row1 = getTableRow(c1, c2);
-    const upstreamRow = getTraceReportUpstreamContent(node);
-    const testRow = getTraceReportTestsContent(node);
-    const downstreamRow = getTraceReportDownstreamContent(node);
+    const upstreamRow = getTraceReportUpstreamContent(documentType, node);
+    const testRow = getTraceReportTestsContent(documentType, node);
+    const downstreamRow = getTraceReportDownstreamContent(documentType, node);
     return `<table class="indented2ColSmall"><tbody>
     ${row1}
     ${upstreamRow}

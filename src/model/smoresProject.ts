@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import * as schema from "./schema"
 import { SmoresFile } from "./smoresFile";
 import { DoorsSmores } from "../doorsSmores";
 import { DocumentNode, DocumentNodeData } from "./documentNode";
@@ -7,6 +8,7 @@ import { VersionController } from "../versionControl/versionController";
 import { join } from "path";
 import { getMdForDocument } from "../customWebviews/markdownExport";
 import { writeFileSync } from "fs";
+import { SmoresDocument } from "./smoresDocument";
 
 export interface ProjectDataModel {
   idBase: number;
@@ -26,12 +28,12 @@ export class SmoresProject extends SmoresFile {
       this.setDefaultImage();
     }
   }
-  getDocuments():DocumentNode[] {
-    let documents:DocumentNode[] = [];
+  getDocuments():SmoresDocument[] {
+    let documents:SmoresDocument[] = [];
     if(this.data.documentIds && this.data.documentIds.length > 0) {
       const documentIds = this.data.documentIds;
       for (let index = 0; index < documentIds.length; index++) {
-        const document:DocumentNode = DocumentNode.createFromId(documentIds[index]);
+        const document:SmoresDocument = SmoresDocument.createDocumentFromId(documentIds[index]);
         documents.push(document);
       }
     }
@@ -48,9 +50,9 @@ export class SmoresProject extends SmoresFile {
     this.write();
     return nextId;
   }
-  newDocument(documentName:string, documentType:string) {
+  newDocument(documentName:string, documentType:string):SmoresDocument {
     const documentId = this.getUniqueId();
-    const newDocument:DocumentNode = DocumentNode.createFromId(documentId);
+    const newDocument:SmoresDocument = SmoresDocument.createDocumentFromId(documentId);
     const newDocumentData:DocumentNodeData = {
       id:documentId,
       category:documentCategory,
@@ -70,7 +72,7 @@ export class SmoresProject extends SmoresFile {
   deleteDocument(documentId:number) {
     let change = false;
     if(SmoresFile.exists(documentId)) {
-      const document:DocumentNode = DocumentNode.createFromId(documentId);
+      const document:SmoresDocument = SmoresDocument.createDocumentFromId(documentId);
       document.delete();
       change = true;
     }
@@ -92,6 +94,43 @@ export class SmoresProject extends SmoresFile {
         this.exportDocument(document);
       }
     }
+  }
+  public static ursExists ():boolean {
+    return SmoresProject.docTypeExists(schema.ursDocType);
+  }
+  public static srsExists ():boolean {
+    return SmoresProject.docTypeExists(schema.srsDocType);
+  }
+  public static adsExists ():boolean {
+    return SmoresProject.docTypeExists(schema.adsDocType);
+  }
+  public static ddsExists ():boolean {
+    return SmoresProject.docTypeExists(schema.ddsDocType);
+  }
+  public static atpExists ():boolean {
+    return SmoresProject.docTypeExists(schema.atpDocType);
+  }
+  public static stpExists ():boolean {
+    return SmoresProject.docTypeExists(schema.stpDocType);
+  }
+  public static itpExists ():boolean {
+    return SmoresProject.docTypeExists(schema.itpDocType);
+  }
+  public static utpExists ():boolean {
+    return SmoresProject.docTypeExists(schema.utpDocType);
+  }
+
+  private static docTypeExists(docType:string) {
+    const activeProject = DoorsSmores.getActiveProject();
+    if(activeProject) {
+      const documents = activeProject.getDocuments();
+      for(let i=0; i<documents.length; i++) {
+        if(documents[i].getDocumentType() === docType) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
   private async exportDocument(document:DocumentNode) {
     const defaultFilename = `${document.data.text}.Md`;

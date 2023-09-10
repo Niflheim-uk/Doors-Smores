@@ -141,6 +141,12 @@
         "icon": "$(link)"
       },
       {
+        "command": "doors-smores.GetTraceReport",
+        "category": "Smores",
+        "title": "Get Trace Report",
+        "icon": "$(link)"
+      },
+      {
         "command": "doors-smores.DeleteDocumentNode",
         "category": "Smores",
         "title": "Delete document item, and sub-items",
@@ -293,8 +299,13 @@
           "group": "navigation@5"
         },
         {
+          "command": "doors-smores.GetTraceReport",
+          "when": "view == doors-smores.documentTree && doors-smores.projectOpen",
+          "group": "navigation@4"
+        },
+        {
           "command": "doors-smores.ExportDocument",
-          "when": "view == doors-smores.documentTree",
+          "when": "view == doors-smores.documentTree && doors-smores.projectOpen",
           "group": "navigation@5"
         },
         {

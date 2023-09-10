@@ -32,6 +32,22 @@ export const userTestCategory = "User Acceptance Test";
 export const softTestCategory = "Software System Test";
 export const archTestCategory = "Integration Test";
 export const  desTestCategory = "Unit Test";
+export const userFRPrefix = "UFR";
+export const softFRPrefix = "SFR";
+export const archFRPrefix = "AFR";
+export const  desFRPrefix = "DFR";
+export const userNFRPrefix = "UNFR";
+export const softNFRPrefix = "SNFR";
+export const archNFRPrefix = "ANFR";
+export const  desNFRPrefix = "DNFR";
+export const userDCPrefix = "UDC";
+export const softDCPrefix = "SDC";
+export const archDCPrefix = "ADC";
+export const  desDCPrefix = "DDC";
+export const userTestPrefix = "UT";
+export const softTestPrefix = "ST";
+export const archTestPrefix = "IT";
+export const  desTestPrefix = "UT";
 export function getDocumentTypeAcronym(documentType:string):string {
   switch (documentType) {
   case ursDocType:
@@ -58,50 +74,50 @@ export function getDocumentTypeAcronym(documentType:string):string {
 
 export function getLabelPrefix(category:string):string {
   switch(category) {
-  case projectCategory :
+  case projectCategory:
     return "PRJ";
   case documentCategory:
     return "DOC";
-  case headingCategory :
+  case headingCategory:
     return "H";
-  case commentCategory :
+  case commentCategory:
     return "C";
-  case   imageCategory :
+  case   imageCategory:
     return "I";
-  case mermaidCategory :
+  case mermaidCategory:
     return "MI";
-  case userFRCategory  :
-    return "UFR";
-  case softFRCategory  :
-    return "SFR";
-  case archFRCategory  :
-    return "AFR";
-  case  desFRCategory  :
-    return "DFR";
-  case userNFRCategory :
-    return "UNFR";
-  case softNFRCategory :
-    return "SNFR";
-  case archNFRCategory :
-    return "ANFR";
-  case  desNFRCategory :
-    return "DNFR";
-  case userDCCategory  :
-    return "UDC";
-  case softDCCategory  :
-    return "SDC";
-  case archDCCategory  :
-    return "ADC";
-  case  desDCCategory  :
-    return "DDC";
+  case userFRCategory:
+    return userFRPrefix;
+  case softFRCategory:
+    return softFRPrefix;
+  case archFRCategory:
+    return archFRPrefix;
+  case  desFRCategory:
+    return desFRPrefix;
+  case userNFRCategory:
+    return userNFRPrefix;
+  case softNFRCategory:
+    return softNFRPrefix;
+  case archNFRCategory:
+    return archNFRPrefix;
+  case  desNFRCategory:
+    return desNFRPrefix;
+  case userDCCategory:
+    return userDCPrefix;
+  case softDCCategory:
+    return softDCPrefix;
+  case archDCCategory:
+    return archDCPrefix;
+  case  desDCCategory:
+    return desDCPrefix;
   case userTestCategory:
-    return "UT";
+    return userTestPrefix;
   case softTestCategory:
-    return "ST";
+    return softTestPrefix;
   case archTestCategory:
-    return "AT";
+    return archTestPrefix;
   case  desTestCategory:
-    return "DT";
+    return desTestPrefix;
   default:
     return "X";
   }
