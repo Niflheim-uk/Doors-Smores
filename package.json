@@ -9,7 +9,7 @@
     "type": ""
   },
   "preview": true,
-  "version": "0.4.7",
+  "version": "0.4.8",
   "engines": {
     "vscode": "^1.79.0"
   },
@@ -31,12 +31,12 @@
             "description": "The maximum number of recent projects to maintain in the projects tree view."
           },
           "documents.includeTraceDetailInDocuments": {
-            "type":"boolean",
+            "type": "boolean",
             "default": false,
             "description": "If set, traces will be included as additional rows on requirement and test case tables."
           },
           "documents.tracingRequired": {
-            "type":"boolean",
+            "type": "boolean",
             "default": false,
             "description": "(Future) If set, upstream, downstream and test traces are expected, as applicable. Items missing traces are highlighted."
           }
