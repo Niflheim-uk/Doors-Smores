@@ -24,7 +24,7 @@ i.tracing {
 }
 button.tracing {
   color: var(--vscode-editor-foreground);
-  background-color: var(--vscode-editor-background);
+  background-color: transparent;
   border: none;
   box-sizing: unset;
   width: 0.5cm;
