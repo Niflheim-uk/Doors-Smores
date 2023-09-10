@@ -1,46 +1,61 @@
+import * as vscode from 'vscode';
 import { SmoresNode } from "../model/smoresNode";
+import { TreeNode } from "../treeView/treeNode";
+import { VersionController } from "../versionControl/versionController";
 
-export function promoteNode(node:SmoresNode) {
-  const parent = node.getParentNode();
-  if(!node.canPromoteNode() || parent === null) {
+export function promoteNode(node:TreeNode) {
+  const parent = node.smoresNode.getParentNode();
+  if(!node.smoresNode.canPromoteNode() || parent === null) {
     return;
   }
   const grandparent = parent.getParentNode();
   if(grandparent) {
     const parentPos = grandparent.getChildPosition(parent.data.id);
-    grandparent.addChildAt(node.data.id, parentPos+1);
-    parent.removeChild(node.data.id);
-    node.data.parent = grandparent.data.id;
-    node.write();
+    grandparent.addChild(node.smoresNode.data.id, parentPos+1);
+    parent.removeChild(node.smoresNode.data.id);
+    node.smoresNode.data.parent = grandparent.data.id;
+    node.smoresNode.write();
+    node.contextValue = node.smoresNode.getContextString();
+    VersionController.commitChanges(`Node ${node.smoresNode.data.id} document level decreased`);
+    vscode.commands.executeCommand('doors-smores.Update-Views');
   }
 }
-export function demoteNode(node:SmoresNode) {
-  const parent = node.getParentNode();
-  if(!node.canDemoteNode() || parent === null) {
+export function demoteNode(node:TreeNode) {
+  const parent = node.smoresNode.getParentNode();
+  if(!node.smoresNode.canDemoteNode() || parent === null) {
     return;
   }
-  const idPos = parent.getChildPosition(node.data.id);
-  // idPos is greater than 0 or couldnt demote
+  const idPos = parent.getChildPosition(node.smoresNode.data.id);
+  // idPos is greater than 0 or couldn't demote
   const prevSiblingPos = idPos -1;
   const siblings = parent.getChildNodes();
-  siblings[prevSiblingPos].addChild(node.data.id);
-  parent.removeChild(node.data.id);
-  node.data.parent = siblings[prevSiblingPos].data.id;
-  node.write();
+  siblings[prevSiblingPos].addChild(node.smoresNode.data.id);
+  parent.removeChild(node.smoresNode.data.id);
+  node.smoresNode.data.parent = siblings[prevSiblingPos].data.id;
+  node.smoresNode.write();
+  node.contextValue = node.smoresNode.getContextString();
+  VersionController.commitChanges(`Node ${node.smoresNode.data.id} document level increased`);
+  vscode.commands.executeCommand('doors-smores.Update-Views');
 }
-export function moveNodeUp(node:SmoresNode) {
-  const parent = node.getParentNode();
+export function moveNodeUp(node:TreeNode) {
+  const parent = node.smoresNode.getParentNode();
   if(parent === null) {
     return;
   }
-  const index = parent.getChildPosition(node.data.id);
+  const index = parent.getChildPosition(node.smoresNode.data.id);
   parent.swapChildIndex(index, index-1);
+  node.contextValue = node.smoresNode.getContextString();
+  VersionController.commitChanges(`Node ${node.smoresNode.data.id} document order decreased`);
+  vscode.commands.executeCommand('doors-smores.Update-Views');
 }
-export function moveNodeDown(node:SmoresNode) {
-  const parent = node.getParentNode();
+export function moveNodeDown(node:TreeNode) {
+  const parent = node.smoresNode.getParentNode();
   if(parent === null) {
     return;
   }
-  const index = parent.getChildPosition(node.data.id);
+  const index = parent.getChildPosition(node.smoresNode.data.id);
   parent.swapChildIndex(index, index+1);
+  node.contextValue = node.smoresNode.getContextString();
+  VersionController.commitChanges(`Node ${node.smoresNode.data.id} document order increased`);
+  vscode.commands.executeCommand('doors-smores.Update-Views');
 }

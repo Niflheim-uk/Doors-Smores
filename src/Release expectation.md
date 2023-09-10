@@ -2,8 +2,8 @@
 ### 0.2
 - [ ] Git commit for known actions
 - [ ] Add the following node types
-  - [ ] User requirement
-  - [ ] Non functional requirement
+  - [x] User requirement
+  - [x] Non functional requirement
   - [ ] Design constraint
   - [ ] System test
   - [ ] Integration test

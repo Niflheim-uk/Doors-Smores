@@ -14,7 +14,7 @@ function getViewDivHtml(node:SmoresNode, exporting:boolean, innerHtml:string) {
   const tooltip = `<b>category</b>: ${node.data.category}<br/><b>id</b>: ${node.data.id}`;
   const outerHtml = `<div class="tooltip">
       <div class="toolTipText">${tooltip}</div>
-      <div class="viewDiv" data-vscode-context='{"webviewSection": "Node-${node.data.id}",
+      <div class="viewDiv" data-vscode-context='{"webviewSection": "Node-${node.data.category}", "nodeId": "${node.data.id}",
         "preventDefaultContextMenuItems": true}'>${innerHtml}</div>
     </div>`;
   return outerHtml;
@@ -42,12 +42,18 @@ function getViewHtmlForNodeType(node:SmoresNode, exporting:boolean):string {
       } else {
         return getViewDivHtml(node, exporting, innerHtml);
       }
-    case "functionalRequirement":
-      innerHtml =  getInnerHtmlForRequirement(node);
-      return getViewDivHtml(node, exporting, innerHtml);
     case "comment":
       const comment = getMarkdownParagraphs(node.data.text);
       innerHtml = markdown.getIndentedHtmlFromMd(comment);
+      return getViewDivHtml(node, exporting, innerHtml);
+    case "userRequirement":
+      innerHtml =  getInnerHtmlForRequirement(node);
+      return getViewDivHtml(node, exporting, innerHtml);
+    case "functionalRequirement":
+      innerHtml =  getInnerHtmlForRequirement(node);
+      return getViewDivHtml(node, exporting, innerHtml);
+    case "nonFunctionalRequirement":
+      innerHtml =  getInnerHtmlForRequirement(node);
       return getViewDivHtml(node, exporting, innerHtml);
     case "image":
       innerHtml = getInnerHtmlForImage(node, exporting);

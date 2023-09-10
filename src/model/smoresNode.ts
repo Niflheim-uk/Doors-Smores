@@ -3,6 +3,7 @@ import {NodeDataModel} from "./smoresDataSchema";
 import * as fs from "fs";
 import { SmoresProject, getProject } from "./smoresProject";
 import { SmoresDataFile } from "./smoresDataFile";
+import { VersionController } from "../versionControl/versionController";
 
 export class SmoresNode extends SmoresDataFile {
 
@@ -42,6 +43,20 @@ export class SmoresNode extends SmoresDataFile {
     context = this.setContextAddOrderStatus(context);
     context = this.setContextAddPromoteStatus(context);
     return `${this.data.category}${context}`;
+  }
+  getDocumentType():string {
+    var documentNode:SmoresNode = this;
+    var parent = this.getParentNode();
+    while(parent !== null) {
+      documentNode = parent;
+      parent = parent.getParentNode();
+    }
+    console.log(documentNode.data.documentData);
+    if(documentNode.data.documentData) {
+      return documentNode.data.documentData.documentType;
+    }
+    return "Unknown";
+ 
   }
   delete() {
     const parent = this.getParentNode();
@@ -96,8 +111,9 @@ export class SmoresNode extends SmoresDataFile {
     });
     this.write();
   }
-  public newItem(category:string,defaultText:string):string|undefined {
+  public newItem(category:string,defaultText:string, insertPos?:number):string|undefined {
     console.log(`New ${category} called`);
+    VersionController.commitChanges(`New ${category} added`);
     const newData = {
       id:0,
       category:`${category}`,
@@ -151,26 +167,21 @@ export class SmoresNode extends SmoresDataFile {
     }
     return -1;
   }
-  public addChild(childId:number) {
+  public addChild(childId:number, insertPos?:number) {
     if(this.data.children === undefined) {
       this.data.children = [childId];
     } else {
-      this.data.children.push(childId);
+      if(insertPos === undefined || insertPos < 0) {
+        this.data.children.push(childId);
+      } else {
+        if(insertPos >= this.data.children.length) {
+          this.data.children.push(childId);
+        } else {
+          this.data.children.splice(insertPos, 0, childId);
+        }
+      }
     }
     this.write();
-  }
-  public addChildAt(childId:number, insertPos:number) {
-    if(childId) {
-      if(this.data.children === undefined) {
-        if(insertPos !== 0) {
-          throw new Error("insert position out of range");
-        }
-        this.data.children = [childId];
-      } else {
-        this.data.children.splice(insertPos, 0, childId);
-      }
-      this.write();  
-    }
   }
   ///////////////////////////////////////////
   // Private methods
@@ -214,7 +225,7 @@ export class SmoresNode extends SmoresDataFile {
     }
     return false;
   }
-  protected newChild(childData:NodeDataModel):string|undefined {
+  protected newChild(childData:NodeDataModel, insertPos?:number):string|undefined {
     const project = getProject();
     if(project === undefined) {
       return;
@@ -228,8 +239,9 @@ export class SmoresNode extends SmoresDataFile {
     const newDataFile = new SmoresDataFile(newNodePath);
     newDataFile.data = childData;
     newDataFile.write();
-    this.addChild(newId);
+    this.addChild(newId, insertPos);
     this.write();
+    vscode.commands.executeCommand('doors-smores.Update-Views');
     return newNodePath;
   }
 }

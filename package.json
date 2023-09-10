@@ -74,9 +74,9 @@
         "title": "New Document"
       },
       {
-        "command": "doors-smores.Update-TreeView",
+        "command": "doors-smores.Update-Views",
         "category": "Smores",
-        "title": "Actively update the tree view",
+        "title": "Refresh Doors Smores views",
         "icon": "$(extensions-refresh)"
       },
       {
@@ -127,41 +127,144 @@
         "icon": "$(arrow-small-down)"
       },
       {
-        "command": "doors-smores.New-Heading",
+        "command": "doors-smores.New-TreeHeading",
         "category": "Smores",
         "title": "New Heading"
       },
       {
-        "command": "doors-smores.New-Comment",
+        "command": "doors-smores.New-TreeComment",
         "category": "Smores",
         "title": "New Comment"
       },
       {
-        "command": "doors-smores.New-Image",
+        "command": "doors-smores.New-TreeUserReq",
+        "category": "Smores",
+        "title": "New User Requirement"
+      },
+      {
+        "command": "doors-smores.New-TreeFuncReq",
+        "category": "Smores",
+        "title": "New Functional Requirement"
+      },
+      {
+        "command": "doors-smores.New-TreeNonFuncReq",
+        "category": "Smores",
+        "title": "New Non-Functional Requirement"
+      },
+      {
+        "command": "doors-smores.New-TreeSysTest",
+        "category": "Smores",
+        "title": "New System Test"
+      },
+      {
+        "command": "doors-smores.New-TreeIntTest",
+        "category": "Smores",
+        "title": "New Integration Test"
+      },
+      {
+        "command": "doors-smores.New-TreeUnitTest",
+        "category": "Smores",
+        "title": "New Unit Test"
+      },
+      {
+        "command": "doors-smores.New-TreeImage",
         "category": "Smores",
         "title": "New Image (File)"
       },
       {
-        "command": "doors-smores.New-MermaidImage",
+        "command": "doors-smores.New-TreeMermaidImage",
         "category": "Smores",
         "title": "New Image (Mermaid Syntax)"
       },
       {
-        "command": "doors-smores.New-Functional-Requirement",
+        "command": "doors-smores.New-WebHeading",
+        "category": "Smores",
+        "title": "New Heading"
+      },
+      {
+        "command": "doors-smores.New-WebComment",
+        "category": "Smores",
+        "title": "New Comment"
+      },
+      {
+        "command": "doors-smores.New-WebUserReq",
+        "category": "Smores",
+        "title": "New User Requirement"
+      },
+      {
+        "command": "doors-smores.New-WebFuncReq",
         "category": "Smores",
         "title": "New Functional Requirement"
+      },
+      {
+        "command": "doors-smores.New-WebNonFuncReq",
+        "category": "Smores",
+        "title": "New Non-Functional Requirement"
+      },
+      {
+        "command": "doors-smores.New-WebSysTest",
+        "category": "Smores",
+        "title": "New System Test"
+      },
+      {
+        "command": "doors-smores.New-WebIntTest",
+        "category": "Smores",
+        "title": "New Integration Test"
+      },
+      {
+        "command": "doors-smores.New-WebUnitTest",
+        "category": "Smores",
+        "title": "New Unit Test"
+      },
+      {
+        "command": "doors-smores.New-WebImage",
+        "category": "Smores",
+        "title": "New Image (File)"
+      },
+      {
+        "command": "doors-smores.New-WebMermaidImage",
+        "category": "Smores",
+        "title": "New Image (Mermaid Syntax)"
       }
     ],
     "menus": {
       "webview/context": [
         {
           "command": "doors-smores.Edit-Section",
-          "when": "webviewId == 'smoresNodeView' && webviewSection =~ /Node-/"
+          "when": "webviewId =~ /smores[A-Z]{3}View/ && webviewSection =~ /Node-/"
+        },
+        {
+          "command": "doors-smores.New-WebHeading",
+          "when": "webviewId =~ /smores[A-Z]{3}View/ && webviewSection =~ /Node-/"
+        },
+        {
+          "command": "doors-smores.New-WebComment",
+          "when": "webviewId =~ /smores[A-Z]{3}View/ && webviewSection =~ /Node-/"
+        },
+        {
+          "command": "doors-smores.New-WebUserReq",
+          "when": "webviewId =~ /smoresUSRView/ && (webviewSection =~ /Node-/)"
+        },
+        {
+          "command": "doors-smores.New-WebFuncReq",
+          "when": "webviewId =~ /smoresSRSView/ && (webviewSection =~ /Node-/)"
+        },
+        {
+          "command": "doors-smores.New-WebNonFuncReq",
+          "when": "webviewId =~ /smoresSRSView/ && (webviewSection =~ /Node-/)"
+        },
+        {
+          "command": "doors-smores.New-WebImage",
+          "when": "webviewId =~ /smores[A-Z]{3}View/ && webviewSection =~ /Node-/"
+        },
+        {
+          "command": "doors-smores.New-WebMermaidImage",
+          "when": "webviewId =~ /smores[A-Z]{3}View/ && (webviewSection =~ /Node-/)"
         }
       ],
       "view/title": [
         {
-          "command": "doors-smores.Update-TreeView",
+          "command": "doors-smores.Update-Views",
           "when": "view == smoresTreeView",
           "group": "navigation"
         },
@@ -211,23 +314,23 @@
           "group": "inline@8"
         },
         {
-          "command": "doors-smores.New-Heading",
+          "command": "doors-smores.New-TreeHeading",
           "when": "view == smoresTreeView && ((viewItem =~ /document/) || (viewItem =~ /heading/))"
         },
         {
-          "command": "doors-smores.New-Comment",
+          "command": "doors-smores.New-TreeComment",
           "when": "view == smoresTreeView && (viewItem =~ /heading/)"
         },
         {
-          "command": "doors-smores.New-Image",
+          "command": "doors-smores.New-TreeFuncReq",
           "when": "view == smoresTreeView && (viewItem =~ /heading/)"
         },
         {
-          "command": "doors-smores.New-MermaidImage",
+          "command": "doors-smores.New-TreeImage",
           "when": "view == smoresTreeView && (viewItem =~ /heading/)"
         },
         {
-          "command": "doors-smores.New-Functional-Requirement",
+          "command": "doors-smores.New-TreeMermaidImage",
           "when": "view == smoresTreeView && (viewItem =~ /heading/)"
         }
       ]

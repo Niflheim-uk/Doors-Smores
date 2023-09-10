@@ -7,149 +7,114 @@ import { newDocumentFromTemplate } from "./projectManagement/newDocument";
 import { newProjectWorkspace } from "./projectManagement/newProject";
 import { openProjectWorkspace } from "./projectManagement/openProject";
 import { closeProjectWorkspace } from "./projectManagement/closeProject";
-import { deleteNodeWithConfirmation } from "./projectManagement/deleteNode";
+import { deleteNode } from "./projectManagement/deleteNode";
 import { 
-  newComment, 
-  newFunctionalRequirement, 
-  newHeading, 
-  newImage, 
-  newMermaidImage 
+  newTreeComment, newWebviewComment,
+  newTreeSysTest, newWebviewSysTest,
+  newTreeIntTest, newWebviewIntTest,
+  newTreeUnitTest, newWebviewUnitTest,
+  newTreeUserReq, newWebviewUserReq,
+  newTreeFuncReq, newWebviewFuncReq,
+  newTreeNonFuncReq, newWebviewNonFuncReq,
+  newTreeHeading, newWebviewHeading,
+  newTreeImage, newWebviewImage,
+  newTreeMermaidImage, newWebviewMermaidImage 
 } from "./projectManagement/newNode";
 import { promoteNode, demoteNode, moveNodeDown, moveNodeUp } from './projectManagement/moveNode';
 
 
 export class DoorsSmores {
-  private treeView:TreeNodeProvider;
-  private documentView:DocumentViewer;
-  private versionController:VersionController;
+  static treeView:TreeNodeProvider;
+  static documentView:DocumentViewer;
   constructor(context: vscode.ExtensionContext) {
-    this.treeView = new TreeNodeProvider();
-    this.documentView = new DocumentViewer();
-    this.versionController = new VersionController();
+    DoorsSmores.treeView = new TreeNodeProvider();
+    DoorsSmores.documentView = new DocumentViewer();
     this.register(context);
   }
 
   private register(context: vscode.ExtensionContext) {
     const registrations = [
-      vscode.window.registerTreeDataProvider('smoresTreeView', this.treeView),
-      vscode.window.createTreeView('smoresTreeView', {treeDataProvider: this.treeView, showCollapseAll: false}),
-      ...this.registerNewContentCommands(),
+      vscode.window.registerTreeDataProvider('smoresTreeView', DoorsSmores.treeView),
+      vscode.window.createTreeView('smoresTreeView', {treeDataProvider: DoorsSmores.treeView, showCollapseAll: false}),
+      ...this.registerTreeViewCommands(),
+      ...this.registerDocumentViewerCommands(),
       ...this.registerProjectCommands(),
-      ...this.registerNodeManipulationCommands(),
-      vscode.commands.registerCommand("doors-smores.Edit-Section", this.documentView.editNode),
-      vscode.commands.registerCommand('doors-smores.Update-TreeView', this.treeView.refresh),
-      vscode.commands.registerCommand("doors-smores.View-TreeNode", (node: TreeNode) => {this.documentView.showNode(node.smoresNode);}),
-      vscode.commands.registerCommand('doors-smores.Export-Document', (node: TreeNode) => {this.documentView.exportDocument(node.smoresNode);})
+      vscode.commands.registerCommand('doors-smores.Update-Views', DoorsSmores.refreshViews),
+      vscode.commands.registerCommand("doors-smores.View-TreeNode", (node: TreeNode) => {DoorsSmores.documentView.showNode(node.smoresNode);}),
+      vscode.commands.registerCommand('doors-smores.Export-Document', (node: TreeNode) => {DoorsSmores.documentView.exportDocument(node.smoresNode);})
     ];
     context.subscriptions.push(...registrations);
   }
-  private refreshViews() {
-    if(this.documentView.isViewActive()) {
-      this.documentView.updatePanel();
+  static refreshViews() {
+    if(DoorsSmores.documentView.isViewActive()) {
+      DoorsSmores.documentView.updatePanel();
     }
-    this.treeView.refresh();
+    DoorsSmores.treeView.refresh();
   }
 
   private registerProjectCommands():vscode.Disposable[] {
     const registrations = [
       vscode.commands.registerCommand("doors-smores.New-Project", async () => {
         if(await newProjectWorkspace()) {
-          if(await this.versionController.repoExists()) {
-            this.versionController.queryExistingRepoUse();
+          if(await VersionController.repoExists()) {
+            VersionController.queryExistingRepoUse();
           } else {
-            this.versionController.queryStartRepoUse();
+            VersionController.queryStartRepoUse();
           }
         }
-        this.treeView.refresh();
+        DoorsSmores.treeView.refresh();
       }),
       vscode.commands.registerCommand("doors-smores.Open-Project", async () => {
         if(await openProjectWorkspace()) {
-          this.versionController.initialise();
+          VersionController.initialise();
         }
-        this.treeView.refresh();
+        DoorsSmores.treeView.refresh();
       }),
       vscode.commands.registerCommand("doors-smores.Close-Project", () => {
         closeProjectWorkspace();
-        this.versionController.close();
-        this.treeView.refresh();
+        DoorsSmores.treeView.refresh();
       }),
-    ];
-    return registrations;
-  }
-  private registerNewContentCommands():vscode.Disposable[] {
-    const registrations = [
       vscode.commands.registerCommand("doors-smores.New-Document", async () => {
         await newDocumentFromTemplate();
-        this.versionController.commitChanges(`New document created`);
-        this.refreshViews();
+        DoorsSmores.refreshViews();
       }),
-      vscode.commands.registerCommand("doors-smores.New-Heading", async (node:TreeNode) => {
-        const heading = await vscode.window.showInputBox({ placeHolder: 'new heading?' });
-        if(heading) {
-          newHeading(node.smoresNode, heading);
-          this.versionController.commitChanges(`New heading added`);
-          this.refreshViews();
-        }
-      }),
-      vscode.commands.registerCommand("doors-smores.New-Comment", (node:TreeNode) => {
-        newComment(node.smoresNode);
-        this.versionController.commitChanges(`New comment added`);
-        this.refreshViews();
-      }),
-      vscode.commands.registerCommand("doors-smores.New-Functional-Requirement", (node:TreeNode) => {
-        newFunctionalRequirement(node.smoresNode);
-        this.versionController.commitChanges(`New functional requirement added`);
-        this.refreshViews();
-      }),
-      vscode.commands.registerCommand("doors-smores.New-Image", (node:TreeNode) => {
-        newImage(node.smoresNode);
-        this.versionController.commitChanges(`New image added`);
-        this.refreshViews();
-      }),
-      vscode.commands.registerCommand("doors-smores.New-MermaidImage", (node:TreeNode) => {
-        newMermaidImage(node.smoresNode);
-        this.versionController.commitChanges(`New mermaid image added`);
-        this.refreshViews();
-      })
     ];
     return registrations;
   }
-  private registerNodeManipulationCommands():vscode.Disposable[] {
+  private registerTreeViewCommands():vscode.Disposable[] {
     const registrations = [
-      vscode.commands.registerCommand("doors-smores.Move-Node-Up", (node:TreeNode) => {
-        moveNodeUp(node.smoresNode);
-        node.contextValue = node.smoresNode.getContextString();
-        this.versionController.commitChanges(`Node ${node.smoresNode.data.id} document order decreased`);
-        this.refreshViews();
-      }),
-      vscode.commands.registerCommand("doors-smores.Move-Node-Down", (node:TreeNode) => {
-        moveNodeDown(node.smoresNode);
-        node.contextValue = node.smoresNode.getContextString();
-        this.versionController.commitChanges(`Node ${node.smoresNode.data.id} document order increased`);
-        this.refreshViews();
-      }),
-      vscode.commands.registerCommand("doors-smores.Promote-Node", (node:TreeNode) => {
-        promoteNode(node.smoresNode);
-        node.contextValue = node.smoresNode.getContextString();
-        this.versionController.commitChanges(`Node ${node.smoresNode.data.id} document level decreased`);
-        this.refreshViews();
-      }),
-      vscode.commands.registerCommand("doors-smores.Demote-Node", (node:TreeNode) => {
-        demoteNode(node.smoresNode);
-        node.contextValue = node.smoresNode.getContextString();
-        this.versionController.commitChanges(`Node ${node.smoresNode.data.id} document level increased`);
-        this.refreshViews();
-      }),
-      vscode.commands.registerCommand("doors-smores.Delete-TreeNode", async (node:TreeNode) => {
-        const parent = node.smoresNode.getParentNode();
-        const nodeId = node.smoresNode.data.id;
-        if(await deleteNodeWithConfirmation(node.smoresNode)) {
-          this.versionController.commitChanges(`Node ${node.smoresNode.data.id} and child nodes deleted`);
-          this.refreshViews();
-        }
-      })
+      vscode.commands.registerCommand("doors-smores.New-TreeHeading", newTreeHeading),
+      vscode.commands.registerCommand("doors-smores.New-TreeComment", newTreeComment),
+      vscode.commands.registerCommand("doors-smores.New-TreeUserReq", newTreeUserReq),
+      vscode.commands.registerCommand("doors-smores.New-TreeNonFuncReq", newTreeNonFuncReq),
+      vscode.commands.registerCommand("doors-smores.New-TreeFuncReq", newTreeFuncReq),
+      vscode.commands.registerCommand("doors-smores.New-TreeSysTest", newTreeSysTest),
+      vscode.commands.registerCommand("doors-smores.New-TreeIntTest", newTreeIntTest),
+      vscode.commands.registerCommand("doors-smores.New-TreeUnitTest", newTreeUnitTest),
+      vscode.commands.registerCommand("doors-smores.New-TreeImage", newTreeImage),
+      vscode.commands.registerCommand("doors-smores.New-TreeMermaidImage", newTreeMermaidImage),
+      vscode.commands.registerCommand("doors-smores.Move-Node-Up", moveNodeUp),
+      vscode.commands.registerCommand("doors-smores.Move-Node-Down", moveNodeDown),
+      vscode.commands.registerCommand("doors-smores.Promote-Node", promoteNode),
+      vscode.commands.registerCommand("doors-smores.Demote-Node", demoteNode),
+      vscode.commands.registerCommand("doors-smores.Delete-TreeNode", deleteNode)
     ];
     return registrations;
   }
-
+  private registerDocumentViewerCommands():vscode.Disposable[] {
+    const registrations = [
+      vscode.commands.registerCommand("doors-smores.Edit-Section", DoorsSmores.documentView.editNode),
+      vscode.commands.registerCommand("doors-smores.New-WebHeading", newWebviewHeading),
+      vscode.commands.registerCommand("doors-smores.New-WebComment", newWebviewComment),
+      vscode.commands.registerCommand("doors-smores.New-WebUserReq", newWebviewUserReq),
+      vscode.commands.registerCommand("doors-smores.New-WebNonFuncReq", newWebviewNonFuncReq),
+      vscode.commands.registerCommand("doors-smores.New-WebFuncReq", newWebviewFuncReq),
+      vscode.commands.registerCommand("doors-smores.New-WebSysTest", newWebviewSysTest),
+      vscode.commands.registerCommand("doors-smores.New-WebIntTest", newWebviewIntTest),
+      vscode.commands.registerCommand("doors-smores.New-WebUnitTest", newWebviewUnitTest),
+      vscode.commands.registerCommand("doors-smores.New-WebImage", newWebviewImage),
+      vscode.commands.registerCommand("doors-smores.New-WebMermaidImage", newWebviewMermaidImage)
+    ];
+    return registrations;
+  }
 }

@@ -22,9 +22,8 @@ export class DocumentViewer {
   }
 
   public editNode(context:any) {
-    if(context.webviewSection && this._referenceNode) {
-      const webviewSection:string = context.webviewSection;
-      const nodeId:number = Number(webviewSection.replace("Node-",""));
+    if(context.nodeId && this._referenceNode) {
+      const nodeId:number = Number(context.nodeId);
       const nodeFilepath = this._referenceNode.getNodeFilepath(nodeId);
       const node = new SmoresNode(nodeFilepath);
       if(node.data.category === "heading") {
@@ -74,7 +73,7 @@ export class DocumentViewer {
         if(this._nodeToEdit) {
           this._nodeToEdit.setNewData(message.submitData);
           this._nodeToEdit = undefined;
-          vscode.commands.executeCommand('doors-smores.Update-TreeView');
+          vscode.commands.executeCommand('doors-smores.Update-Views');
         }
         this.updatePanel();
         vscode.window.showErrorMessage(message.text);
@@ -85,7 +84,22 @@ export class DocumentViewer {
         return;
     }
   }
+  private getViewIdByDocumentType(docType:string) {
+    switch (docType) {
+      case 'User Requirements Specification': return "smoresURSView";
+      case 'Software Requirements Specification': return "smoresSRSView";
+      case "Architecture Design Specification": return "smoresADSView";
+      case "Detailed Design Specification": return "smoresDDSView";
+      case "Software Acceptance Test Protocol": return "smoresATPView";
+      case "Software System Test Protocol": return "smoresSTPView";
+      case "Software Integration Test Protocol": return "smoresITPView";
+      case "Software Unit Test Protocol": return "smoresUTPView";
+      default: return "smoresNodeView";
+    }
+  }
   private _createPanel(node:SmoresNode) {
+    const docType = node.getDocumentType();
+    const viewId = this.getViewIdByDocumentType(docType);
     this._referenceNode = node;
     const imagesPath = SmoresDataFile.getImagesFilepath();
     const nodePath = SmoresDataFile.getDataFilepath();
@@ -100,8 +114,8 @@ export class DocumentViewer {
     const nodeUri = vscode.Uri.file(nodePath);    
     const extensionUri = vscode.Uri.file(extensionPath);    
     this._viewPanel = vscode.window.createWebviewPanel(
-      "smoresNodeView", // Identifies the type of the webview. Used internally
-      "Smores Preview", // Title of the panel displayed to the user
+      viewId, // Identifies the type of the webview. Used internally
+      docType, // Title of the panel displayed to the user
       vscode.ViewColumn.One, // Editor column to show the new webview panel in.
       {
         enableScripts: true,
@@ -132,7 +146,7 @@ export class DocumentViewer {
     if(newValue) {
       node.data.text = newValue;
       node.write();
-      vscode.commands.executeCommand('doors-smores.Update-TreeView');
+      vscode.commands.executeCommand('doors-smores.Update-Views');
       this.updatePanel();
     }
   }
@@ -153,7 +167,7 @@ export class DocumentViewer {
     if(uri) {
       node.data.text = path.relative(imagesUri.path, uri[0].path);
       node.write();
-      vscode.commands.executeCommand('doors-smores.Update-TreeView');
+      vscode.commands.executeCommand('doors-smores.Update-Views');
       this.updatePanel();
     }  
   }
