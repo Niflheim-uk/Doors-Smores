@@ -45,8 +45,8 @@
   width:16cm;
   display:flex;
   flex-direction: column;
-  margin-top: 2cm;
-  margin-bottom: 2cm;
+  margin-top: 1cm;
+  margin-bottom: 1cm;
 }
 .editBox {
   height: 300px;

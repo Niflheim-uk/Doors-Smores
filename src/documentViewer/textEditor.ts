@@ -50,8 +50,8 @@ function getEditDivHtml(node:SmoresNode, editSection:string, helpText:string):st
   const buttons = getButtons(node.data.id);
   const help = getHelp(helpText, node.data.id);
   const outerHtml = `
-  <div class="editDiv">${editSection}</div>
-  <div class="buttonContainer">${buttons}${help}</div>`;
+  <div class="editDiv">${editSection}<br/>
+  <div class="buttonContainer">${buttons}${help}</div></div>`;
   return outerHtml;
 }
 function getCommentEditDivHtml(node:SmoresNode):string {
