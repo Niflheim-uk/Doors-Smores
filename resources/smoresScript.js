@@ -1,7 +1,10 @@
 const vscode = acquireVsCodeApi();
 
-addEventListener("load", initialize);
+addEventListener("load", delayedInit);
 
+function delayedInit() {
+  setTimeout(initialize, 50);
+}
 function initialize() {
   /* Trace view */
   var elements = document.getElementsByClassName('tracing');
@@ -19,10 +22,10 @@ function initialize() {
     if(Array.isArray(matches)) {
       el.addEventListener('click', traceDeleteOnClick);
     }
-    matches = el.id.match(/New-([\S]+)/);
-    if(Array.isArray(matches)) {
-      el.addEventListener('click', traceAddOnClick);
-    }
+  }
+  el = document.getElementById('NewTrace');
+  if(el !== undefined) {
+    el.addEventListener('click', traceAddOnClick);
   }
   elements = document.getElementsByClassName('editSubmit');
   for (let i = 0; i < elements.length; i++) {
@@ -128,20 +131,10 @@ function traceVerifyOnClick(event) {
 }
 function traceDeleteOnClick(event) {
   const nodeId = Number(event.currentTarget.dataset["nodeId"]);
-  const traceType = event.currentTarget.dataset["traceType"];
-  let upstream = false;
-  if(event.currentTarget.dataset["traceUpstream"] === 'true') {
-    upstream = true;
-  }
-  vscode.postMessage({command: 'removeTrace', nodeId:nodeId, traceType:traceType, traceUpstream:upstream});
+  vscode.postMessage({command: 'removeTrace', nodeId:nodeId});
 }
 function traceAddOnClick(event) {
-  const traceType = event.currentTarget.dataset["traceType"];
-  let upstream = false;
-  if(event.currentTarget.dataset["traceUpstream"] === 'true') {
-    upstream = true;
-  }
-  vscode.postMessage({command: 'addTrace', traceType:traceType, traceUpstream:upstream});
+  vscode.postMessage({command: 'addTrace'});
 }
 function editOnSubmit() {
   const textAreas = document.getElementsByTagName('textarea');
