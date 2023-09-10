@@ -19,9 +19,9 @@
   "contributes": {
     "configuration": [
       {
-        "title": "Maximum Recent Projects",
+        "title": "Doors Smores",
         "properties": {
-          "doors-smores.max-recent-projects": {
+          "Maximum Recent Projects": {
             "default": "5",
             "type": "integer"
           }
