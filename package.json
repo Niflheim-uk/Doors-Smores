@@ -21,8 +21,8 @@
       {
         "title": "Doors Smores",
         "properties": {
-          "Maximum Recent Projects": {
-            "default": "5",
+          "doors-smores.projectView.maximumRecentProjects": {
+            "default": 5,
             "type": "integer"
           }
         }
