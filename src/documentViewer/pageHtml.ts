@@ -28,6 +28,12 @@ function getScriptPath():string|undefined {
   }
   return undefined;
 }
+function getMermaidPath():string|undefined {
+  if(_extensionPath) {
+    return path.join(_extensionPath, 'resources', 'vendor', 'mermaid', 'mermaid.min.js');
+  }
+  return undefined;
+}
 function getStyleBlock(exporting:boolean):string {
   const nonce = utils.getNonce();
   const webview = utils.getWebview();
@@ -73,6 +79,33 @@ function getScriptBlock(exporting:boolean):string {
   <script nonce="${nonce}" src="${scriptUri}"></script>
   `;
 }
+
+function getMermaidBlock(exporting:boolean):string {
+  const nonce = utils.getNonce();
+  const webview = utils.getWebview();
+  const mermaidPath = getMermaidPath();
+  const mermaidConfig = `{ 
+    startOnLoad: true, 
+    theme: 'neutral',
+    flowchart: {
+       useMaxWidth: false, 
+       htmlLabels: true 
+      } 
+    }`;
+  var mermaidUri;
+  if(webview === undefined || mermaidPath === undefined) {
+    return "";
+  }
+  if(exporting) {
+    mermaidUri = mermaidPath;
+  } else {
+    mermaidUri = webview.asWebviewUri(vscode.Uri.file(mermaidPath)).toString();
+  }
+
+  return `
+  <script nonce="${nonce}" src="${mermaidUri}"></script>
+  <script nonce="${nonce}">mermaid.initialize(${mermaidConfig});</script>`;
+}
 export function getPageHtml(node:SmoresNode, exporting:boolean, editNode?:SmoresNode):string {
   const nonce = utils.getNonce();
   const webview = utils.getWebview();
@@ -82,6 +115,7 @@ export function getPageHtml(node:SmoresNode, exporting:boolean, editNode?:Smores
   const bodyHtml = getBodyHtml(node, exporting, editNode);
   const styleBlock = getStyleBlock(exporting);
   const scriptBlock = getScriptBlock(exporting);
+  const mermaidBlock = getMermaidBlock(exporting);
   utils.clearNonce();
   
   return `
@@ -91,10 +125,9 @@ export function getPageHtml(node:SmoresNode, exporting:boolean, editNode?:Smores
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       ${styleBlock}
-      ${scriptBlock}
       <title>${node.data.text}</title>
     </head>
-    <body>${bodyHtml}</body>
+    <body>${bodyHtml}${mermaidBlock}${scriptBlock}</body>    
   </html>`;  
 }
 /*

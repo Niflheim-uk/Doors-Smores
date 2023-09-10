@@ -1,6 +1,7 @@
 import { SmoresNode } from '../model/smoresNode';
 import { getInnerHtmlForImage } from './imageInnerHtml';
 import { getInnerHtmlForRequirement } from './requirementInnerHtml';
+import { getInnerHtmlForMermaid } from './mermaidImageHtml';
 import * as heading from './headingInnerHtml';
 import { getMarkdownParagraphs } from '../utils/utils';
 import { getEditHtmlForNodeType } from './textEditor';
@@ -50,6 +51,9 @@ function getViewHtmlForNodeType(node:SmoresNode, exporting:boolean):string {
       return getViewDivHtml(node, exporting, innerHtml);
     case "image":
       innerHtml = getInnerHtmlForImage(node, exporting);
+      return getViewDivHtml(node, exporting, innerHtml);
+    case "mermaid":
+      innerHtml = getInnerHtmlForMermaid(node);
       return getViewDivHtml(node, exporting, innerHtml);
     default:
       innerHtml =  "<H1>ERROR - Unknown Category</H1>";

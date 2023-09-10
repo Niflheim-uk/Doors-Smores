@@ -134,7 +134,12 @@
       {
         "command": "doors-smores.New-Image",
         "category": "Smores",
-        "title": "New Image"
+        "title": "New Image (File)"
+      },
+      {
+        "command": "doors-smores.New-MermaidImage",
+        "category": "Smores",
+        "title": "New Image (Mermaid Syntax)"
       },
       {
         "command": "doors-smores.New-Functional-Requirement",
@@ -206,6 +211,10 @@
         },
         {
           "command": "doors-smores.New-Image",
+          "when": "view == smoresTreeView && (viewItem =~ /heading/)"
+        },
+        {
+          "command": "doors-smores.New-MermaidImage",
           "when": "view == smoresTreeView && (viewItem =~ /heading/)"
         },
         {

@@ -58,6 +58,12 @@ export class SmoresNode extends SmoresDataFile {
   newImage() {
     return this.newItem("image", "../defaultImage.jpg");
   }
+  newMermaidImage() {
+    return this.newItem("mermaid", `sequenceDiagram
+  Alice->>John: Hello John, how are you?
+  John-->>Alice: Great!
+  Alice-)John: See you later!`);
+  }
   delete() {
     const parent = this.getParentNode();
     const children = this.getChildNodes();

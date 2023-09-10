@@ -38,6 +38,8 @@ function getLabelPrefix(nodeData:NodeDataModel):string {
       return "I";
     case "functionalRequirement":
       return "FR";
+    case "mermaid":
+      return "M";
     default:
       return "X";
   }

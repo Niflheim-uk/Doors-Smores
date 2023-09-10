@@ -1,10 +1,11 @@
 import { SmoresNode } from '../model/smoresNode';
 import * as utils from '../utils/utils';
 
-const mdHelp:string = "some helpful instructions";
-const commentHelp:string = "some helpful instructions";
-const requirementHelp:string = "some helpful instructions";
-const transRatHelp:string = "some helpful instructions";
+const mdHelp:string = "some helpful instructions about Markdown syntax";
+const mermaidHelp:string = "some helpful instructions about the Mermaid syntax";
+const commentHelp:string = "some helpful instructions about comments";
+const requirementHelp:string = "some helpful instructions about requirements";
+const transRatHelp:string = "some helpful instructions about translation rationale";
 
 function getEditTextArea(divId:string, divContent:string):string {
   return `<textarea id='${divId}' class="editBox" data-vscode-context='
@@ -25,6 +26,16 @@ function getHelp(helpText:string, nodeId:number) {
 }
 function getCommentEditDivHtml(node:SmoresNode):string {
   let helpText:string = `${commentHelp}<br/>${mdHelp}`;
+  const textArea = getEditTextArea(`textarea-${node.data.id}-1`,node.data.text);
+  const buttons = getButtons(`{text:"textarea-${node.data.id}-1"}`);
+  const help = getHelp(helpText, node.data.id);
+  const outerHtml = `
+  <div class="editDiv">${textArea}</div>
+  <div class="buttonContainer">${buttons}${help}</div>`;
+  return outerHtml;
+}
+function getMermaidEditDivHtml(node:SmoresNode):string {
+  let helpText:string = `${mermaidHelp}`;
   const textArea = getEditTextArea(`textarea-${node.data.id}-1`,node.data.text);
   const buttons = getButtons(`{text:"textarea-${node.data.id}-1"}`);
   const help = getHelp(helpText, node.data.id);
@@ -60,11 +71,12 @@ export function getEditHtmlForNodeType(node:SmoresNode):string {
     case "heading":
     case "image":
       return "<H1>ERROR - Inconceivable!</H1>";
-      break;
     case "functionalRequirement":
       return getRequirementEditDivHtml(node);
     case "comment":
       return getCommentEditDivHtml(node);
+    case "mermaid":
+      return getMermaidEditDivHtml(node);
     default:
       return "<H1>ERROR - Unknown Category</H1>";
   }
