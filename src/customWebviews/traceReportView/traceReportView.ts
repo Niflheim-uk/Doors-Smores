@@ -12,7 +12,6 @@ import { getTableTextHtmlFromMd } from "../markdownConversion";
 import { getTraceReportDownstreamContent, getTraceReportTestsContent, getTraceReportUpstreamContent } from "./traceReportContent";
 import { SmoresDocument } from "../../model/smoresDocument";
 import { getPageBreak } from "../getPageBreak";
-import { getTableOfContents } from "../getTableOfContents";
 import { getTraceReportIntroFromTemplate } from "./traceReportIntroTemplate";
 
 export class TraceReportView {
@@ -171,10 +170,8 @@ export class TraceReportView {
     }
     const documentType = node.data.documentData.documentType;
     const body = TraceReportView.getHtmlForNode(documentType, node);
-    const cover = TraceReportView.getTraceReportCover(documentType, node.data.text);
-    const TOC = getTableOfContents(body, 2);
     const intro = TraceReportView.getTraceReportIntro(documentType, node);
-    return `${cover}${TOC}${intro}${body}`;
+    return `${intro}${body}`;
   }
   private static getHtmlForNode(documentType:string, node: DocumentNode):string {
     let html:string = "";

@@ -11,6 +11,7 @@ Requirement analysis software doesn't have to be that complicated... right?
 
 # Pre-requisites
 - Requires Git to be installed for version control features. See [this page](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) for instructions on installing Git.
+- Requires [wkhtmltopdf](https://wkhtmltopdf.org) for exporting documents
 
 # Documentation
 - Instructions on how to use Doors Smores can be found [here](https://github.com/Niflheim-uk/Doors-Smores-Docs)
@@ -45,10 +46,13 @@ Requirement analysis software doesn't have to be that complicated... right?
 # Planned release schedule
 
 ### 0.6 
-![n](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/incomplete_icon.png?raw=true) Document cover page \
-![n](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/incomplete_icon.png?raw=true) Document table of contents \
+![y](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/complete_icon.png?raw=true) Document cover page \
+![y](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/complete_icon.png?raw=true) Document table of contents \
+![n](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/incomplete_icon.png?raw=true) Revision history \
 ![n](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/incomplete_icon.png?raw=true) All templates fleshed out \
-![n](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/incomplete_icon.png?raw=true) Auto sync with remote repository to keep a team in sync.
+![n](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/incomplete_icon.png?raw=true) Auto sync with remote repository to keep a team in sync \
+![n](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/incomplete_icon.png?raw=true) Release tagging \
+![n](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/incomplete_icon.png?raw=true) Automatic document revision numbering
 
 ### 0.7
 ![n](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/incomplete_icon.png?raw=true) User defined header & footer to allow document branding. \
@@ -65,8 +69,6 @@ Requirement analysis software doesn't have to be that complicated... right?
 - Produce risk analysis reports.
 
 ## Other planned features
-- Release tagging
-- Automatic document revision numbering
 - Document review mechanism
 - Document approval mechanism
 - Document diff between releases, and between release and current draft.

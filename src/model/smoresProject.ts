@@ -60,7 +60,7 @@ export class SmoresProject extends SmoresFile {
       parent:0,
       children:[],
       traces:{traceIds:[],suspectIds:[]},
-      documentData:{documentType}
+      documentData:{documentType, revisionHistory:[], traceReportRevisionHistory:[]}
     };
     newDocument.data = newDocumentData;
     newDocument.write();

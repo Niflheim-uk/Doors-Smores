@@ -5,8 +5,19 @@ import { VersionController } from "../versionControl/versionController";
 import { basename, join } from "path";
 import { rmSync } from "fs";
 
+export type RevisionHistoryItem = {
+  day:number;
+  month:number;
+  year:number;
+  major:number;
+  minor:number;
+  detail:string[];
+  author:string;
+};
 interface DocumentData {
   documentType: string;
+  revisionHistory:RevisionHistoryItem[];
+  traceReportRevisionHistory:RevisionHistoryItem[];
 }
 interface RequirementData {
   translationRationale: string;
@@ -44,6 +55,14 @@ function fixData(data:DocumentNodeData) : DocumentNodeData {
   }
   if(data.traces === undefined) {
     data.traces = {traceIds:[],suspectIds:[]};
+  }
+  if(data.documentData) {
+    if(data.documentData.revisionHistory === undefined) {
+      data.documentData.revisionHistory = [];
+    }
+    if(data.documentData.traceReportRevisionHistory === undefined) {
+      data.documentData.traceReportRevisionHistory = [];
+    }
   }
   return data;
 }

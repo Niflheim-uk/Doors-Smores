@@ -12,6 +12,17 @@ export function getDocumentStylePaths():string[] {
   ];
   return stylesPaths;
 }
+export function getCoverStylePaths():string[] {
+  const extensionPath = DoorsSmores.getExtensionPath();
+  // Local path to css styles
+  const stylesPaths:string[] = [
+    join(extensionPath, 'resources', 'document.css'),
+    join(extensionPath, 'resources', 'displayStyle.css'),
+    join(extensionPath, 'resources', 'pagination.css'),
+    join(extensionPath, 'resources', 'cover.css')
+  ];
+  return stylesPaths;
+}
 export function getTracingStylePaths():string[] {
   const extensionPath = DoorsSmores.getExtensionPath();
   const stylesPaths:string[] = [

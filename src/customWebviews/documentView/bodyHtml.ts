@@ -11,7 +11,6 @@ import {
   getInnerHtmlForMermaid, 
 } from '../contentInnerHtml';
 import { getPageBreak } from '../getPageBreak';
-import { getTableOfContents } from '../getTableOfContents';
 
 function getViewDivHtml(node:DocumentNode, exporting:boolean, innerHtml:string) {
   if(exporting) {
@@ -115,17 +114,11 @@ function getHtmlForNode(node: DocumentNode, exporting:boolean, editNode?: Docume
   html = html.concat(getHtmlForNodeChildren(node, exporting, editNode));
   return html;
 }
-function getDocumentCover(documentType:string, documentName:string) {
-  return `<h1>${documentType} - ${documentName}</h1>`;
-}
 export function getBodyHtml(node: DocumentNode, exporting:boolean, editNode?: DocumentNode):string {
   heading.resetHeaderDepth();
   if(node.data.documentData) {
-    const documentType = node.data.documentData.documentType;
     const body = getHtmlForNode(node, exporting, editNode);
-    const cover = getDocumentCover(documentType, node.data.text);
-    const TOC = getTableOfContents(body, 2);
-    return `${cover}${TOC}${body}`;
+    return body;
   } else {
     return getHtmlForNode(node, exporting, editNode);
   }

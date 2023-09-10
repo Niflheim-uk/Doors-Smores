@@ -9,6 +9,9 @@ import { DocumentNode } from "../../model/documentNode";
 import { DoorsSmores } from "../../doorsSmores";
 import { SmoresFile } from "../../model/smoresFile";
 import { VersionController } from "../../versionControl/versionController";
+import { exec } from "child_process";
+import { writeDocumentPdf } from "../writeDocumentPdf";
+import { SmoresDocument } from "../../model/smoresDocument";
 
 export class DocumentView {
   public static currentPanel: DocumentView | undefined;
@@ -117,6 +120,8 @@ export class DocumentView {
     content = DocumentView.getPageHtml(panel.webview, documentNode!, true);
     vscode.commands.executeCommand('workbench.action.closeActiveEditor');
     fs.writeFileSync(filePath, content);
+    const document = SmoresDocument.createDocumentFromId(documentNode!.data.id);
+    writeDocumentPdf(document, filePath, false);
   }
   private static createPanel(viewId:string, title:string) {
     const projUri = vscode.Uri.file(DoorsSmores.getProjectDirectory());    
