@@ -206,30 +206,31 @@ export class SmoresNode extends SmoresDataFile {
     if(tracedNode === undefined) {
       return;
     }
-    const thisLabel = schema.getLabelPrefix(this.data.category);
-    const traceLabel = schema.getLabelPrefix(tracedNode.data.category);
     this.data.traces.traceIds.push(traceId);
     this.write();
-    VersionController.commitChanges(`Added trace from ${thisLabel}${this.data.id} to ${traceLabel}${traceId}`);
     if(reciprocate) {
       tracedNode.addTrace(this.data.id, false);
+      const thisLabel = schema.getLabelPrefix(this.data.category);
+      const traceLabel = schema.getLabelPrefix(tracedNode.data.category);
+      VersionController.commitChanges(`Added trace from ${thisLabel}${this.data.id} to ${traceLabel}${traceId}`);
     }
   }
   public removeTrace(traceId:number, reciprocate:boolean=true) {
-    if(this.data.traces.traceIds.includes(traceId)) {
+    if(!this.data.traces.traceIds.includes(traceId)) {
       return;
     }
     const tracedNode = getNodeFromId(traceId);
     if(tracedNode === undefined) {
       return;
     }
-    const thisLabel = schema.getLabelPrefix(this.data.category);
-    const traceLabel = schema.getLabelPrefix(tracedNode.data.category);
-    this.data.traces.traceIds.push(traceId);
+    const idPos = this.data.traces.traceIds.findIndex(id => traceId === id);
+    this.data.traces.traceIds.splice(idPos,1);
     this.write();
-    VersionController.commitChanges(`Added trace from ${thisLabel}${this.data.id} to ${traceLabel}${traceId}`);
     if(reciprocate) {
-      tracedNode.addTrace(this.data.id, false);
+      tracedNode.removeTrace(this.data.id, false);
+      const thisLabel = schema.getLabelPrefix(this.data.category);
+      const traceLabel = schema.getLabelPrefix(tracedNode.data.category);
+      VersionController.commitChanges(`Removed trace from ${thisLabel}${this.data.id} to ${traceLabel}${traceId}`);
     }
   }
   public isTraceSuspect(traceId:number):boolean {

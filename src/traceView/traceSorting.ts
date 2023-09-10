@@ -5,10 +5,10 @@ const srsReqPattern = /^S((FR)|(NFR)|(DC))$/;
 const adsReqPattern = /^A((FR)|(NFR)|(DC))$/;
 const srsAdsReqPattern = /^(S|A)((FR)|(NFR)|(DC))$/;
 const ddsReqPattern = /^D((FR)|(NFR)|(DC))$/;
-const userTestPattern = /^AT$/;
+const userTestPattern = /^UT$/;
 const softTestPattern = /^ST$/;
-const archTestPattern = /^IT$/;
-const desTestPattern = /^UT$/;
+const archTestPattern = /^AT$/;
+const desTestPattern = /^DT$/;
 
 export function isCategoryTraceable(category:string):boolean {
   switch(category) {
@@ -33,6 +33,85 @@ export function isCategoryTraceable(category:string):boolean {
     return false;
   }
 }
+export function getValidCategoryOptions(originCategory:string):string[] {
+  switch(originCategory) {
+  case schema.userFRType:
+    return [
+      schema.userTestType, // tests
+      schema.softFRType, schema.softDCType // downstream
+    ];
+  case schema.userNFRType:
+    return [
+      schema.userTestType, // tests
+      schema.softNFRType, schema.softDCType // downstream
+    ];
+  case schema.userDCType:
+    return [
+      schema.userTestType, //tests
+      schema.softDCType
+    ];
+  case schema.softFRType:
+    return [
+      schema.userFRType, // upstream
+      schema.softTestType, schema.archTestType, // tests
+      schema.archFRType, schema.archDCType, schema.desFRType, schema.desDCType // downstream
+    ];
+  case schema.softNFRType:
+    return [
+      schema.userNFRType, // upstream
+      schema.softTestType, schema.archTestType, // test
+      schema.archNFRType, schema.archDCType, schema.desNFRType, schema.desDCType // downstream
+    ];
+  case schema.softDCType:
+    return [
+      schema.userNFRType, schema.userDCType,
+      schema.softTestType, schema.archTestType,
+      schema.archDCType, schema.desDCType
+    ];
+  case schema.archFRType:
+    return [
+      schema.softFRType, // upstream
+      schema.archTestType, schema.desTestType, // tests
+      schema.desFRType, schema.desDCType // downstream
+    ];
+  case schema.archNFRType:
+    return [
+      schema.softNFRType, // upstream
+      schema.archTestType, schema.desTestType, // tests
+      schema.desNFRType, schema.desDCType // downstream
+    ];
+  case schema.archDCType:
+    return [
+      schema.softNFRType, schema.softDCType,
+      schema.archTestType, schema.desTestType,
+      schema.desDCType
+    ];
+  case schema.desFRType:
+    return [
+      schema.softFRType, schema.archFRType, // upstream
+      schema.desTestType, schema.archTestType, // tests
+    ];
+  case schema.desNFRType:
+    return [
+      schema.softNFRType, schema.archNFRType, // upstream
+      schema.desTestType, schema.archTestType, // tests
+    ];
+  case schema.desDCType:
+    return [
+      schema.softFRType, schema.softNFRType, schema.softDCType, schema.archFRType, schema.archNFRType, schema.archDCType,
+      schema.desTestType, schema.archTestType,
+    ];
+  case schema.userTestType:
+    return [schema.userFRType, schema.userNFRType, schema.userDCType];
+  case schema.softTestType:
+    return [schema.softFRType, schema.softNFRType, schema.softDCType];
+  case schema.archTestType:
+    return [schema.softFRType, schema.softNFRType, schema.softDCType, schema.archFRType, schema.archNFRType, schema.archDCType, schema.desFRType, schema.desNFRType, schema.desDCType];
+  case schema.desTestType:
+    return [schema.archFRType, schema.archNFRType, schema.archDCType, schema.desFRType, schema.desNFRType, schema.desDCType];
+  }  
+  return[];
+}
 export function getTargetableDocumentTypes(originDocumentType:string) {
   switch(originDocumentType) {
     case schema.emptyDocType:
@@ -42,7 +121,7 @@ export function getTargetableDocumentTypes(originDocumentType:string) {
     case schema.srsDocType:
       return [schema.ursDocType, schema.srsDocType, schema.adsDocType, schema.ddsDocType, schema.stpDocType, schema.itpDocType, schema.emptyDocType];
     case schema.adsDocType:
-      return [schema.srsDocType, schema.ddsDocType, schema.stpDocType, schema.itpDocType, schema.utpDocType, schema.emptyDocType];
+      return [schema.srsDocType, schema.ddsDocType, schema.itpDocType, schema.utpDocType, schema.emptyDocType];
     case schema.ddsDocType:
       return [schema.srsDocType, schema.adsDocType, schema.itpDocType, schema.utpDocType, schema.emptyDocType];
     case schema.atpDocType:
@@ -54,7 +133,7 @@ export function getTargetableDocumentTypes(originDocumentType:string) {
     case schema.utpDocType:
       return [schema.adsDocType, schema.ddsDocType, schema.emptyDocType];
     }
-    return undefined;
+    return [];
 }
 function getMatchingTraceTypes(originCategoryLabel:string, traces:number[], traceCategoryLabels:string[], patterns:RegExp[]):number[] {
   if(traces.length !== traceCategoryLabels.length) {
@@ -92,14 +171,36 @@ export function getDetailsTraceType(originCategoryLabel:string, traces:number[],
 export function getVerifiedByTraceType(originCategoryLabel:string, traces:number[], traceCategoryLabels:string[]):number[] {
   const userLevelMatches = getMatchingTraceTypes(originCategoryLabel, traces, traceCategoryLabels, [ursReqPattern, userTestPattern]);
   const softLevelMatches = getMatchingTraceTypes(originCategoryLabel, traces, traceCategoryLabels, [srsReqPattern, softTestPattern]);
+  const softLevelMatches2 = getMatchingTraceTypes(originCategoryLabel, traces, traceCategoryLabels, [srsReqPattern, archTestPattern]);
   const archLevelMatches = getMatchingTraceTypes(originCategoryLabel, traces, traceCategoryLabels, [adsReqPattern, archTestPattern]);
+  const archLevelMatches2 = getMatchingTraceTypes(originCategoryLabel, traces, traceCategoryLabels, [adsReqPattern, desTestPattern]);
   const desLevelMatches = getMatchingTraceTypes(originCategoryLabel, traces, traceCategoryLabels, [ddsReqPattern, desTestPattern]);
-  return [...userLevelMatches, ...softLevelMatches, ...archLevelMatches, ...desLevelMatches];
+  const desLevelMatches2 = getMatchingTraceTypes(originCategoryLabel, traces, traceCategoryLabels, [ddsReqPattern, archTestPattern]);
+  return [
+    ...userLevelMatches, 
+    ...softLevelMatches, 
+    ...softLevelMatches2, 
+    ...archLevelMatches, 
+    ...archLevelMatches2, 
+    ...desLevelMatches,
+    ...desLevelMatches2
+  ];
 }
 export function getVerifiesTraceType(originCategoryLabel:string, traces:number[], traceCategoryLabels:string[]):number[] {
   const userLevelMatches = getMatchingTraceTypes(originCategoryLabel, traces, traceCategoryLabels, [userTestPattern, ursReqPattern]);
   const softLevelMatches = getMatchingTraceTypes(originCategoryLabel, traces, traceCategoryLabels, [softTestPattern, srsReqPattern]);
+  const softLevelMatches2 = getMatchingTraceTypes(originCategoryLabel, traces, traceCategoryLabels, [archTestPattern, srsReqPattern]);
   const archLevelMatches = getMatchingTraceTypes(originCategoryLabel, traces, traceCategoryLabels, [archTestPattern, adsReqPattern]);
+  const archLevelMatches2 = getMatchingTraceTypes(originCategoryLabel, traces, traceCategoryLabels, [desTestPattern, adsReqPattern]);
   const desLevelMatches = getMatchingTraceTypes(originCategoryLabel, traces, traceCategoryLabels, [desTestPattern, ddsReqPattern]);
-  return [...userLevelMatches, ...softLevelMatches, ...archLevelMatches, ...desLevelMatches];
+  const desLevelMatches2 = getMatchingTraceTypes(originCategoryLabel, traces, traceCategoryLabels, [archTestPattern, ddsReqPattern]);
+  return [
+    ...userLevelMatches, 
+    ...softLevelMatches, 
+    ...softLevelMatches2, 
+    ...archLevelMatches, 
+    ...archLevelMatches2, 
+    ...desLevelMatches,
+    ...desLevelMatches2
+  ];
 }
