@@ -1,4 +1,4 @@
-import { pathspec, SimpleGitOptions, simpleGit, TagResult } from 'simple-git';
+import { pathspec, SimpleGitOptions, simpleGit, TagResult, TaskOptions } from 'simple-git';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { DoorsSmores } from '../doorsSmores';
@@ -14,21 +14,23 @@ export type DiffRecord = {
 };
 
 
-var _pathSpec:string = '.';
-var _gitOptions: Partial<SimpleGitOptions> = {
-  binary: 'git',
-  maxConcurrentProcesses: 6,
-  trimmed: false,
-};
-var _commitMessage:string = "";
-var _commitTimer:NodeJS.Timeout;
-var _tagTag:string = "";
-var _tagMessage:string = "";
-var _tagTimer:NodeJS.Timeout;
 export class VersionController {
+  private static pathSpec:string = '.';
+  private static tagTag:string = "";
+  private static tagMessage:string = "";
+  private static commitMessage:string = "";
+  private static tagTimer:NodeJS.Timeout;
+  private static commitTimer:NodeJS.Timeout;
+  private static syncTimer:NodeJS.Timeout;
   private static open:boolean = false;
+  private static gitOptions: Partial<SimpleGitOptions> = {
+    binary: 'git',
+    maxConcurrentProcesses: 6,
+    trimmed: false,
+  };
   private static readonly firstTag:string = "start";
   private static readonly firstTagMessage:string = "DO NOT REMOVE: Used for diff";
+  private static readonly syncPeriod:number = (1000 * 60 * 5);
   public static isOpen() {
     return VersionController.open;
   }
@@ -51,11 +53,25 @@ export class VersionController {
     });
     return repoExists;
   }
+  public static async syncWithRemote() {
+    clearTimeout(VersionController.syncTimer);
+    const branchName = await simpleGit(VersionController.gitOptions).revparse(['--abbrev-ref', 'HEAD']);
+    const remotes = await simpleGit(VersionController.gitOptions).getRemotes(true);
+    if(remotes.length > 0) {
+      const remoteName = remotes[0].name;
+      await simpleGit(VersionController.gitOptions)
+      .pull(remoteName)
+      .raw('push', '--set-upstream', remoteName, branchName)
+      .pushTags(remoteName);
+
+    }
+    VersionController.syncTimer = setTimeout(VersionController.syncWithRemote, VersionController.syncPeriod);
+  }
 
   public static async commitChanges(msg:string) {
-    _commitMessage = _commitMessage.concat(msg, '\n');
-    clearTimeout(_commitTimer);
-    _commitTimer = setTimeout(VersionController.actOnCommitChanges, 1000);
+    VersionController.commitMessage = VersionController.commitMessage.concat(msg, '\n');
+    clearTimeout(VersionController.commitTimer);
+    VersionController.commitTimer = setTimeout(VersionController.actOnCommitChanges, 1000);
     console.log(msg);
   }
   private static async actOnCommitChanges() {
@@ -63,17 +79,18 @@ export class VersionController {
     if(project) {
       project.exportAll();
     }
-    if(!VersionController.open || _commitMessage === "") {
+    if(!VersionController.open || VersionController.commitMessage === "") {
       return; 
     }
-    simpleGit(_gitOptions).status([pathspec(_pathSpec)]).then(result=>{
+    await simpleGit(VersionController.gitOptions).status([pathspec(VersionController.pathSpec)]).then(async result=>{
       let filesChanged:string[] = result.not_added;
       filesChanged.push(...result.created);
       filesChanged.push(...result.deleted);
       filesChanged.push(...result.modified);
       const filesToAdd = VersionController.filterIgnoredFiles(filesChanged, result.ignored);
-      simpleGit(_gitOptions).add(filesToAdd).commit(_commitMessage);
-      _commitMessage = "";
+      await simpleGit(VersionController.gitOptions).add(filesToAdd).commit(VersionController.commitMessage);
+      VersionController.commitMessage = "";
+      VersionController.syncWithRemote();
     });
   }
 
@@ -84,17 +101,19 @@ export class VersionController {
       vscode.window.showErrorMessage("Repo not in use");
       return;
     }
-    _gitOptions.baseDir = projectNode.data.repoRoot;
-    if(_gitOptions.baseDir && projectNode.data.repoPathspec) {
-      _pathSpec = projectNode.data.repoPathspec;
+    VersionController.gitOptions.baseDir = projectNode.data.repoRoot;
+    if(VersionController.gitOptions.baseDir && projectNode.data.repoPathspec) {
+      VersionController.pathSpec = projectNode.data.repoPathspec;
       if(!await VersionController.testRepo()) {
-        vscode.window.showErrorMessage(`Git repository not found.\nExpected root: ${_gitOptions.baseDir}`);
+        vscode.window.showErrorMessage(`Git repository not found.\nExpected root: ${VersionController.gitOptions.baseDir}`);
       } else {
         console.log("Opened pre-existing repo");
         VersionController.open = true;
+        VersionController.syncWithRemote();
       }
     }
   }
+
   public static async startRepoUse() {
     if(await VersionController.repoExists()) {
       const msg = "The project resides inside a Git repository.\nWould you like to use the inherited Git repository,\nor create a separate Git repository for this\nproject?\nNote, if a separate repository is created, a\n.gitIgnore file will be created to hide the\nnested repository from the existing repository.";
@@ -113,7 +132,7 @@ export class VersionController {
     }  
   }
   public static async getUserName() {
-    return simpleGit(_gitOptions).raw('config', 'user.name').catch(err=>{return "Unknown";});
+    return simpleGit(VersionController.gitOptions).raw('config', 'user.name').catch(err=>{return "Unknown";});
   }
   public static async getLastTag(document:SmoresDocument, traceReport:boolean, verify:boolean=false) {
     const lastRev = document.getLatestRevision(traceReport);
@@ -124,7 +143,7 @@ export class VersionController {
     const docName = document.data.text.split("\n")[0].replace(/\s/g,'_');
     const tag = `${tr}${document.data.id}_${docName}_revision_${lastRev.getIssueString()}`;
     if(VersionController.open && verify) {
-      const tags:TagResult = await simpleGit(_gitOptions).tags();
+      const tags:TagResult = await simpleGit(VersionController.gitOptions).tags();
       for (let i = 0; i < tags.all.length; i++) {
         const testTag = tags.all[i];
         if(testTag === tag) {
@@ -175,7 +194,7 @@ export class VersionController {
   }
   private static async makeFirstCommit(createdNewRepo:boolean) {
     const startTag = VersionController.getStartTag();
-    await simpleGit(_gitOptions).add(`${_pathSpec}/*`)
+    await simpleGit(VersionController.gitOptions).add(`${VersionController.pathSpec}/*`)
     .commit('Initial commit')
     .addAnnotatedTag(startTag,VersionController.firstTagMessage).then(()=>{
       VersionController.open = true;
@@ -188,23 +207,23 @@ export class VersionController {
     });
   }
   private static addProjectFolderToGitIgnore() {
-    if(_gitOptions.baseDir === undefined) {
+    if(VersionController.gitOptions.baseDir === undefined) {
       vscode.window.showErrorMessage("baseDir of git options is undefined");
       return;
     }
-    const gitIgnore = path.join(_gitOptions.baseDir, "..", ".gitignore");
+    const gitIgnore = path.join(VersionController.gitOptions.baseDir, "..", ".gitignore");
     var ignoreString:string = "";
     if(existsSync(gitIgnore)) {
       ignoreString = readFileSync(gitIgnore, "utf-8");
       ignoreString = ignoreString.concat("\n");
     }
-    ignoreString = ignoreString.concat(`${path.basename(_gitOptions.baseDir)}`);
+    ignoreString = ignoreString.concat(`${path.basename(VersionController.gitOptions.baseDir)}`);
     writeFileSync(gitIgnore, ignoreString, {encoding:"utf-8"});
   }
   private static async initNewRepo(nested:boolean=false) {
-    _gitOptions.baseDir = DoorsSmores.getProjectDirectory();
-    _pathSpec = '.';
-    await simpleGit(_gitOptions)
+    VersionController.gitOptions.baseDir = DoorsSmores.getProjectDirectory();
+    VersionController.pathSpec = '.';
+    await simpleGit(VersionController.gitOptions)
     .init().then(async()=> {
       await VersionController.makeFirstCommit(true);
     });
@@ -214,13 +233,13 @@ export class VersionController {
   }
   private static async initExistingRepo(nested:boolean=false) {
     const projDir = DoorsSmores.getProjectDirectory();
-    _gitOptions.baseDir = projDir;
+    VersionController.gitOptions.baseDir = projDir;
     if(projDir === undefined) {
       return;
     }
-    simpleGit(_gitOptions).revparse('--show-toplevel').then(async gitRoot=>{
-      _gitOptions.baseDir = gitRoot;
-      _pathSpec = path.relative(gitRoot, projDir);
+    simpleGit(VersionController.gitOptions).revparse('--show-toplevel').then(async gitRoot=>{
+      VersionController.gitOptions.baseDir = gitRoot;
+      VersionController.pathSpec = path.relative(gitRoot, projDir);
       await VersionController.makeFirstCommit(false);
     });
   }
@@ -235,15 +254,15 @@ export class VersionController {
     return 'Error';
   }
   private static async getIssueChanges(tag:string) {
-    const numstatResponse = await simpleGit(_gitOptions).raw('diff', '--exit-code', '--no-renames', '--numstat', `${tag}..HEAD`);
-    const summaryResponse = await simpleGit(_gitOptions).raw('diff', '--exit-code', '--no-renames', '--compact-summary', '--name-status', `${tag}..HEAD`);
+    const numstatResponse = await simpleGit(VersionController.gitOptions).raw('diff', '--exit-code', '--no-renames', '--numstat', `${tag}..HEAD`);
+    const summaryResponse = await simpleGit(VersionController.gitOptions).raw('diff', '--exit-code', '--no-renames', '--compact-summary', '--name-status', `${tag}..HEAD`);
     const numstat = numstatResponse.split("\n");
     const summary = summaryResponse.split("\n");
     return [numstat, summary];
   }
   private static async getDiffRecordDetail(filepath:string, tag:string, mod:string) {
     var detailResponse;
-    detailResponse  = await simpleGit(_gitOptions).raw('diff', '--no-renames', '--exit-code', `${tag}..HEAD`, '--', filepath);
+    detailResponse  = await simpleGit(VersionController.gitOptions).raw('diff', '--no-renames', '--exit-code', `${tag}..HEAD`, '--', filepath);
     const detailArray = VersionController.detailResponseCleanSplit(detailResponse);
     if(mod === "M") {
       detailResponse = detailArray.slice(4).join("\n");
@@ -266,19 +285,20 @@ export class VersionController {
     return splitResponse;
   }
   private static async tagIssue(tag:string, message:string) {
-    clearTimeout(_commitTimer);
+    clearTimeout(VersionController.commitTimer);
     await VersionController.actOnCommitChanges();
-    _tagTag = tag;
-    _tagMessage = message;
-    clearTimeout(_tagTimer);
-    _tagTimer = setTimeout(VersionController.actOnTagIssue, 500);
+    VersionController.tagTag = tag;
+    VersionController.tagMessage = message;
+    clearTimeout(VersionController.tagTimer);
+    VersionController.tagTimer = setTimeout(VersionController.actOnTagIssue, 500);
     
   }
   private static async actOnTagIssue() {
-    await simpleGit(_gitOptions).addAnnotatedTag(_tagTag, _tagMessage).then(
+    await simpleGit(VersionController.gitOptions).addAnnotatedTag(VersionController.tagTag, VersionController.tagMessage).then(
       val=>{console.log(val);},
       err=>{console.error(err);}
     );
+    await VersionController.syncWithRemote();
   }
   private static async updateProjectNodeWithGitUse():Promise<void> {
     const projNode = DoorsSmores.getActiveProject();
@@ -287,7 +307,7 @@ export class VersionController {
     }
     projNode.data.gitInUse = VersionController.open;
     if(VersionController.open) {
-      projNode.data.repoPathspec = _pathSpec;
+      projNode.data.repoPathspec = VersionController.pathSpec;
       projNode.data.repoRoot = await VersionController.getGitRoot();
     } else {
       projNode.data.repoPathspec = undefined;
@@ -321,14 +341,14 @@ export class VersionController {
   private static async testRepo():Promise<boolean> {
     let repoAsExpected = false;
     if(await VersionController.repoExists()) {
-      if(await VersionController.getGitRoot() === _gitOptions.baseDir) {
+      if(await VersionController.getGitRoot() === VersionController.gitOptions.baseDir) {
         repoAsExpected = true;
       } 
     }    
     return repoAsExpected;
   }
   private static async getGitRoot():Promise<string> {
-    const gitRoot = await simpleGit(_gitOptions).revparse('--show-toplevel');
+    const gitRoot = await simpleGit(VersionController.gitOptions).revparse('--show-toplevel');
     return gitRoot;
   }
 }
