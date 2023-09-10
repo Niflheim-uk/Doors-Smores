@@ -1,24 +1,17 @@
-import * as path from 'path';
-import * as fs from 'fs';
 import { SmoresNode, getNodeFromId } from "../model/smoresNode";
-import { SmoresDataFile } from '../model/smoresDataFile';
-import { getInnerHtmlForConstraint } from '../documentViewer/constraintInnerHtml';
-import { getInnerHtmlForRequirement } from '../documentViewer/requirementInnerHtml';
-import { getInnerHtmlForTest } from '../documentViewer/testInnerHtml';
 import * as schema from '../model/smoresDataSchema';
+import { 
+  getInnerHtmlForRequirement,
+  getInnerHtmlForConstraint,
+  getInnerHtmlForTest,
+  getIdLabel
+} from '../documentViewer/contentInnerHtml';
 
-var viewSVG:string = "<i class='codicon codicon-zoom-in'></i>";
-var deleteSVG:string = "<i class='codicon codicon-trash'></i>";
-var verifiedSVG:string = "<i style='color:#55ba7f;' class='codicon codicon-verified-filled'></i>";
-var unverifiedSVG:string = "<i style='color:#e5e54e;' class='codicon codicon-unverified'></i>";
-var newTraceSVG:string = "<i class='codicon codicon-add'></i>";
-function readImage(extensionPath:string, imageName:string) {
-  const imagePath = path.join(extensionPath, 'resources', imageName);
-  if (fs.existsSync(imagePath)){
-    return fs.readFileSync(imagePath, "utf-8");
-  }
-  return "";
-}
+var viewSVG:string = "<i class='tracing codicon codicon-zoom-in'></i>";
+var deleteSVG:string = "<i class='tracing codicon codicon-trash'></i>";
+var verifiedSVG:string = "<i style='color:#55ba7f;' class='tracing codicon codicon-verified-filled'></i>";
+var unverifiedSVG:string = "<i style='color:#e5e54e;' class='tracing codicon codicon-unverified'></i>";
+var newTraceSVG:string = "<i class='tracing codicon codicon-add'></i>";
 function getNameFromId(nodeId:number):string {
   const node = getNodeFromId(nodeId);
   if(node) {
@@ -65,14 +58,10 @@ function isTraceSuspect(nodeId:number, suspectTraces:number[]|undefined):boolean
   }
   return false;
 }
-// function getViewImage() {
-//   return `<img src=${eyeUri}>`;
-// }
-// function getDeleteImage() {
-//   return `<img src=${trashUri}>`;
-// }
 function getTraceRow(nodeId:number, suspectTraces:number[]|undefined, traceType:string, traceUpstream:boolean):string {
   const suspect = isTraceSuspect(nodeId, suspectTraces);
+  const node = getNodeFromId(nodeId);
+  const traceLabel = getIdLabel(node!);
   const traceName = getNameFromId(nodeId);
   let verStatus = verifiedSVG;
   if(suspect) {
@@ -85,6 +74,7 @@ function getTraceRow(nodeId:number, suspectTraces:number[]|undefined, traceType:
   return `
   <tr>
     <td class='traceHealth'>${verStatus}</td>
+    <td class='traceId tableSmall'>${traceLabel}</td>
     <td class='traceLink'>${traceName}</td>
     <td class='traceHealth'><button class='tracing' ${viewDetail}>${viewSVG}</button></td>
     <td class='traceHealth'><button class='tracing' ${deleteDetail}>${deleteSVG}</button></td>

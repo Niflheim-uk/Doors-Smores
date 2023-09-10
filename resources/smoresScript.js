@@ -10,14 +10,17 @@ function initialize() {
     var matches = el.id.match(/ViewTd-([\d]+)/);
     if(Array.isArray(matches)) {
       el.addEventListener('click', traceViewOnClick);
+      console.log('view');
     }
     matches = el.id.match(/DeleteTd-([\d]+)/);
     if(Array.isArray(matches)) {
       el.addEventListener('click', traceDeleteOnClick);
+      console.log('del');
     }
     matches = el.id.match(/New-([\S]+)/);
     if(Array.isArray(matches)) {
       el.addEventListener('click', traceAddOnClick);
+      console.log('new');
     }
   }
   elements = document.getElementsByClassName('editSubmit');

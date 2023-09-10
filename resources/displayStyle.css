@@ -38,11 +38,6 @@ button.secondary {
 button.secondary:hover {
   background-color: var(--vscode-button-secondaryHoverBackground);
 }
-button.icon {
-  color: var(--vscode-editor-foreground);
-  background-color: var(--vscode-editor-background);
-}
-
 
 /* Fonts */
 body {
@@ -70,7 +65,7 @@ li, ol, ul {
 }
 .indented {
   margin-left: 1.5cm;
-  width: 14.5;
+  width: 14.5cm;
 }
 h1 {
   font-size: 12pt;
@@ -89,7 +84,10 @@ code {
   margin-bottom: 3pt;
 }
 .tableSmall {
+  margin-top: 3pt;
+  margin-bottom: 3pt;
   font-size: 7pt;
+  vertical-align: top;
 }
 .tableTitle {
   font-weight: bold;
@@ -119,15 +117,9 @@ table.heading, td.heading {
 table.heading tr>td:first-child {
   width: 1.5cm;
 }
-table.requirements, table.testCase, table.constraint {
+table.indented2ColSmall {
   margin-left: 1.5cm;
 }
-table.requirements tr>td:first-child {
-  width: 1.5cm;
-}
-table.testCase tr>td:first-child {
-  width: 1.5cm;
-}
-table.constraint tr>td:first-child {
+table.indented2ColSmall tr>td:first-child {
   width: 1.5cm;
 }

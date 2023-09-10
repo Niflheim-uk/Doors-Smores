@@ -66,61 +66,7 @@ table.heading, td.heading {
 table.heading tr>td:first-child {
   width: 1.5cm;
 }
-table.requirements, table.testCase, table.constraint {
+table.indented2ColSmall {
   margin-left: 1.5cm;
 }
 
-/* Tracing */
-button.tracing {
-  margin: 0;
-  padding:0;
-  border-width: 0;
-  background-color: var(--vscode-editor-background);
-  color: var(--vscode-editor-foreground);
-}
-body.tracing {
-  position: absolute;
-  margin: 0;
-  padding: 0;
-}
-div.tracingGrid {
-  display: grid;
-  grid-template-columns: 10cm auto;
-  grid-gap:1cm;
-}
-
-div.traceContainer {
-  display:flex;
-  flex-direction: column;
-  position: relative;
-}
-div.tracing {
-  width: 10cm !important;
-}
-div.traceTitle {
-  width:3cm !important;
-}
-div.traceNew {
-  position:relative;
-  left: 0.5cm;
-}
-h3.tracing {
-  margin-bottom: 3pt;
-}
-table.traceView {
-  width:8cm;
-}
-table.traceView, td.traceHealth {
-  border: none;
-}
-table.traceView td {
-  width: 0.3cm;
-  padding-top: 0.1cm;
-  padding-left: 0.1cm;
-  padding-right: 0.1cm;
-}
-table.traceView tr>td:nth-child(2) {
-  width: 5cm;
-  padding-top:0;
-  border: 1px solid;
-}

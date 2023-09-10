@@ -85,7 +85,7 @@ export function getNodeIcon(node:SmoresNode):vscode.ThemeIcon {
       return new vscode.ThemeIcon('question', iconColour);
   }
 }
-export function getBaseStylePaths():string[] {
+export function getDocumentStylePaths():string[] {
   // Local path to css styles
   const stylesPaths:string[] = [
     getExtensionBasedPath(['resources', 'theme.css']),

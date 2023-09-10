@@ -1,11 +1,17 @@
 import { Converter, ConverterOptions } from "showdown";
 
+export function getIndentedHtmlFromMd(mdString:string):string {
+  return `<div class="indented">${getHtmlFromMd(mdString)}</div>`;
+}
+ 
 const converterOptions:ConverterOptions = {
-  simpleLineBreaks:true,
-  tables:true
+  simpleLineBreaks: true,
+  tables: true,
 };
 export function getHtmlFromMd(mdString:string):string {
-  const converter = new Converter(converterOptions);
+  var options = converterOptions;
+  options.extensions = [];
+  const converter = new Converter(options);
   const html =  converter.makeHtml(mdString);
   return paragraphHtml(html);
 }
@@ -14,10 +20,6 @@ function paragraphHtml(html:string):string {
     return html;
   }
   return `<p>${html}</p>`;
-}
-
-export function getIndentedHtmlFromMd(mdString:string):string {
-  return `<div class="indented">${getHtmlFromMd(mdString)}</div>`;
 }
 
 export function getTableTextHtmlFromMd(mdString:string):string {

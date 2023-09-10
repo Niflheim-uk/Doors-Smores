@@ -1,12 +1,11 @@
 import * as vscode from "vscode";
-import * as utils from "../utils/utils";
 import { getNonce } from "../utils/getNonce";
 import { getExtensionBasedPath } from "../utils/getExtension";
-import { getBaseStylePaths, getScriptPath } from "../utils/gui";
+import { getDocumentStylePaths, getScriptPath } from "../utils/gui";
 
 export function getStyleBlock(webview:vscode.Webview, exporting:boolean):string {
   const nonce = getNonce();
-  const stylePaths = getBaseStylePaths();
+  const stylePaths = getDocumentStylePaths();
   if(webview === undefined) {
     return "";
   }

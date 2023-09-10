@@ -1,13 +1,14 @@
 import { SmoresNode } from '../model/smoresNode';
-import { getInnerHtmlForImage } from './imageInnerHtml';
-import { getInnerHtmlForRequirement } from './requirementInnerHtml';
-import { getInnerHtmlForTest } from './testInnerHtml';
-import { getInnerHtmlForConstraint } from './constraintInnerHtml';
-import { getInnerHtmlForMermaid } from './mermaidImageHtml';
 import * as heading from './headingInnerHtml';
 import { getMarkdownParagraphs } from '../utils/utils';
 import { getEditHtmlForNodeType } from './textEditor';
 import * as markdown from './markdownConversion';
+import { 
+  getInnerHtmlForImage,
+  getInnerHtmlForRequirement, 
+  getInnerHtmlForConstraint, 
+  getInnerHtmlForTest 
+} from './contentInnerHtml';
 
 function getViewDivHtml(node:SmoresNode, exporting:boolean, innerHtml:string) {
   if(exporting) {
@@ -73,7 +74,7 @@ function getViewHtmlForNodeType(node:SmoresNode, exporting:boolean):string {
       innerHtml = getInnerHtmlForImage(node, exporting);
       return getViewDivHtml(node, exporting, innerHtml);
     case "mermaid":
-      innerHtml = getInnerHtmlForMermaid(node);
+      innerHtml = `<span class="tabStop"><pre class='mermaid'>${node.data.text}</pre></span>(node)`;
       return getViewDivHtml(node, exporting, innerHtml);
     default:
       innerHtml = "<H1>ERROR - Unknown Category</H1>";
