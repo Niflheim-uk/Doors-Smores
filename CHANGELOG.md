@@ -2,6 +2,9 @@
 
 All notable changes to the "doors-smores" extension will be documented in this file.
 
+## 0.2.6
+- Bug fix for submit button when editing content
+
 ## 0.2.5 
 - purged local svg files and switched to using codicon for all icons
 - coloured verified/unverified badges
