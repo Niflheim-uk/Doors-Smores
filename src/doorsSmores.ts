@@ -3,7 +3,6 @@ import { TreeNode } from "./treeView/treeNode";
 import { TreeNodeProvider } from './treeView/treeNodeProvider';
 import { DocumentViewer } from './documentViewer/documentViewer';
 import { TraceView } from './traceView/traceView';
-import { loadTraceImages } from './traceView/traceHtml';
 import { VersionController } from './versionControl/versionController';
 import { newDocumentFromTemplate } from "./projectManagement/newDocument";
 import { newProjectWorkspace } from "./projectManagement/newProject";
@@ -35,7 +34,6 @@ export class DoorsSmores {
     DoorsSmores.documentView = new DocumentViewer();
     DoorsSmores.traceView = new TraceView();
     this.register(context);
-    loadTraceImages();
   }
 
   private register(context: vscode.ExtensionContext) {
