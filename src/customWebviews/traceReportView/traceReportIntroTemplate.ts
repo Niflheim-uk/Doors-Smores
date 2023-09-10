@@ -31,7 +31,14 @@ export function getTraceReportIntroFromTemplate(documentType:string, documentNam
   if(project === undefined) {
     return "";
   }
-  let intro:string[] = introTemplateMd;
+  var intro:string[]=[];
+  for(let i=0; i<introTemplateMd.length; i++) {
+    if(Array.isArray(intro)) {
+      intro.push(introTemplateMd[i]);
+    } else {
+      intro = [introTemplateMd[i]];
+    }
+  }
   const projectName = project.getFilenameNoExt();
   
   intro[2] = intro[2].replace(/PROJECT_NAME/g, projectName);

@@ -231,21 +231,27 @@ export function isUpstreamTraceMissing(documentType:string, node:DocumentNode) {
     return false;
   case schema.srsDocType:
     if(node.data.category === schema.softFRCategory) {
-      if(!traceCategoryLabels.includes(schema.userFRPrefix)) {
+      if(!SmoresProject.ursExists()) {
+        return false;
+      } else if(!traceCategoryLabels.includes(schema.userFRPrefix)) {
         return true;
       }
     }
     return false;
   case schema.adsDocType:
     if(node.data.category === schema.archFRCategory) {
-      if(!traceCategoryLabels.includes(schema.softFRPrefix)) {
+      if(!SmoresProject.srsExists()) {
+        return false;
+      } else if(!traceCategoryLabels.includes(schema.softFRPrefix)) {
         return true;
       }
     }
     return false;
   case schema.ddsDocType:
     if(node.data.category === schema.desFRCategory) {
-      if(!traceCategoryLabels.includes(schema.softFRPrefix) && !traceCategoryLabels.includes(schema.archFRPrefix)) {
+      if(!SmoresProject.srsExists() && !SmoresProject.adsExists()) {
+        return false;
+      } else if(!traceCategoryLabels.includes(schema.softFRPrefix) && !traceCategoryLabels.includes(schema.archFRPrefix)) {
         return true;
       }
     }
