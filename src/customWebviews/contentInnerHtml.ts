@@ -27,21 +27,13 @@ export function getIdLabel(node:DocumentNode) {
 export function getInnerHtmlForImage(node:DocumentNode, exporting:boolean) {
   const nodePath = DoorsSmores.getNodeDirectory(node.data.id);
   const imageFilePath = join(nodePath, `${node.data.text}`);
-  return getImageHolderDiv(node.data.id, imageFilePath, exporting);
-}
-export function getInnerHtmlForGeneratedSVG(node:DocumentNode, exporting:boolean) {
-  const imageFilePath = join(node.getDirPath(), `${node.data.id}.svg`);
-  return getImageHolderDiv(node.data.id, imageFilePath, exporting);
-}
-function getImageHolderDiv(nodeId:number, imagePath:string, exporting:boolean) {
-  let imageFileUri = Uri.file(imagePath);
+  let imageFileUri = Uri.file(imageFilePath);
   if(exporting===false) {
     imageFileUri = DocumentView.getWebviewUri(imageFileUri);
   }
-  return `<div Id='image-${nodeId}' class='imageHolder'>
+  return `<div Id='image-${node.data.id}' class='imageHolder'>
     <img src=${imageFileUri}>
   </div>`;
-
 }
 
 export function getInnerHtmlForRequirement(node:DocumentNode, hideTracing:boolean=false):string {

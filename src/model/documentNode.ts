@@ -2,8 +2,7 @@ import { DoorsSmores } from "../doorsSmores";
 import { SmoresFile } from "./smoresFile";
 import * as schema from './schema';
 import { VersionController } from "../versionControl/versionController";
-import { exec } from "child_process";
-import { basename, dirname, join } from "path";
+import { basename } from "path";
 
 interface DocumentData {
   documentType: string;
@@ -146,13 +145,9 @@ export class DocumentNode extends SmoresFile {
   }
   public update(dataMap:any) {
     let commitMessage = "";
-    let updateMermaid = false;
     if(dataMap.text) {
       this.data.text = dataMap.text;
       commitMessage = commitMessage.concat(`Updated text field on ${this.data.id}\n`);  
-      if(this.data.category === schema.mermaidCategory) {
-        updateMermaid = true;
-      }
     }
     if(dataMap.translationRationale) {
       this.data.requirementData = {translationRationale:dataMap.translationRationale};
@@ -164,23 +159,9 @@ export class DocumentNode extends SmoresFile {
     }
     this.markTracesSuspect();
     this.write();
-    if(updateMermaid) {
-      const inputFile = this.getTextFilepath();
-      const outputFile = join(this.getDirPath(), `${this.data.id}.svg`);
-      exec(`mmdc -i ${inputFile} -o ${outputFile}`,async (err, stdout, stderr) => {
-        if(stdout) {console.log(stdout);}
-        if(stderr) {console.error(stderr);}
-        if(err) {console.error(err);}
-        if(commitMessage !== "") {
-          await VersionController.commitChanges(commitMessage);
-          DoorsSmores.refreshViews();
-        }
-      });
-    } else {
-      if(commitMessage !== "") {
-        VersionController.commitChanges(commitMessage);
-      }
-    }  
+    if(commitMessage !== "") {
+      VersionController.commitChanges(commitMessage);
+    }
   }
 
   public getChildPosition(childId:number):number {

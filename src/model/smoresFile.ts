@@ -81,13 +81,13 @@ export class SmoresFile {
   private getJSONFilepath() {
     return join(this.dirPath, this.filename);
   }
-  protected getTextFilepath() {
+  private getTextFilepath() {
     return join(this.dirPath, "Text.txt");
   }
-  protected getExpectedResultsFilepath() {
+  private getExpectedResultsFilepath() {
     return join(this.dirPath, "ExpectedResults.txt");
   }
-  protected getTranslationRationaleFilepath() {
+  private getTranslationRationaleFilepath() {
     return join(this.dirPath, "TranslationRationale.txt");
   }
   private writeNonJSONFiles(jsonData:any):any {

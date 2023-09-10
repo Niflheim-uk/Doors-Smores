@@ -43,3 +43,29 @@ export function getScriptBlock(webview:vscode.Webview, exporting:boolean):string
   `;
 }
 
+export function getMermaidBlock(webview:vscode.Webview, exporting:boolean):string {
+  const nonce = getNonce();
+  const extensionPath = DoorsSmores.getExtensionPath();
+  const mermaidPath = join(extensionPath, 'resources', 'vendor', 'mermaid', 'mermaid.min.js');
+  const mermaidConfig = `{ 
+    startOnLoad: true, 
+    theme: 'neutral',
+    flowchart: {
+       useMaxWidth: false, 
+       htmlLabels: true 
+      } 
+    }`;
+  var mermaidUri;
+  if(webview === undefined) {
+    return "";
+  }
+  if(exporting) {
+    mermaidUri = mermaidPath;
+  } else {
+    mermaidUri = webview.asWebviewUri(vscode.Uri.file(mermaidPath)).toString();
+  }
+
+  return `
+  <script nonce="${nonce}" src="${mermaidUri}"></script>
+  <script nonce="${nonce}">mermaid.initialize(${mermaidConfig});</script>`;
+}
