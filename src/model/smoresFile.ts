@@ -56,7 +56,7 @@ export class SmoresFile {
       jsonData = this.writeNonJSONFiles(jsonData);
       let jsonString = JSON.stringify(jsonData, null, 4);
       const jsonFile = this.getJSONFilepath();
-      writeFileSync(jsonFile, jsonString);
+      writeFileSync(jsonFile, `${jsonString}\n`);
       console.log(`wrote file ${this.data.id}`);
     } catch (err) {
       console.error(err);

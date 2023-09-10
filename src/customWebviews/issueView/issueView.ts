@@ -6,6 +6,7 @@ import { getCoverStylePaths } from "../resources";
 import { SmoresDocument } from "../../model/smoresDocument";
 import { Disposable, Uri, ViewColumn, WebviewPanel, commands, window } from "vscode";
 import { VersionController } from "../../versionControl/versionController";
+import { existsSync } from "fs";
 
 export class IssueView {
   public static currentPanel: IssueView | undefined;
@@ -15,7 +16,7 @@ export class IssueView {
   private constructor(private document:SmoresDocument, private traceReport:boolean) {
     this.panel = this.createPanel();
     this.panel.onDidDispose(() => this.dispose(), null, this._disposables);
-    this.panel.webview.onDidReceiveMessage( (item) =>{this.handleMessage(item);});
+    this.panel.webview.onDidReceiveMessage( (msg) =>{this.handleMessage(msg);});
   }
   public static async issueDocument(document:SmoresDocument, traceReport:boolean) {
     if (IssueView.currentPanel) {
@@ -33,7 +34,15 @@ export class IssueView {
       panel.webview.html = await IssueView.currentPanel.getPageHtml();
     }
   }
-  private async handleMessage(item:RevisionHistoryItem) {
+  private async handleMessage(msg:any) {
+    switch(msg.command) {
+    case "submit":
+      this.handleSubmitMessage(msg.item);
+      break;
+    }
+    return;
+  }
+  private async handleSubmitMessage(item:RevisionHistoryItem) {
     if(this.traceReport) {
       this.document.data.documentData!.traceReportRevisionHistory.push(item);
     } else {
@@ -141,26 +150,43 @@ export class IssueView {
       display:flex; 
       flex-direction:column;
     }
-    div.summaryDiv {
+    div.summaryDiv {display:flex;}
+    div.deltaDiv, div.detailInnerDiv {
       display:flex; 
+      flex-direction:column;
     }
-    .insertion {
-      color:green;
+    div.deltaDiv {width:50%;}
+    div.detailDiv {
+      position:absolute;
+      right:0;
+      top:0;
+      background-color:var(--vscode-editor-background);
+      border: solid;
+      border-color: var(--vscode-input-border);
+      padding: 5px 5px;
+      border-radius: 6px;
+      z-index:1;
+      visibility:hidden;
     }
-    .deletion {
-      color:red;
+    button {width:unset !important;}
+    span.deltaSpan:hover {
+      background-color:var(--vscode-editor-hoverHighlightBackground);
     }
+    .insertion {color:green;}
+    .notation {color:blue;}
+    .deletion {color:red;}
+    .whitespace {white-space:pre;}
   </style>
   ${styleBlock}
 </head>
 <body data-vscode-context='{"preventDefaultContextMenuItems": true}'>
-  ${bodyHtml}
+  <div>${bodyHtml}</div>
   ${scriptBlock}
 </body>    
 </html>`;  
   }
   private async getBodyHtml() {
-    var html = "";
+    var html = this.getDeltaDetailDiv();;
     const revisionHistory = this.getRevisionHistory();
     html = html.concat(await this.getIssueSection());
     html = html.concat(await this.getAuthorSection());
@@ -168,7 +194,15 @@ export class IssueView {
     html = html.concat(this.getHistoricSections(revisionHistory));
     return html;
   }
-
+  private getDeltaDetailDiv():string {
+    return `
+    <div class="detailDiv" id="detailDiv">
+      <button id="detailButton">Return</button>
+      <div class="detailInnerDiv" id="detailDivInner">
+      </div>
+    </div>
+    `;
+  }
   private async getIssueSection() {
     var html = this.getIssueSelectionSection();
     html = html.concat(await this.getSummarySection());
@@ -206,16 +240,19 @@ export class IssueView {
     </div>`;
   }
   private async getDeltaHtml() {
+    const tag = VersionController.getLastTag(this.document, this.traceReport);
     const diffRecords = await VersionController.getDiffRecords(this.document, this.traceReport);
-    var html="";
+    var html='<div class="deltaDiv">';
     for(let i=0; i<diffRecords.length; i++) {
       const fileClass = this.getModificationClass(diffRecords[i].fileModification);
       const filepath = `<span class='${fileClass}'>${diffRecords[i].filepath}</span>`;
       const ins = `<span class='insertion'> +${diffRecords[i].insertions} </span>`;
       const del = `<span class='deletion'> +${diffRecords[i].deletions} </span>`;
-      html = html.concat(`<span>&nbsp;&nbsp;(${ins}|${del}) ${filepath}<span><br>`);
+      const dataFile = `data-file="${diffRecords[i].filepath}"`;
+      const dataDetail = `data-detail="${diffRecords[i].detail}"`;
+      html = html.concat(`<span ${dataFile} ${dataDetail} class="deltaSpan">&nbsp;&nbsp;(${ins}|${del}) ${filepath}</span>`);
     }
-    return html;
+    return html.concat("</div>");
   }
   private getModificationClass(fileMod:string) {
     switch(fileMod) {
@@ -225,6 +262,8 @@ export class IssueView {
       return "deletion";
     case 'A':
       return "insertion";
+    case 'R050':
+      return 'rename';
     default:
       window.showErrorMessage("Unknown modification code");
       return "unchanged";

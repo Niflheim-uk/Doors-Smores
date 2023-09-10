@@ -5,6 +5,12 @@ addEventListener("load", initialize);
 function initialize() {
   const issueButton = document.getElementById('issueButton');
   issueButton.addEventListener('click', issueDocumentOnClick);
+  const elements = document.getElementsByClassName('deltaSpan');
+  for (let i = 0; i < elements.length; i++) {
+    elements[i].addEventListener('click', deltaSpanOnClick);
+  }
+  const detailButton = document.getElementById('detailButton');
+  detailButton.addEventListener('click', detailReturnOnClick);
 }
 
 function issueDocumentOnClick() {
@@ -19,7 +25,7 @@ function issueDocumentOnClick() {
   const detailArea = document.getElementById('issueSummary');
   const authorArea = document.getElementById('issueAuthor');
   const date = new Date();
-  const message = {
+  const item = {
     day:date.getDate(),
     month:date.getMonth(),
     year:date.getFullYear(),
@@ -29,5 +35,37 @@ function issueDocumentOnClick() {
     author:authorArea.value,
     isMajor:isMajor
   };
-  vscode.postMessage(message);
+  vscode.postMessage({command:'submit', item});
+}
+
+function deltaSpanOnClickBak(event) {
+  const filepath = event.currentTarget.dataset["file"];
+  vscode.postMessage({command: 'viewDiff', filepath});
+}
+function deltaSpanOnClick(event) {
+  const detail = event.currentTarget.dataset["detail"];
+  const detailLines = detail.split("\n");
+  const detailInnerDiv = document.getElementById('detailDivInner');
+  while (detailInnerDiv.lastChild) {
+    detailInnerDiv.removeChild(detailInnerDiv.lastChild);
+  }
+  for(let i=0; i<detailLines.length; i++) {
+    var line = document.createElement('span');
+    line.className = 'whitespace';
+    if(detailLines[i][0] === '+') {
+      line.classList.add('insertion');
+    } else if(detailLines[i][0] === '-') {
+      line.classList.add('deletion');
+    } else if(detailLines[i][0] === '@') {
+      line.classList.add('notation');
+    }
+    line.innerText = detailLines[i];
+    detailInnerDiv.appendChild(line);
+  }
+  const detailDiv = document.getElementById('detailDiv');
+  detailDiv.style.visibility = 'visible';
+}
+function detailReturnOnClick(event) {
+  const detailDiv = document.getElementById('detailDiv');
+  detailDiv.style.visibility = 'hidden';
 }

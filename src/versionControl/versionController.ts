@@ -3,12 +3,14 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { DoorsSmores } from '../doorsSmores';
 import { SmoresDocument } from '../model/smoresDocument';
+import { existsSync } from 'fs';
 
 export type DiffRecord = {
   filepath:string;
   insertions:number;
   deletions:number;
   fileModification:string;
+  detail:string;
 };
 
 
@@ -148,11 +150,13 @@ export class VersionController {
         const parts = numstat[i].split("\t");
         const filepath = parts[2];
         if(filepath) {
+          const mod = VersionController.getModificationState(summary, filepath);
           const record:DiffRecord= {
             filepath,
             insertions:Number(parts[0]),
             deletions:Number(parts[1]),
-            fileModification:VersionController.getModificationState(summary, filepath)
+            fileModification:mod,
+            detail:await VersionController.getDiffRecordDetail(filepath, tag, mod)
           };
           records.push(record);
         }
@@ -176,16 +180,16 @@ export class VersionController {
     var numstat;
     var summary;
     if(_open) {
-      numstatResponse = await simpleGit(_gitOptions).raw('diff', '--exit-code', '--numstat', `${tag}..HEAD`);
-      summaryResponse = await simpleGit(_gitOptions).raw('diff', '--exit-code', '--compact-summary', '--name-status', `${tag}..HEAD`);
+      numstatResponse = await simpleGit(_gitOptions).raw('diff', '--exit-code', '--no-renames', '--numstat', `${tag}..HEAD`);
+      summaryResponse = await simpleGit(_gitOptions).raw('diff', '--exit-code', '--no-renames', '--compact-summary', '--name-status', `${tag}..HEAD`);
       numstat = numstatResponse.split("\n");
       summary = summaryResponse.split("\n");
     } else {
       const dataRoot = DoorsSmores.getDataDirectory();
       const tagRoot = dataRoot.concat(`_${tag}`);
       const tempRoot = DoorsSmores.getDataTempDirectory();
-      numstatResponse = await simpleGit(_gitOptions).raw('diff', '--no-index', '--exit-code', '--numstat', `${tagRoot}`, `${tempRoot}`);
-      summaryResponse = await simpleGit(_gitOptions).raw('diff', '--no-index', '--exit-code', '--compact-summary', '--name-status', `${tagRoot}`, `${tempRoot}`);
+      numstatResponse = await simpleGit(_gitOptions).raw('diff', '--no-index', '--no-renames', '--exit-code', '--numstat', `${tagRoot}`, `${tempRoot}`);
+      summaryResponse = await simpleGit(_gitOptions).raw('diff', '--no-index', '--no-renames', '--exit-code', '--compact-summary', '--name-status', `${tagRoot}`, `${tempRoot}`);
       numstat = numstatResponse.split("\n");
       summary = summaryResponse.split("\n");
       for(let i=0; i<numstat.length; i++) {
@@ -212,6 +216,32 @@ export class VersionController {
       }
     }
     return [numstat, summary];
+  }
+  private static async getDiffRecordDetail(filepath:string, tag:string, mod:string) {
+    var detailResponse;
+    if(_open) {
+      detailResponse  = await simpleGit(_gitOptions).raw('diff', '--no-renames', '--exit-code', `${tag}..HEAD`, '--', filepath);
+    } else {
+      const dataDir = DoorsSmores.getDataDirectory();
+      var left = path.join(dataDir.concat(`_${tag}`), filepath);
+      var right = path.join(DoorsSmores.getDataTempDirectory(), filepath);
+      if(!existsSync(left)) {
+        left = '/dev/null';
+      }
+      if(!existsSync(right)) {
+        right = '/dev/null';
+      }
+      detailResponse  = await simpleGit(_gitOptions).raw('diff', '--no-index', '--no-renames', '--exit-code', `${left}`, `${right}`);
+    }
+    const detailArray = detailResponse.split("\n");
+    if(mod === "M") {
+      detailResponse = detailArray.slice(4).join("\n");
+    } else if (mod === "D" || mod === "A") {
+      detailResponse = detailArray.slice(5).join("\n");
+    } else {
+      detailResponse = detailArray.join("\n");
+    }
+    return detailResponse.replace(/"/g,"&#34;");
   }
   private static async tagIssue(tag:string, message:string) {
     clearTimeout(_commitTimer);
