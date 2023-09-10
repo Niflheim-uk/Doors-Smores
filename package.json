@@ -274,7 +274,7 @@
         },
         {
           "command": "doors-smores.New-WebUserReq",
-          "when": "webviewId =~ /smores((USR)|(Node))View/ && (webviewSection =~ /Node-/)",
+          "when": "webviewId =~ /smores((URS)|(Node))View/ && (webviewSection =~ /Node-/)",
           "group": "smores2@1"
         },
         {
@@ -386,7 +386,7 @@
         },
         {
           "command": "doors-smores.New-TreeUserReq",
-          "when": "view == smoresTreeView && (viewItem =~ /((USR)|(EMPTY))/)",
+          "when": "view == smoresTreeView && (viewItem =~ /((URS)|(EMPTY))/)",
           "group": "smores2@1"
         },
         {
