@@ -1,6 +1,6 @@
 import { ExecException, exec } from "child_process";
 import { SmoresDocument } from "../model/smoresDocument";
-import { generateCoverHtmlFile, generateHistoryFile } from "./coverPage";
+import { generateCoverHtmlFile, generateHistoryFile } from "./coverAndHistoryPages";
 import { DoorsSmores } from "../doorsSmores";
 import { basename, dirname, join } from "path";
 import { generateHeaderFooterHtmlFiles } from "./headerAndFooter";

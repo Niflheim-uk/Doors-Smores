@@ -13,6 +13,7 @@ export type RevisionHistoryItem = {
   minor:number;
   detail:string[];
   author:string;
+  isMajor:boolean;
 };
 interface DocumentData {
   documentType: string;

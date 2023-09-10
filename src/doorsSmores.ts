@@ -44,7 +44,7 @@ export class DoorsSmores {
 
     const registrations = [
       vscode.commands.registerCommand('doors-smores.RefreshViews', DoorsSmores.refreshViews),
-      vscode.commands.registerCommand('doors-smores.GetTraceReport', DoorsSmores.getTraceReport),
+      vscode.commands.registerCommand('doors-smores.ExportTraceReport', DoorsSmores.exportTraceReport),
       this.statusBarItem
     ];
     context.subscriptions.push(...registrations);
@@ -189,7 +189,7 @@ export class DoorsSmores {
       DoorsSmores.writeRecentProjects(recentProjects);
     }
   }
-  public static getActiveDocument():DocumentNode|undefined {
+  public static getActiveDocument():SmoresDocument|undefined {
     if(DoorsSmores.app.activeProject) {
       return DoorsSmores.app.activeDocument;
     } else {
@@ -266,15 +266,15 @@ export class DoorsSmores {
         const numMissing = activeDoc.getNumberMissingTraces();
         DoorsSmores.app.statusBarItem.text = `$(link): ${numTraces}$(thumbsup) ${numMissing}$(thumbsdown)`;
         DoorsSmores.app.statusBarItem.show();
-        DoorsSmores.app.statusBarItem.command = {title:'Get Trace Report',command:'doors-smores.GetTraceReport',arguments:[activeDoc]};
+        DoorsSmores.app.statusBarItem.command = {title:'Get Trace Report',command:'doors-smores.ExportTraceReport',arguments:[activeDoc]};
       } else {
         DoorsSmores.app.statusBarItem.hide();
       }
     }
   }
-  public static getTraceReport(document:SmoresDocument) {
+  public static exportTraceReport(document:SmoresDocument) {
     if(document) {
-      document.getTraceReport();
+      document.viewTraceReport();
     } else {
       if(DoorsSmores.app.activeDocument) {
         DoorsSmores.app.activeDocument.exportTraceReport();

@@ -39,6 +39,26 @@
             "type": "boolean",
             "default": false,
             "description": "If set, upstream, downstream and test traces are expected, as applicable. Items missing traces are highlighted."
+          },
+          "documents.useCustomHeader": {
+            "type": "boolean",
+            "default": false,
+            "description": "If set, the default header is replaced with the content provided by the file path below."
+          },
+          "style.customHeaderHtml": {
+            "type": "string",
+            "default": "",
+            "description": "(WIP) This setting should provide the path to a file containing the html snippet to be included in the header."
+          },
+          "documents.useCustomFooter": {
+            "type": "boolean",
+            "default": false,
+            "description": "If set, the default footer is replaced with the content provided by the file path below."
+          },
+          "style.customFooterHtml": {
+            "type": "string",
+            "default": "",
+            "description": "(WIP) This setting should provide the path to a file containing the html snippet to be included in the footer."
           }
         }
       }
@@ -113,79 +133,85 @@
       {
         "command": "doors-smores.RefreshViews",
         "category": "Smores",
-        "title": "Refresh Doors Smores views",
+        "title": "Refresh",
         "icon": "$(extensions-refresh)"
       },
       {
         "command": "doors-smores.ExportDocument",
         "category": "Smores",
-        "title": "Export the current Document",
+        "title": "Export Document",
         "icon": "$(output)"
+      },
+      {
+        "command": "doors-smores.ExportTraceReport",
+        "category": "Smores",
+        "title": "Export Trace Report",
+        "icon": "$(link)"
+      },
+      {
+        "command": "doors-smores.IssueDocument",
+        "category": "Smores",
+        "title": "Issue Document",
+        "icon": "$(versions)"
       },
       {
         "command": "doors-smores.ViewDocumentNode",
         "category": "Smores",
-        "title": "View document item, and sub-items",
+        "title": "View item",
         "icon": "$(eye)"
       },
       {
         "command": "doors-smores.EditDocumentNode",
         "category": "Smores",
-        "title": "Edit document item",
+        "title": "Edit item",
         "icon": "$(pen)"
       },
       {
         "command": "doors-smores.ViewTraces",
         "category": "Smores",
-        "title": "Trace document item",
-        "icon": "$(link)"
-      },
-      {
-        "command": "doors-smores.GetTraceReport",
-        "category": "Smores",
-        "title": "Get Trace Report",
+        "title": "Trace item",
         "icon": "$(link)"
       },
       {
         "command": "doors-smores.DeleteDocumentNode",
         "category": "Smores",
-        "title": "Delete document item, and sub-items",
+        "title": "Delete item",
         "icon": "$(trash)"
       },
       {
         "command": "doors-smores.DeleteDocument",
         "category": "Smores",
-        "title": "Delete document item, and sub-items",
+        "title": "Delete document",
         "icon": "$(trash)"
       },
       {
         "command": "doors-smores.RemoveRecentProject",
         "category": "Smores",
-        "title": "Remove recent project from history",
+        "title": "Remove project",
         "icon": "$(close)"
       },
       {
         "command": "doors-smores.Promote",
         "category": "Smores",
-        "title": "Promote",
+        "title": "Promote item",
         "icon": "$(arrow-small-left)"
       },
       {
         "command": "doors-smores.Demote",
         "category": "Smores",
-        "title": "Demote",
+        "title": "Demote item",
         "icon": "$(arrow-small-right)"
       },
       {
         "command": "doors-smores.MoveUp",
         "category": "Smores",
-        "title": "Move Up",
+        "title": "Move item up",
         "icon": "$(arrow-small-up)"
       },
       {
         "command": "doors-smores.MoveDown",
         "category": "Smores",
-        "title": "Move Down",
+        "title": "Move item down",
         "icon": "$(arrow-small-down)"
       },
       {
@@ -285,7 +311,7 @@
       "view/title": [
         {
           "command": "doors-smores.NewDocument",
-          "when": "(view == doors-smores.documentTree || view == doors-smores.projectTree) && doors-smores.projectOpen",
+          "when": "view == doors-smores.projectTree && doors-smores.projectOpen",
           "group": "navigation@1"
         },
         {
@@ -299,24 +325,29 @@
           "group": "navigation@5"
         },
         {
-          "command": "doors-smores.GetTraceReport",
-          "when": "view == doors-smores.documentTree && doors-smores.projectOpen",
-          "group": "navigation@4"
-        },
-        {
-          "command": "doors-smores.ExportDocument",
-          "when": "view == doors-smores.documentTree && doors-smores.projectOpen",
-          "group": "navigation@5"
-        },
-        {
           "command": "doors-smores.CloseProject",
           "when": "view == doors-smores.projectTree && doors-smores.projectOpen",
           "group": "navigation@6"
         },
         {
+          "command": "doors-smores.ExportDocument",
+          "when": "view == doors-smores.documentTree && doors-smores.projectOpen",
+          "group": "smores0@1"
+        },
+        {
+          "command": "doors-smores.IssueDocument",
+          "when": "view == doors-smores.documentTree && doors-smores.projectOpen",
+          "group": "smores0@2"
+        },
+        {
+          "command": "doors-smores.ExportTraceReport",
+          "when": "view == doors-smores.documentTree && doors-smores.projectOpen",
+          "group": "smores1@1"
+        },
+        {
           "command": "doors-smores.RefreshViews",
           "when": "view == doors-smores.documentTree || view == doors-smores.projectTree",
-          "group": "navigation@9"
+          "group": "smores9@1"
         }
       ],
       "view/item/context": [

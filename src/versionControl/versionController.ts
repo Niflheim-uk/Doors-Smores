@@ -103,6 +103,9 @@ export class VersionController {
       console.error(err);
     });
   }
+  public static async getUserName() {
+    return simpleGit(_gitOptions).raw('config', 'user.name').catch(err=>{return "Unknown";});
+  }
 }
   
 function filterIgnoredFiles(filesChanged:string[], filesIgnored?:string[]):string[] {
