@@ -64,11 +64,6 @@
             "type": "boolean",
             "default": true,
             "description": "If set, the revision history will only show major revisions and minor revisions since last major.\nIf not set, major and minor releases are treated equally in the revision history."
-          },
-          "repository.remoteRepositoryPath": {
-            "type": "string",
-            "default": "",
-            "description": "This setting is used to set the remote repository path for the current project. As such, it is automatically updated when a project is opened."
           }
         }
       }
@@ -269,6 +264,11 @@
         "category": "Smores",
         "title": "Sync with remote repository",
         "icon": "$(sync)"
+      },
+      {
+        "command": "doors-smores.SetRemote",
+        "category": "Smores",
+        "title": "Set the remote repository"
       }
     ],
     "menus": {
@@ -364,6 +364,11 @@
           "command": "doors-smores.RefreshViews",
           "when": "view == doors-smores.documentTree || view == doors-smores.projectTree",
           "group": "smores9@1"
+        },
+        {
+          "command": "doors-smores.SetRemote",
+          "when": "view == doors-smores.projectTree && doors-smores.projectOpen",
+          "group": "smores9@2"
         }
       ],
       "view/item/context": [

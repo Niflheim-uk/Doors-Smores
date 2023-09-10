@@ -40,15 +40,11 @@ export class DoorsSmores {
     DoorsSmores.app = this;
     StatusBar.register(context);
     DoorsSmores.refreshViews();
-    vscode.workspace.onDidChangeConfiguration(event => {
-      if(event.affectsConfiguration("repository.remoteRepositoryPath")) {
-        DoorsSmores.updateRemoteRepository();
-      }
-    });
     const registrations = [
       vscode.commands.registerCommand('doors-smores.RefreshViews', DoorsSmores.refreshViews),
       vscode.commands.registerCommand('doors-smores.ExportTraceReport', DoorsSmores.exportTraceReport),
-      vscode.commands.registerCommand('doors-smores.SyncRemote', VersionController.syncWithRemote)
+      vscode.commands.registerCommand('doors-smores.SyncRemote', VersionController.syncWithRemote),
+      vscode.commands.registerCommand('doors-smores.SetRemote', DoorsSmores.setRemoteRepository)
     ];
     context.subscriptions.push(...registrations);
     registerNewContentCommands(context);
@@ -279,31 +275,20 @@ export class DoorsSmores {
       }
     }
   }
-  private static updateRemoteRepository() {
+  private static async setRemoteRepository() {
     const project = DoorsSmores.getActiveProject();
     if(project) {
-      const settings = vscode.workspace.getConfiguration('repository');
-      const remoteRepositoryPath:string|undefined = settings.get("remoteRepositoryPath");
-      if(remoteRepositoryPath === undefined || remoteRepositoryPath === "") {
-        // yeah.. lets just see if that needs a moment, mkay?
-        setTimeout(DoorsSmores.repostitoryPathClearedRecheck, 2000);
-      } else {
-        if(project.data.repoRemote !== remoteRepositoryPath) {
-          project.data.repoRemote = remoteRepositoryPath;
-          project.write();
-        }
-        VersionController.updateRemote();
+      var remotePath = project.data.repoRemote;
+      if(remotePath === undefined) {
+        remotePath = "";
       }
-    }
-  }
-  private static repostitoryPathClearedRecheck() {
-    const project = DoorsSmores.getActiveProject();
-    if(project) {
-      const settings = vscode.workspace.getConfiguration('repository');
-      const remoteRepositoryPath:string|undefined = settings.get("remoteRepositoryPath");
-      if(remoteRepositoryPath === undefined || remoteRepositoryPath === "") {
-        if(project.data.repoRemote !== remoteRepositoryPath) {
-          project.data.repoRemote = undefined;
+      remotePath = await vscode.window.showInputBox({
+        prompt:`Enter remote repository path`,
+        placeHolder:`${remotePath}`
+      });
+      if(remotePath !== undefined || remotePath !== "") {
+        if(project.data.repoRemote !== remotePath) {
+          project.data.repoRemote = remotePath;
           project.write();
         }
         VersionController.updateRemote();
