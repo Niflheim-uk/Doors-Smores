@@ -106,3 +106,42 @@ export function getLabelPrefix(category:string):string {
     return "X";
   }
 }
+export function isTestCategory(category:string) {
+  switch(category) {
+  case userTestCategory:
+  case softTestCategory:
+  case archTestCategory:
+  case desTestCategory:
+    return true;
+  }
+  return false;
+}
+export function isFuncReqCategory(category:string) {
+  switch(category) {
+  case userFRCategory:
+  case softFRCategory:
+  case archFRCategory:
+  case desFRCategory:
+    return true;
+  }
+  return false;
+}
+export function isNonFuncReqCategory(category:string) {
+  switch(category) {
+  case userNFRCategory:
+  case softNFRCategory:
+  case archNFRCategory:
+  case desNFRCategory:
+    return true;
+  }
+  return false;
+}export function isConstraintCategory(category:string) {
+  switch(category) {
+  case userDCCategory:
+  case softDCCategory:
+  case archDCCategory:
+  case desDCCategory:
+    return true;
+  }
+  return false;
+}

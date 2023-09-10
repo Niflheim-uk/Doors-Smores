@@ -5,34 +5,20 @@ import { Uri } from 'vscode';
 import * as schema from '../model/schema';
 import { DoorsSmores } from '../doorsSmores';
 import { DocumentView } from './documentView/documentView';
+import {getDecomposedFromTraceType, getDecomposesToTraceType, getDetailedByTraceType, getDetailsTraceType, getSatisfiedByTraceType, getSatisfiesTraceType, getTraceCategoryLabels, getVerifiedByTraceType, getVerifiesTraceType} from './traceSorting';
 
 export function getIdLabel(node:DocumentNode) {
-  switch(node.data.category) {
-  case schema.headingCategory:
+  if(node.data.category === schema.headingCategory) {
     return `Heading<br/>Id:${node.data.id}`;
-  case schema.commentCategory:
+  } else if(node.data.category === schema.commentCategory) {
     return `Comment<br/>Id:${node.data.id}`;
-  case schema.userFRCategory:
-  case schema.userNFRCategory:
-  case schema.softFRCategory:
-  case schema.softNFRCategory:
-  case schema.archFRCategory:
-  case schema.archNFRCategory:
-  case schema.desFRCategory:
-  case schema.desNFRCategory:
+  } else if(schema.isFuncReqCategory(node.data.category) || schema.isNonFuncReqCategory(node.data.category)) {
     return `Requirement<br/>Id:${node.data.id}`;
-  case schema.userDCCategory:
-  case schema.softDCCategory:
-  case schema.archDCCategory:
-  case schema.desDCCategory:
+  } else if(schema.isConstraintCategory(node.data.category)) {
     return `Constraint<br/>Id:${node.data.id}`;
-  case schema.userTestCategory:
-  case schema.softTestCategory:
-  case schema.archTestCategory:
-  case schema.desTestCategory:
+  } else if(schema.isTestCategory(node.data.category)) {
     return `Test Case<br/>Id:${node.data.id}`;
-  case schema.imageCategory:
-  case schema.mermaidCategory:
+  } else if(node.data.category === schema.imageCategory || node.data.category === schema.mermaidCategory) {
     return `Image<br/>Id:${node.data.id}`;
   }
   return "";
@@ -50,31 +36,46 @@ export function getInnerHtmlForImage(node:DocumentNode, exporting:boolean) {
   </div>`;
 }
 
-export function getInnerHtmlForRequirement(node:DocumentNode):string {
+export function getInnerHtmlForRequirement(node:DocumentNode, hideTracing:boolean=false):string {
   const reqRow = getFirstRow(node);
   const trRow = getTranslationRationaleRow(node);
+  let traceRows:string = "";
+  if(!hideTracing && DocumentView.includeTraceInfo) {
+    traceRows = getTraceRows(node);
+  }
   return `
   <table class="indented2ColSmall"><tbody>
     ${reqRow}
     ${trRow}
+    ${traceRows}
   </tbody></table>`;
 }
-export function getInnerHtmlForConstraint(node:DocumentNode) {
+export function getInnerHtmlForConstraint(node:DocumentNode, hideTracing:boolean=false):string {
   const constRow = getFirstRow(node);
   const trRow = getTranslationRationaleRow(node);
+  let traceRows:string = "";
+  if(!hideTracing && DocumentView.includeTraceInfo) {
+    traceRows = getTraceRows(node);
+  }
   return `
   <table class="indented2ColSmall"><tbody>
     ${constRow}
     ${trRow}
+    ${traceRows}
   </tbody></table>`;
 }
-export function getInnerHtmlForTest(node:DocumentNode) {
+export function getInnerHtmlForTest(node:DocumentNode, hideTracing:boolean=false):string {
   const testRow = getFirstRow(node);
   const erRow = getExpectedResultsRow(node);
+  let traceRows:string = "";
+  if(!hideTracing && DocumentView.includeTraceInfo) {
+    traceRows = getTraceRows(node);
+  }
   return `
   <table class="indented2ColSmall"><tbody>
     ${testRow}
     ${erRow}
+    ${traceRows}
   </tbody></table>`;
 }
 function getFirstRow(node:DocumentNode) {
@@ -98,4 +99,45 @@ function getExpectedResultsRow(node:DocumentNode) {
 }
 function getTableRow(c1:string, c2:string) {
   return `<tr><td class="tableSmall">${c1}</td><td>${c2}</td></tr>`;
+}
+
+function getTraceRow(label:string, traceIds:number[]) {
+  if(traceIds.length === 0) {
+    return "";
+  }
+  let c2="";
+  for(let i=0;i<traceIds.length;i++) {
+    const traceNode = DocumentNode.createFromId(traceIds[i]);
+    if(traceNode) {
+      c2 = c2.concat(getTableTextHtmlFromMd(`${traceNode.data.id}: ${traceNode.data.text.split('\n')[0]}`));
+    }
+  }
+  return getTableRow(label,c2);
+}
+function getTraceRows(node:DocumentNode):string {
+  const originCategory = node.data.category;
+  const originCategoryLabel = schema.getLabelPrefix(originCategory);
+  const traces = node.data.traces.traceIds;
+  const traceCategoryLabels = getTraceCategoryLabels(traces);
+  let traceRows="";
+  if(schema.isTestCategory(node.data.category)) {
+    const verifies = getVerifiesTraceType(originCategoryLabel, traces, traceCategoryLabels);
+    traceRows = traceRows.concat(getTraceRow("Verifies", verifies));
+  } else {
+    const decomposedFrom = getDecomposedFromTraceType(originCategoryLabel, traces, traceCategoryLabels);
+    const satisfies = getSatisfiesTraceType(originCategoryLabel, traces, traceCategoryLabels);
+    const details = getDetailsTraceType(originCategoryLabel, traces, traceCategoryLabels);
+    const decomposesTo = getDecomposesToTraceType(originCategoryLabel, traces, traceCategoryLabels);
+    const satisfiedBy = getSatisfiedByTraceType(originCategoryLabel, traces, traceCategoryLabels);
+    const detailedBy = getDetailedByTraceType(originCategoryLabel, traces, traceCategoryLabels);
+    const verifiedBy = getVerifiedByTraceType(originCategoryLabel, traces, traceCategoryLabels);
+    traceRows = traceRows.concat(getTraceRow("Decomposed<br/>from", decomposedFrom));
+    traceRows = traceRows.concat(getTraceRow("Satisfies", satisfies));
+    traceRows = traceRows.concat(getTraceRow("Details", details));
+    traceRows = traceRows.concat(getTraceRow("Decomposes<br/>to", decomposesTo));
+    traceRows = traceRows.concat(getTraceRow("Satisfied<br/>by", satisfiedBy));
+    traceRows = traceRows.concat(getTraceRow("Detailed<br/>by", detailedBy));
+    traceRows = traceRows.concat(getTraceRow("Verified<br/>by", verifiedBy));  
+  }
+  return traceRows;
 }

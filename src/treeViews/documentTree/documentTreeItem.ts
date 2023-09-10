@@ -3,11 +3,9 @@ import { DocumentNode } from "../../model/documentNode";
 import * as schema from '../../model/schema';
 import { getNodeIcon } from "../treeIcons";
 import { VersionController } from "../../versionControl/versionController";
+import { DoorsSmores } from "../../doorsSmores";
 
 export class DocumentTreeItem extends vscode.TreeItem {
-  // - category
-  // - document type
-  // - Filepath
   readonly node:DocumentNode;
   constructor(readonly filePath:string) {
     const documentNode = new DocumentNode(filePath);
@@ -34,6 +32,7 @@ export class DocumentTreeItem extends vscode.TreeItem {
   }
   public deleteNode() {
     this.node.delete();
+    DoorsSmores.refreshViews();
     VersionController.commitChanges(`Node ${this.node.data.id} and child nodes deleted`);
   }
   public static isDocumentTreeItem(item:DocumentTreeItem) {

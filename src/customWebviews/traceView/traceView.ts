@@ -2,10 +2,10 @@ import * as vscode from "vscode";
 import * as schema from '../../model/schema';
 import { 
   getDownstreamReqTraceHtml, 
-  getDownstreamTestTraceHtml,
+  getTestsForItemHtml,
   getUpstreamReqTraceHtml,
-  getUpstreamTestTraceHtml,
-  getTraceTargetHtml
+  getTestTargetsHtml,
+  getTracedItemHtml
  } from "./traceHtml";
 import { clearNonce, getNonce } from "../getNonce";
 import { getScriptPath, getTracingStylePaths } from "../resources";
@@ -164,46 +164,30 @@ export class TraceView {
     </html>`;  
   }
   private getBodyHtml(node:DocumentNode):string {
-    switch(node.data.category) {
-      case schema.userFRCategory:
-      case schema.userNFRCategory:
-      case schema.userDCCategory:
-      case schema.softFRCategory:
-      case schema.softNFRCategory:
-      case schema.softDCCategory:
-      case schema.archFRCategory:
-      case schema.archNFRCategory:
-      case schema.archDCCategory:
-      case schema.desFRCategory:
-      case schema.desNFRCategory:
-      case schema.desDCCategory:
-        return this.getReqTracingGrid(node);
-      case schema.userTestCategory:
-      case schema.softTestCategory:
-      case schema.archTestCategory:
-      case schema.desTestCategory:
-        return this.getTestTracingGrid(node);
-      case schema.documentCategory:
-      case schema.headingCategory:
-      case schema.commentCategory:
-      case schema.imageCategory:
-      case schema.mermaidCategory:
-      default:
+    if(schema.isFuncReqCategory(node.data.category)) {
+      return this.getReqTracingGrid(node);
+    } else if(schema.isNonFuncReqCategory(node.data.category)) {
+      return this.getReqTracingGrid(node);
+    } else if(schema.isConstraintCategory(node.data.category)) {
+      return this.getReqTracingGrid(node);
+    } else if(schema.isTestCategory(node.data.category)) {
+      return this.getTestTracingGrid(node);
+    } else {
         return "<H2>Invalid selection</H2>";
       }
   }
   private getReqTracingGrid(node:DocumentNode):string {
     let html = "<div class='tracingGrid'><div></div>";
     html = html.concat('<div>', getUpstreamReqTraceHtml(node), '</div>');
-    html = html.concat('<div>', getTraceTargetHtml(node),'</div>');
-    html = html.concat('<div>', getDownstreamTestTraceHtml(node),'</div><div></div>');
+    html = html.concat('<div>', getTracedItemHtml(node),'</div>');
+    html = html.concat('<div>', getTestsForItemHtml(node),'</div><div></div>');
     html = html.concat('<div>', getDownstreamReqTraceHtml(node)),'</div></div>';
     return html;
   }
   private getTestTracingGrid(node:DocumentNode):string {
     let html = "<div class='tracingGrid'><div></div><div></div>";
-    html = html.concat('<div>', getTraceTargetHtml(node),'</div>');
-    html = html.concat('<div>', getUpstreamTestTraceHtml(node),'</div>');
+    html = html.concat('<div>', getTracedItemHtml(node),'</div>');
+    html = html.concat('<div>', getTestTargetsHtml(node),'</div>');
     html = html.concat('<div></div><div></div></div>');
     return html;
   }

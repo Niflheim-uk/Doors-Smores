@@ -236,7 +236,7 @@ export class DoorsSmores {
   }
 
   public static writeRecentProjects(newList:ProjectInfo[]) {
-    const settings = vscode.workspace.getConfiguration('doors-smores.projectView');
+    const settings = vscode.workspace.getConfiguration('projectView');
     const maxRecentProjects:number|undefined = settings.get("maximumRecentProjects");
     if(maxRecentProjects && newList.length > maxRecentProjects) {
       newList.splice(maxRecentProjects);

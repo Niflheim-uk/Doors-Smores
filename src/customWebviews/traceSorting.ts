@@ -1,4 +1,5 @@
-import * as schema from '../../model/schema';
+import { DocumentNode } from '../model/documentNode';
+import * as schema from '../model/schema';
 
 const ursReqPattern = /^U((FR)|(NFR)|(DC))$/;
 const srsReqPattern = /^S((FR)|(NFR)|(DC))$/;
@@ -10,6 +11,18 @@ const softTestPattern = /^ST$/;
 const archTestPattern = /^AT$/;
 const desTestPattern = /^DT$/;
 
+export function getTraceCategoryLabels(traceIds:number[]):string[] {
+  var labels =[];
+  for(let i=0; i<traceIds.length; i++) {
+    const traceNode = DocumentNode.createFromId(traceIds[i]);
+    if(traceNode) {
+      labels.push(schema.getLabelPrefix(traceNode.data.category));
+    } else {
+      labels.push(schema.getLabelPrefix("unknown"));
+    }
+  }
+  return labels;
+}
 export function isCategoryTraceable(category:string):boolean {
   switch(category) {
   case schema.userFRCategory:

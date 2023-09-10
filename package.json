@@ -25,9 +25,20 @@
       {
         "title": "Doors Smores",
         "properties": {
-          "doors-smores.projectView.maximumRecentProjects": {
+          "projectView.maximumRecentProjects": {
+            "type": "integer",
             "default": 5,
-            "type": "integer"
+            "description": "The maximum number of recent projects to maintain in the projects tree view."
+          },
+          "documents.includeTraceDetailInDocuments": {
+            "type":"boolean",
+            "default": false,
+            "description": "If set, traces will be included as additional rows on requirement and test case tables."
+          },
+          "documents.tracingRequired": {
+            "type":"boolean",
+            "default": false,
+            "description": "(Future) If set, upstream, downstream and test traces are expected, as applicable. Items missing traces are highlighted."
           }
         }
       }

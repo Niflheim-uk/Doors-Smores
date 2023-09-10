@@ -21,23 +21,26 @@ Requirement analysis software doesn't have to be that complicated... right?
   - Node Id creation is machine dependant, allowing multiple users to share a repository without creating conflicting Ids.
 - Tracing between documents
 
-## Planned Features
-- Document cover page
-- Document table of contents
-- Tracing reports
-- Options to include tracing information in primary documents
+# Planned release schedule
+### 0.5
+- [ ] Markdown export on export all
+- [ ] Auto export all on change to support document level diff
+- [ ] Tracing reports
+- [x] Options to include tracing information in primary documents
+- [ ] Some instructions
+- [x] Convert multi-line fields to external file references (easier for diff/merge)
+
+### 0.6 
+- [ ] Document cover page
+- [ ] Document table of contents
+- [ ] All templates
+
+### Future
 - Risk management
-- Document level diff
+- Document level diff ()
 - Auto sync with remote repository
 - Header/footer templates
 - User document styles
-- Additional document templates
-
-## Other planned
-- A better ReadMe
-- Some instructions
-- ..A nice break
-- ....A large drink
 
 ## Release Notes
 

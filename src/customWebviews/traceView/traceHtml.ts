@@ -13,9 +13,10 @@ import {
   getDetailsTraceType, 
   getSatisfiedByTraceType, 
   getSatisfiesTraceType, 
+  getTraceCategoryLabels, 
   getVerifiedByTraceType, 
   getVerifiesTraceType 
-} from "./traceSorting";
+} from "../traceSorting";
 
 var viewSVG:string = "<i class='tracing codicon codicon-zoom-in'></i>";
 var deleteSVG:string = "<i class='tracing codicon codicon-trash'></i>";
@@ -66,18 +67,6 @@ function getTraceTable(originId:number, traceArray:number[]|undefined, title:str
     <div><table class='traceView'>${traceRows}</table></div>
   </div>`;
 }
-function getTraceCategoryLabels(traceIds:number[]):string[] {
-  var labels =[];
-  for(let i=0; i<traceIds.length; i++) {
-    const traceNode = DocumentNode.createFromId(traceIds[i]);
-    if(traceNode) {
-      labels.push(schema.getLabelPrefix(traceNode.data.category));
-    } else {
-      labels.push(schema.getLabelPrefix("unknown"));
-    }
-  }
-  return labels;
-}
 export function getDownstreamReqTraceHtml(node:DocumentNode):string {
   let html = "";
   const originCategory = node.data.category;
@@ -99,7 +88,7 @@ export function getDownstreamReqTraceHtml(node:DocumentNode):string {
   }
   return html;
 }
-export function getDownstreamTestTraceHtml(node:DocumentNode):string {
+export function getTestsForItemHtml(node:DocumentNode):string {
   let html = "";
   const originCategory = node.data.category;
   const originCategoryLabel = schema.getLabelPrefix(originCategory);
@@ -132,7 +121,7 @@ export function getUpstreamReqTraceHtml(node:DocumentNode):string {
   }
   return html;
 }
-export function getUpstreamTestTraceHtml(node:DocumentNode):string {
+export function getTestTargetsHtml(node:DocumentNode):string {
   let html = "";
   const originCategory = node.data.category;
   const originCategoryLabel = schema.getLabelPrefix(originCategory);
@@ -145,7 +134,7 @@ export function getUpstreamTestTraceHtml(node:DocumentNode):string {
   }
   return html;
 }
-export function getTraceTargetHtml(node:DocumentNode):string {
+export function getTracedItemHtml(node:DocumentNode):string {
   const title = `<br/><div class='traceTitle'><h3 class='tracing'>Tracing: ${node.data.id}</h3></div>`;
   const addButton = "<div><br/><button id='NewTrace'>Add Trace</button></div>";
   switch(node.data.category) {
@@ -157,17 +146,17 @@ export function getTraceTargetHtml(node:DocumentNode):string {
   case schema.archNFRCategory:
   case schema.desFRCategory:
   case schema.desNFRCategory:
-    return `<div class='tracing'>${title}${getInnerHtmlForRequirement(node)}${addButton}</div>`;
+    return `<div class='tracing'>${title}${getInnerHtmlForRequirement(node, true)}${addButton}</div>`;
   case schema.userDCCategory:
   case schema.softDCCategory:
   case schema.archDCCategory:
   case schema.desDCCategory:
-    return `<div class='tracing'>${title}${getInnerHtmlForConstraint(node)}${addButton}</div>`;
+    return `<div class='tracing'>${title}${getInnerHtmlForConstraint(node, true)}${addButton}</div>`;
   case schema.userTestCategory:
   case schema.softTestCategory:
   case schema.archTestCategory:
   case schema.desTestCategory:
-    return `<div class='tracing'>${title}${getInnerHtmlForTest(node)}${addButton}</div>`;
+    return `<div class='tracing'>${title}${getInnerHtmlForTest(node, true)}${addButton}</div>`;
   default:
     return "<H1>ERROR - Invalid Category</H1>";
   }

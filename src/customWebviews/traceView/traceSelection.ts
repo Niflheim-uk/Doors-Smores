@@ -1,6 +1,6 @@
 import * as schema from '../../model/schema';
 import { window } from "vscode";
-import { getTargetableDocumentTypes, getValidCategoryOptions, isCategoryTraceable } from "./traceSorting";
+import { getTargetableDocumentTypes, getValidCategoryOptions, isCategoryTraceable } from "../traceSorting";
 import { DocumentNode } from '../../model/documentNode';
 import { DoorsSmores } from '../../doorsSmores';
 
