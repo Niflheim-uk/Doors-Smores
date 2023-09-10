@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import {NodeDataModel} from '../model/smoresDataSchema';
 import { Converter } from 'showdown';
 import { SmoresNode } from '../model/smoresNode';
-import { insertHtmlClass, setWebviewSection} from '../utils';
+import { insertHtmlClass, setWebviewSection} from '../utils/utils';
 
 function getTableTextHtml(mdText:string):string {
   const classMap = {

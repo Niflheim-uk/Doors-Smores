@@ -4,7 +4,7 @@ import * as path from "path";
 import { TreeNode } from "./treeNode";
 import { getProject, SmoresProject } from "../model/smoresProject";
 import { SmoresNode } from "../model/smoresNode";
-import * as utils from "../utils";
+import * as utils from "../utils/utils";
 import { SmoresDataFile } from "../model/smoresDataFile";
 
 export class TreeNodeProvider implements vscode.TreeDataProvider<TreeNode> {

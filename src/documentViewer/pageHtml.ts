@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { SmoresNode } from "../model/smoresNode";
 import {getBodyHtml} from './bodyHtml';
+import { getNonce } from "../utils/utils";
 
 const _extension = vscode.extensions.getExtension("Niflheim.doors-smores");
 let _extensionPath:string|undefined = undefined;
@@ -27,7 +28,7 @@ if(_extension) {
 }
 
 export function getPageHtml(node:SmoresNode, exporting:boolean, editNode?:SmoresNode):string {
-
+  const nonce = getNonce();
   const bodyHtml = getBodyHtml(node, exporting, editNode);
   let scripts = "";
   if(exporting===false) {
@@ -38,6 +39,7 @@ export function getPageHtml(node:SmoresNode, exporting:boolean, editNode?:Smores
   <html lang="en">
     <head>
       <meta charset="UTF-8">
+      <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'nonce-${nonce}';">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <style>${_stylesCss[0]}</style>
       <style>${_stylesCss[1]}</style>

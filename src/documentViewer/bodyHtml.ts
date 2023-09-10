@@ -2,7 +2,7 @@ import { SmoresNode } from '../model/smoresNode';
 import { getInnerHtmlForImage } from './imageInnerHtml';
 import { getInnerHtmlForRequirement } from './requirementInnerHtml';
 import { getHeadingHtml } from './headingInnerHtml';
-import { getMarkdownParagraphs, insertHtmlClass, setWebviewSection } from '../utils';
+import { getMarkdownParagraphs, insertHtmlClass, setWebviewSection } from '../utils/utils';
 import { getEditHtmlForNodeType } from './textEditor';
 import { Converter } from "showdown";
 

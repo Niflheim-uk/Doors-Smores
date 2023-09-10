@@ -3,11 +3,12 @@ import * as path from "path";
 import * as fs from 'fs';
 import { TreeNode } from "../treeView/treeNode";
 import { SmoresNode } from "../model/smoresNode";
-import { getPageHtml } from './pageHtml';
-import { getWorkspaceRoot } from '../utils';
-import { setWebview } from "./imageInnerHtml";
+import { getBodyHtml } from './bodyHtml';
+import { getWorkspaceRoot } from '../utils/utils';
+import { setWebview, setImagesUri } from "./imageInnerHtml";
+import { getPageHtmlFromTemplate } from "../utils/htmlPageTemplate";
 
-export class NodeViewer {
+export class DocumentViewer {
   private _extensionUri!:vscode.Uri;
   private _imagesUri!:vscode.Uri;
   private _referenceNode:SmoresNode|undefined;
@@ -79,7 +80,8 @@ export class NodeViewer {
       if(workspaceRoot && filename) {
         const filePath = path.join(workspaceRoot, filename);
         this._showNode(documentNode);
-        const html = getPageHtml(documentNode, false);
+        const bodyHtml = getBodyHtml(documentNode, true);
+        const html = getPageHtmlFromTemplate(false, bodyHtml);
         if(html !== undefined) {
           fs.writeFileSync(filePath,html);
         }
@@ -107,6 +109,7 @@ export class NodeViewer {
     this._referenceNode = node;
     const nodeUri = vscode.Uri.file(path.dirname(node.filePath.toString()));
     this._imagesUri = vscode.Uri.joinPath(nodeUri, "images");
+    setImagesUri(this._imagesUri);
     this._viewPanel = vscode.window.createWebviewPanel(
       "smoresNodeView", // Identifies the type of the webview. Used internally
       "Smores Preview", // Title of the panel displayed to the user
@@ -164,8 +167,7 @@ export class NodeViewer {
     if(this._viewPanel === undefined || this._referenceNode === undefined) {
       return;
     }
-    const html = getPageHtml(this._referenceNode, true, this._nodeToEdit);
-    this._viewPanel.webview.html = html;
-    return html;
+    const bodyHtml = getBodyHtml(this._referenceNode, false, this._nodeToEdit);
+    this._viewPanel.webview.html = getPageHtmlFromTemplate(true, bodyHtml);
   }
 }
