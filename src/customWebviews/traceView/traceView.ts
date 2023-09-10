@@ -145,6 +145,13 @@ export class TraceView {
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="Content-Security-Policy" content="
+          default-src 'none'; 
+          font-src ${this._panel.webview.cspSource} 'nonce-${nonce}';
+          img-src ${this._panel.webview.cspSource} 'nonce-${nonce}';
+          script-src ${this._panel.webview.cspSource} 'nonce-${nonce}';
+          style-src ${this._panel.webview.cspSource} 'nonce-${nonce}';
+        "/>
         <link nonce="${nonce}" href="${webUri[0]}" rel="stylesheet"/>
         <link nonce="${nonce}" href="${webUri[1]}" rel="stylesheet"/>
         <link nonce="${nonce}" href="${webUri[2]}" rel="stylesheet"/>

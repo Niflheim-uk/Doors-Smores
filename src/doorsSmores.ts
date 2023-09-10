@@ -11,6 +11,12 @@ import { TraceView } from './customWebviews/traceView/traceView';
 import { newDocument } from './model/newDocument';
 import { VersionController } from './versionControl/versionController';
 
+export function activate(context: vscode.ExtensionContext) {
+  vscode.commands.executeCommand('setContext', 'doors-smores.projectOpen', false);
+  new DoorsSmores(context);
+}
+export function deactivate() {}
+
 export type ProjectInfo = {
   name:string,
   path:string

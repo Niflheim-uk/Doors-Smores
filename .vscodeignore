@@ -12,7 +12,7 @@ vsc-extension-quickstart.md
 .vscode
 node_modules
 out
-!out/extension.js
+!out/doorsSmores.js
 src/
 tsconfig.json
 webpack.config.js
