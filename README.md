@@ -9,7 +9,10 @@ The premise is simple.
 
 Requirement analysis software doesn't have to be that complicated... right?
 
-## Current Features
+# Pre-requisites
+- Requires Git to be installed for version control features. See [this page](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) for instructions on installing Git.
+
+# Current Features
 - Can create and edit documents.
   - 8 document types are supported
     - User Requirements Specification
@@ -47,31 +50,33 @@ Requirement analysis software doesn't have to be that complicated... right?
 ![y](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/complete_icon.png?raw=true) Convert multi-line fields to external file references (easier for diff/merge)
 
 ### 0.6 
-![n](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/complete_icon.png?raw=true) Document cover page \
-![n](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/complete_icon.png?raw=true) Document table of contents \
-![n](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/complete_icon.png?raw=true) All templates fleshed out
+![n](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/incomplete_icon.png?raw=true) Document cover page \
+![n](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/incomplete_icon.png?raw=true) Document table of contents \
+![n](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/incomplete_icon.png?raw=true) All templates fleshed out \
+![n](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/incomplete_icon.png?raw=true) Auto sync with remote repository to keep a team in sync.
 
-### Future
-- Risk management
-  - Define types of harm with severity
-  - Define risks that result in harm
-  - Define risk controls that mitigate risks
-  - Trace types of harm to the risks that cause it.
-  - Trace risks to the risk control that mitigate it
-  - Trace risk control to the requirement that implements it.
-  - Produce risk analysis reports.
-- Document level diff 
-  - Already in place via document export in markdown on changes and committed to Git, but a solution is planned for those not using version control.
-- Auto sync with remote repository
-  - Keeps the team in sync.
-- User defined header & footer to allow document branding.
-- User defined document styles
+### 0.7
+![n](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/incomplete_icon.png?raw=true) User defined header & footer to allow document branding. \
+![n](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/incomplete_icon.png?raw=true) User defined document styles
+
+### 0.8
+![n](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/incomplete_icon.png?raw=true) Risk management - includes the following:
+- Define types of harm with severity
+- Define risks that result in harm
+- Define risk controls that mitigate risks
+- Trace types of harm to the risks that cause it.
+- Trace risks to the risk control that mitigate it
+- Trace risk control to the requirement that implements it.
+- Produce risk analysis reports.
+
+## Other planned features
+- Release tagging
+- Automatic document revision numbering
+- Document review mechanism
+- Document approval mechanism
+- Document diff between releases, and between release and current draft.
 - Script to protocol interfaces 
    - Will allow test protocols to be consumed by test frameworks (formal documentation and scripted tests remain in sync).
-
-## Release Notes
-
-- Alpha testing only
 
 ## Known issues
 
