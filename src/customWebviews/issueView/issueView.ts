@@ -135,11 +135,20 @@ export class IssueView {
   <style nonce="${nonce}">
     textarea {
       margin-left:1%;
-      width:49%;
+      width:45%;
     }
     div.radioDiv {
       display:flex; 
       flex-direction:column;
+    }
+    div.summaryDiv {
+      display:flex; 
+    }
+    .insertion {
+      color:green;
+    }
+    .deletion {
+      color:red;
     }
   </style>
   ${styleBlock}
@@ -153,16 +162,16 @@ export class IssueView {
   private async getBodyHtml() {
     var html = "";
     const revisionHistory = this.getRevisionHistory();
-    html = html.concat(this.getIssueSection());
+    html = html.concat(await this.getIssueSection());
     html = html.concat(await this.getAuthorSection());
     html = html.concat(this.getSubmitSection());
     html = html.concat(this.getHistoricSections(revisionHistory));
     return html;
   }
 
-  private getIssueSection():string {
+  private async getIssueSection() {
     var html = this.getIssueSelectionSection();
-    html = html.concat(this.getSummarySection());
+    html = html.concat(await this.getSummarySection());
     return html;
   }
   private getIssueSelectionSection() {
@@ -183,14 +192,43 @@ export class IssueView {
       </div>
     </div>`;
   }
-  private getSummarySection() {
+  private async getSummarySection() {
     var summaryContent = "";
+    const deltaHtml = await this.getDeltaHtml();
     return `
     <br>
     <div>
       <h1>Enter issue summary</h1>
-      <textarea id='issueSummary' rows="8">${summaryContent}</textarea>
+      <div class="summaryDiv">
+        <textarea id='issueSummary' rows="8">${summaryContent}</textarea>
+        ${deltaHtml}
+      </div>
     </div>`;
+  }
+  private async getDeltaHtml() {
+    const diffRecords = await VersionController.getDiffRecords(this.document, this.traceReport);
+    var html="";
+    for(let i=0; i<diffRecords.length; i++) {
+      const fileClass = this.getModificationClass(diffRecords[i].fileModification);
+      const filepath = `<span class='${fileClass}'>${diffRecords[i].filepath}</span>`;
+      const ins = `<span class='insertion'> +${diffRecords[i].insertions} </span>`;
+      const del = `<span class='deletion'> +${diffRecords[i].deletions} </span>`;
+      html = html.concat(`<span>&nbsp;&nbsp;(${ins}|${del}) ${filepath}<span><br>`);
+    }
+    return html;
+  }
+  private getModificationClass(fileMod:string) {
+    switch(fileMod) {
+    case 'M':
+      return "modification";
+    case 'D':
+      return "deletion";
+    case 'A':
+      return "insertion";
+    default:
+      window.showErrorMessage("Unknown modification code");
+      return "unchanged";
+    }
   }
   private async getAuthorSection() {
     const author = await VersionController.getUserName();

@@ -8,6 +8,7 @@ export type DiffRecord = {
   filepath:string;
   insertions:number;
   deletions:number;
+  fileModification:string;
 };
 
 
@@ -140,28 +141,77 @@ export class VersionController {
   }
   public static async getDiffRecords(document:SmoresDocument, traceReport:boolean) {
     const tag = VersionController.getLastTag(document, traceReport);
-    var diffResponse;
+    const [numstat, summary] = await VersionController.getIssueChanges(tag);
+    var records:DiffRecord[] = [];
+    if(Array.isArray(numstat) && Array.isArray(summary)) {
+      for(let i=0; i<numstat.length; i++) {
+        const parts = numstat[i].split("\t");
+        const filepath = parts[2];
+        if(filepath) {
+          const record:DiffRecord= {
+            filepath,
+            insertions:Number(parts[0]),
+            deletions:Number(parts[1]),
+            fileModification:VersionController.getModificationState(summary, filepath)
+          };
+          records.push(record);
+        }
+      }
+    }
+    return records;
+  }
+  private static getModificationState(summaryResponse:string[], filepath:string) {
+    for(let i=0; i<summaryResponse.length; i++) {
+      const entry = summaryResponse[i];
+      const escaped = filepath.replace(/[.*+?^${}()|[\]\/\\]/g, '\\$&'); 
+      if(entry.match(escaped)) {
+        return entry.split("\t")[0];
+      }
+    }
+    return 'Error';
+  }
+  private static async getIssueChanges(tag:string) {
+    var numstatResponse;
+    var summaryResponse;
+    var numstat;
+    var summary;
     if(_open) {
-      diffResponse = await simpleGit(_gitOptions).raw('diff', '--exit-code', '--numstat', `${tag}..HEAD`);
+      numstatResponse = await simpleGit(_gitOptions).raw('diff', '--exit-code', '--numstat', `${tag}..HEAD`);
+      summaryResponse = await simpleGit(_gitOptions).raw('diff', '--exit-code', '--compact-summary', '--name-status', `${tag}..HEAD`);
+      numstat = numstatResponse.split("\n");
+      summary = summaryResponse.split("\n");
     } else {
       const dataRoot = DoorsSmores.getDataDirectory();
       const tagRoot = dataRoot.concat(`_${tag}`);
       const tempRoot = DoorsSmores.getDataTempDirectory();
-      diffResponse = await simpleGit(_gitOptions).raw('diff', '--no-index', '--exit-code', '--numstat', `${tagRoot}`, `${tempRoot}`);
-    }
-    var records:DiffRecord[] = [];
-    if(Array.isArray(diffResponse)) {
-      for(let i=0; i<diffResponse.length; i++) {
-        const parts = diffResponse[i].split("\t");
-        const record:DiffRecord= {
-          filepath:parts[2],
-          insertions:parts[0],
-          deletions:parts[1]
-        };
-        records.push(record);
+      numstatResponse = await simpleGit(_gitOptions).raw('diff', '--no-index', '--exit-code', '--numstat', `${tagRoot}`, `${tempRoot}`);
+      summaryResponse = await simpleGit(_gitOptions).raw('diff', '--no-index', '--exit-code', '--compact-summary', '--name-status', `${tagRoot}`, `${tempRoot}`);
+      numstat = numstatResponse.split("\n");
+      summary = summaryResponse.split("\n");
+      for(let i=0; i<numstat.length; i++) {
+        const parts = numstat[i].split("\t");
+        if(parts[2]) {
+          const matchesMod = parts[2].match('[^}]*}\/(.*)');
+          const matchesAddDel = parts[2].match('.*\.smoresData[^\/]*\/(.*)');
+          if(matchesMod !== null) {
+            numstat[i] = `${parts[0]}\t${parts[1]}\t${matchesMod[1]}`;
+          } else if(matchesAddDel !== null) {
+            const filepath = matchesAddDel[1].replace(" => dev/null}","").replace("}","");
+            numstat[i] = `${parts[0]}\t${parts[1]}\t${filepath}`;
+          }
+        }
+      }
+      for(let i=0; i<summary.length; i++) {
+        const parts = summary[i].split("\t");
+        if(parts.length>1) {
+          const matches = parts[parts.length-1].match('.*\.smoresData[^\/]*\/(.*)');
+          if(matches !== null) {
+            summary[i] = `${parts[0]}\t${matches[1]}`;
+          }
+        }
       }
     }
-    return records;
+    return [numstat, summary];
   }
   private static async tagIssue(tag:string, message:string) {
     clearTimeout(_commitTimer);
