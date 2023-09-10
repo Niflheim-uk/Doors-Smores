@@ -17,7 +17,7 @@
     "Other"
   ],
   "activationEvents": [
-    "workspaceContains:*.smores-project"
+    "onStartupFinished"
   ],
   "main": "./out/doorsSmores.js",
   "contributes": {
