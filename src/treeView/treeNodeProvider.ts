@@ -172,8 +172,8 @@ export class TreeNodeProvider implements vscode.TreeDataProvider<TreeNode> {
         vscode.commands.executeCommand('doors-smores.View-TreeNode',node.smoresNode);
         this.refresh();
       }),
-      vscode.commands.registerCommand("doors-smores.New-Mermaid-Image", (node:TreeNode) => {
-        node.smoresNode.newMermaidImage();
+      vscode.commands.registerCommand("doors-smores.New-Image", (node:TreeNode) => {
+        node.smoresNode.newImage();
         vscode.commands.executeCommand('doors-smores.View-TreeNode',node.smoresNode);
         this.refresh();
       })

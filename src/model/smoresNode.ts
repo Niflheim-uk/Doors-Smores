@@ -52,9 +52,8 @@ export class SmoresNode extends SmoresDataFile {
   newFunctionalRequirement() {
     this.newItem("functionalRequirement", "new functional requirement");
   }
-  newMermaidImage() {
-    const defaultImage = "---\ntitle: Node\n---\nflowchart LR\n    id\n";
-    this.newItem("mermaidImage", `${defaultImage}`);
+  newImage() {
+    this.newItem("image", "../defaultImage.jpg");
   }
   promote() {
     const parent = this.getParentNode();

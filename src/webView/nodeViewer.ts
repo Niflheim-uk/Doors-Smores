@@ -6,6 +6,7 @@ import { SmoresNode } from "../model/smoresNode";
 
 export class NodeViewer {
   private _extensionUri!:vscode.Uri;
+  private _imagesUri!:vscode.Uri;
   private referenceNode:SmoresNode|undefined;
   private nodeToEdit:SmoresNode|undefined;
   private viewPanel: vscode.WebviewPanel | undefined;
@@ -42,6 +43,7 @@ export class NodeViewer {
     this.referenceNode = node;
     if (this.viewPanel === undefined) {
       const nodeUri = vscode.Uri.file(path.dirname(node.filePath.toString()));
+      this._imagesUri = vscode.Uri.joinPath(nodeUri, "images");
       this.viewPanel = vscode.window.createWebviewPanel(
         "smoresNodeView", // Identifies the type of the webview. Used internally
         "Smores Preview", // Title of the panel displayed to the user
@@ -50,7 +52,8 @@ export class NodeViewer {
           enableScripts: true,
           localResourceRoots:[
             vscode.Uri.joinPath(this._extensionUri, 'resources'),
-            vscode.Uri.joinPath(nodeUri, "images")            
+            nodeUri,
+            this._imagesUri
           ]
         }
       );
@@ -84,16 +87,37 @@ export class NodeViewer {
     }
     await this.updatePanel();
   }
+  private async editHeadingText(node: SmoresNode) {
+    const currentValue = node.data.text.split("\n")[0];
+    const newValue = await vscode.window.showInputBox({ value: `${currentValue}` });
+    if(newValue) {
+      node.data.text = newValue;
+      node.write();
+      vscode.commands.executeCommand('doors-smores.Update-TreeView');
+      await this.updatePanel();
+    }
+  }
+  private async editImageSource(node: SmoresNode) {
+    const uri = await vscode.window.showOpenDialog({
+      canSelectMany:false,
+      /* eslint-disable  @typescript-eslint/naming-convention */
+      filters:{'Image source':['jpg','jpeg','png','gif','tif']},
+      openLabel:"Select New Image Source",
+      canSelectFolders:false,
+      defaultUri:this._imagesUri
+    });
+    if(uri) {
+      node.data.text = path.relative(this._imagesUri.path, uri[0].path);
+      node.write();
+      vscode.commands.executeCommand('doors-smores.Update-TreeView');
+      await this.updatePanel();
+    }  
+  }
   private async editSingleOrMultilineNode(node: SmoresNode) {
     if(node.data.category === "heading") {
-      const currentValue = node.data.text.split("\n")[0];
-      const newValue = await vscode.window.showInputBox({ value: `${currentValue}` });
-      if(newValue) {
-        node.data.text = newValue;
-        node.write();
-        vscode.commands.executeCommand('doors-smores.Update-TreeView');
-        await this.updatePanel();
-      }
+      this.editHeadingText(node);
+    } else if (node.data.category === "image") {
+      this.editImageSource(node);
     } else {
       this.nodeToEdit = node;
       await this.updatePanel();
@@ -118,7 +142,7 @@ export class NodeViewer {
   }
   private getHtmlForViewing(nodeId:number, innerHtml:string, tooltip:string) {
     const outerHtml = `<div class="tooltip">
-        <div class="tooltiptext">${tooltip}</div>
+        <div class="toolTipText">${tooltip}</div>
         <div class="viewDiv" data-vscode-context='{"webviewSection": "Node-${nodeId}",
           "preventDefaultContextMenuItems": true}'>${innerHtml}</div>
       </div>`;
@@ -129,13 +153,8 @@ export class NodeViewer {
     if(this.viewPanel === undefined) {
       return "";
     }
-    const nodeDir = path.dirname(node.filePath.toString());
-    const nodeUri = vscode.Uri.file(nodeDir);
-    const imageFilePath = vscode.Uri.joinPath(nodeUri, 'images', `${node.data.text}`);
-//    const normalised = imageFilePath.replace(/\\/g,'/');
-    const imageFileUri = vscode.Uri.joinPath(this._extensionUri, 'resources', 'failure.png');//vscode.Uri.parse(normalised);
-            
-    const imageWebUri = this.viewPanel.webview.asWebviewUri(imageFilePath);
+    const imageFileUri = vscode.Uri.joinPath(this._imagesUri, `${node.data.text}`);
+    const imageWebUri = this.viewPanel.webview.asWebviewUri(imageFileUri);
     const innerHtml = `<div Id='mermaid-${node.data.id}' class='mermaidHolder'>
       <img src=${imageWebUri}>
     </div>`;

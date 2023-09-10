@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import * as smoresDataSchema from "./smoresDataSchema";
 import * as fs from "fs";
+import * as path from "path";
 import { SmoresDataFile } from "./smoresDataFile";
 
 export interface ProjectDataModel {
@@ -18,9 +19,27 @@ export class SmoresProject extends SmoresDataFile {
   constructor (readonly projectFilepath:fs.PathLike) {
     super(projectFilepath);
     SmoresDataFile.setProjectFilePath(projectFilepath);
-    this.setDefaults();
+    if(this.setDefaults()) {
+      this.setDefaultImage();
+    }
   }
-  private setDefaults() {
+  private setDefaultImage() {
+    const extension = vscode.extensions.getExtension('Niflheim.doors-smores');
+    const extensionUri = extension?.extensionUri;
+    if(extensionUri === undefined) {
+      return;
+    }
+    const defaultImageSrc = vscode.Uri.joinPath(
+      extensionUri, 'resources', 'defaultImage.jpg'
+    );
+    const projectRoot = path.dirname(this.filePath.toString());
+    const projectName = path.basename(this.filePath.toString(), '.smores-project');
+    const projectDir = path.join(projectRoot, projectName);
+    const imageDest = path.join(projectDir, 'defaultImage.jpg');
+    const imageUri = vscode.Uri.file(imageDest);
+    vscode.workspace.fs.copy(defaultImageSrc, imageUri, {overwrite:true});
+  }
+  private setDefaults():boolean {
     let change = false;
       if(this.data.idBase === undefined) {
       this.data.idBase = 10000;
@@ -33,6 +52,7 @@ export class SmoresProject extends SmoresDataFile {
     if(change) {
       this.write();
     }
+    return change;
   }
   getUniqueId():number {
     const userIndex = this.getUserIndex();

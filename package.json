@@ -114,6 +114,11 @@
         "title": "New Comment"
       },
       {
+        "command": "doors-smores.New-Image",
+        "category": "Smores",
+        "title": "New Image"
+      },
+      {
         "command": "doors-smores.New-Functional-Requirement",
         "category": "Smores",
         "title": "New Functional Requirement"
@@ -165,6 +170,10 @@
         },
         {
           "command": "doors-smores.New-Comment",
+          "when": "view == smoresTreeView && (viewItem =~ /heading/)"
+        },
+        {
+          "command": "doors-smores.New-Image",
           "when": "view == smoresTreeView && (viewItem =~ /heading/)"
         },
         {
