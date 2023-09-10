@@ -20,6 +20,8 @@ import {
   newTreeMermaidImage, newWebviewMermaidImage, getNodeFromContext 
 } from "./projectManagement/newNode";
 import { promoteNode, demoteNode, moveNodeDown, moveNodeUp } from './projectManagement/moveNode';
+import { getProject } from './model/smoresProject';
+import { SmoresNode } from './model/smoresNode';
 
 
 export class DoorsSmores {
@@ -40,7 +42,7 @@ export class DoorsSmores {
       ...this.registerProjectCommands(),
       vscode.commands.registerCommand('doors-smores.Update-Views', DoorsSmores.refreshViews),
       vscode.commands.registerCommand("doors-smores.View-TreeNode", DoorsSmores.viewTreeNode),
-      vscode.commands.registerCommand('doors-smores.Export-Document', (node: TreeNode) => {DoorsSmores.documentView.exportDocument(node.smoresNode);})
+      vscode.commands.registerCommand('doors-smores.Export-Document', (node: TreeNode) => {DoorsSmores.exportDocument(node.smoresNode);})
     ];
     context.subscriptions.push(...registrations);
   }
@@ -66,6 +68,21 @@ export class DoorsSmores {
     if(DocumentViewer.currentPanel) {
       DocumentViewer.currentPanel.editNode(context);
     }
+  }
+  static exportAll() {
+    console.log('export all');
+    const project = getProject();
+    if(project === undefined) {
+      return;
+    }
+    const documentPaths = project.getDocumentPaths();
+    for(let i=0; i<documentPaths.length; i++) {
+      const document = new SmoresNode(documentPaths[i]);
+      DoorsSmores.exportDocument(document, false);
+    }
+  }
+  static exportDocument(documentNode:SmoresNode, userAction:boolean=true) {
+    DocumentViewer.exportDocument(documentNode, userAction);
   }
   
   private registerProjectCommands():vscode.Disposable[] {

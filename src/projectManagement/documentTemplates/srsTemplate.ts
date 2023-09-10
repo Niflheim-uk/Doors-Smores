@@ -6,7 +6,9 @@ import {
   createHistoryTable,
   createReferenceTable,
   createGlossaryTable,
-  createIntroduction
+  createIntroduction,
+  documentStart,
+  createOverallDescription
  } from "./documentParts";
 
 export function createNodesForSRSFull(docNode:SmoresNode) {
@@ -128,14 +130,10 @@ export function createNodesForSRSFull(docNode:SmoresNode) {
 }
 
 export function createNodesForSRSMini(docNode:SmoresNode) {
-  createHistoryTable(docNode);
-  const path_1 = docNode.newItem(schema.headingType, "Introduction");
-  const node_1 = new SmoresNode(path_1!);
-  node_1.newItem(schema.commentType, "The introduction should outline the document. What is its purpose? Who is it for? What will the rest of the document contain?");
-  const path_2 = docNode.newItem(schema.headingType, "Overall description");
-  const node_2 = new SmoresNode(path_2!);
-  node_2.newItem(schema.commentType, "Give an overview of what this software should do / how it fits into any larger system (i.e. if this is one component of a planned system, show how it fits into the larger scheme).");
+  documentStart(docNode);
+  createOverallDescription(docNode);
   const path_3 = docNode.newItem(schema.headingType, "Software Requirements");
   const node_3 = new SmoresNode(path_3!);
   node_3.newItem(schema.commentType, "If you plan on breaking requirements down into categories, explain that. Then get down to it.");
+
 }

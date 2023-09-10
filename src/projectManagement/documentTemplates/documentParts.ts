@@ -8,8 +8,8 @@ export function createHistoryTable(parentNode:SmoresNode) {
   const node = new SmoresNode(path!);
   node.newItem(schema.commentType, 
   `| Date | Issue | Summary     | Author |
-   |------|-------|-------------|--------|
-   |  TBD | 00-01 | First issue |    TBD |`);
+|------|-------|-------------|--------|
+|  TBD | 00-01 | First issue |    TBD |`);
   return node;
 }
 export function createReferenceTable(parentNode:SmoresNode) {
@@ -17,8 +17,8 @@ export function createReferenceTable(parentNode:SmoresNode) {
   const node = new SmoresNode(path!);
   node.newItem(schema.commentType, 
   `| ID | Reference Name | Title          |
-   |----|----------------|----------------|
-   | [1]| doc1           | Document title |`);
+|----|----------------|----------------|
+| [1]| doc1           | Document title |`);
   return node;
 }
 export function createGlossaryTable(parentNode:SmoresNode) {
@@ -27,8 +27,8 @@ export function createGlossaryTable(parentNode:SmoresNode) {
   node.newItem(schema.commentType, "Defined terms are capitalized in this document. These terms are defined in the table below.");
   node.newItem(schema.commentType, 
   `| Term | Definition             |
-   |------|------------------------|
-   | TERM | The definition for TERM|`);
+|------|------------------------|
+| TERM | The definition for TERM|`);
   return node;
 }
 export function createIntroduction(parentNode:SmoresNode) {
@@ -36,13 +36,13 @@ export function createIntroduction(parentNode:SmoresNode) {
   const node = new SmoresNode(path!);
   const path_P = node.newItem(schema.headingType, "Purpose");
   const node_P = new SmoresNode(path_P!);
-  node_P.newItem(schema.commentType, "This document defines a <document type>.");
+  node_P.newItem(schema.commentType, "This document defines a *document type*.");
   const path_S = node.newItem(schema.headingType, "Scope");
   const node_S = new SmoresNode(path_S!);
-  node_S.newItem(schema.commentType, "The scope of this document is the <name> software system.");
+  node_S.newItem(schema.commentType, "The scope of this document is the *project name* software system.");
   const path_A = node.newItem(schema.headingType, "Intended audience");
   const node_A = new SmoresNode(path_A!);
-  node_A.newItem(schema.commentType, "This document is intended for <developers/testers> of the <name> software system.");
+  node_A.newItem(schema.commentType, "This document is intended for *developers/testers* of the *project name* software system.");
   return node;
 }
 
@@ -52,3 +52,12 @@ export function documentStart(docNode:SmoresNode) {
   createGlossaryTable(node_1);
   createReferenceTable(node_1);
 }
+export function testProtocolStart(docNode:SmoresNode) {
+
+}
+export function createOverallDescription(docNode:SmoresNode) {
+  const path = docNode.newItem(schema.headingType, "Overall description");
+  const node = new SmoresNode(path!);
+  node.newItem(schema.commentType, "*Give an overview of what this software should do / how it fits into any larger system (i.e. if this is one component of a planned system, show how it fits into the larger scheme).*");
+}
+

@@ -1,9 +1,9 @@
 import { pathspec, SimpleGitOptions, simpleGit } from 'simple-git';
 import { SmoresDataFile } from '../model/smoresDataFile';
-import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { SmoresProject, getProject } from '../model/smoresProject';
+import { getProject } from '../model/smoresProject';
+import { DoorsSmores } from '../doorsSmores';
 
 var _open:boolean = false;
 var _pathSpec:string = '.';
@@ -38,6 +38,7 @@ export class VersionController {
   }
 
   public static async commitChanges(msg:string) {
+    DoorsSmores.exportAll();
     console.log(msg);
     if(!_open) {
       return; 

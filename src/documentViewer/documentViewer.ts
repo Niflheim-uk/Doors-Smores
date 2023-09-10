@@ -57,28 +57,13 @@ export class DocumentViewer {
     } else {
       const docType = node.getDocumentType();
       const viewId = DocumentViewer.getViewIdByDocumentType(docType);
-      const imagesUri = vscode.Uri.file(SmoresDataFile.getImagesFilepath());    
-      const nodeUri = vscode.Uri.file(SmoresDataFile.getDataFilepath());    
-      const extensionUri = getExtensionUri();
-      const panel = vscode.window.createWebviewPanel(
-        viewId, // Identifies the type of the webview. Used internally
-        docType, // Title of the panel displayed to the user
-        vscode.ViewColumn.One, // Editor column to show the new webview panel in.
-        {
-          enableScripts: true,
-          localResourceRoots:[
-            vscode.Uri.joinPath(extensionUri, 'resources'),
-            nodeUri,
-            imagesUri
-          ]
-        }  
-      );
+      const panel = DocumentViewer.createPanel(viewId, docType);
       DocumentViewer.currentPanel = new DocumentViewer(panel, node);
     }
     return DocumentViewer.currentPanel.refresh(exporting);
   }
   public refresh(exporting:boolean = false) {
-    this._panel.webview.html = this.getPageHtml(exporting);
+    this._panel.webview.html = DocumentViewer.getPageHtml(this._panel.webview, this._viewNode, exporting, this._editNode);
     return this._panel.webview.html;
   }
   
@@ -97,19 +82,46 @@ export class DocumentViewer {
       }
     }
   }
-  public async exportDocument(node:SmoresNode) {
+  public static async exportDocument(node:SmoresNode, userAction:boolean=true) {
     let documentNode:SmoresNode|null = node;
     while(documentNode!== null && documentNode.getParentNode() !== null) {
       documentNode = documentNode.getParentNode();
     }
-    const workspaceRoot = getWorkspaceRoot();
-    const filename = await vscode.window.showInputBox(
-      { value: `${documentNode!.data.text}.html` });
-    if(workspaceRoot && filename) {
-      const filePath = path.join(workspaceRoot, filename);
-      const html = DocumentViewer.render(documentNode!, true);
-      fs.writeFileSync(filePath,html);
+    var filePath:string;
+    const defaultFilename = `${documentNode!.data.text}.html`;
+    const projectRoot = SmoresDataFile.getProjectRoot();
+    if(userAction) {
+      const filename = await vscode.window.showInputBox({value:defaultFilename});
+      if(filename === undefined) {
+        return;
+      }
+      filePath = path.join(projectRoot, filename);
+    } else {
+      filePath = path.join(projectRoot, defaultFilename);
     }
+    const panel = DocumentViewer.createPanel('smoresNodeView', 'Exporting');
+    const html = DocumentViewer.getPageHtml(panel.webview, documentNode!, true);
+    vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+    fs.writeFileSync(filePath,html);
+  }
+  private static createPanel(viewId:string, title:string) {
+    const imagesUri = vscode.Uri.file(SmoresDataFile.getImagesFilepath());    
+    const nodeUri = vscode.Uri.file(SmoresDataFile.getDataFilepath());    
+    const extensionUri = getExtensionUri();
+    const panel = vscode.window.createWebviewPanel(
+      viewId, // Identifies the type of the webview. Used internally
+      title, // Title of the panel displayed to the user
+      vscode.ViewColumn.One, // Editor column to show the new webview panel in.
+      {
+        enableScripts: true,
+        localResourceRoots:[
+          vscode.Uri.joinPath(extensionUri, 'resources'),
+          nodeUri,
+          imagesUri
+        ]
+      }  
+    );
+    return panel;
   }
   private _handleMessageFromPanel(message:any) {
     switch (message.command) {
@@ -174,12 +186,12 @@ export class DocumentViewer {
       this.refresh();
     }  
   }
-  private getPageHtml(exporting:boolean):string {
+  private static getPageHtml(webview:vscode.Webview, viewNode:SmoresNode, exporting:boolean, editNode?:SmoresNode):string {
     const nonce = getNonce();
-    const bodyHtml = getBodyHtml(this._viewNode, exporting, this._editNode);
-    const styleBlock = getStyleBlock(this._panel.webview, exporting);
-    const scriptBlock = getScriptBlock(this._panel.webview, exporting);
-    const mermaidBlock = getMermaidBlock(this._panel.webview, exporting);
+    const bodyHtml = getBodyHtml(viewNode, exporting, editNode);
+    const styleBlock = getStyleBlock(webview, exporting);
+    const scriptBlock = getScriptBlock(webview, exporting);
+    const mermaidBlock = getMermaidBlock(webview, exporting);
     clearNonce();
     
     return `
@@ -190,12 +202,12 @@ export class DocumentViewer {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta http-equiv="Content-Security-Policy" content="
           default-src 'none'; 
-          img-src ${this._panel.webview.cspSource} 'nonce-${nonce}';
-          script-src ${this._panel.webview.cspSource} 'nonce-${nonce}';
-          style-src ${this._panel.webview.cspSource} 'nonce-${nonce}';
+          img-src ${webview.cspSource} 'nonce-${nonce}';
+          script-src ${webview.cspSource} 'nonce-${nonce}';
+          style-src ${webview.cspSource} 'nonce-${nonce}';
         "/>
         ${styleBlock}
-        <title>${this._viewNode.data.text}</title>
+        <title>${viewNode.data.text}</title>
       </head>
       <body>${bodyHtml}${mermaidBlock}${scriptBlock}</body>    
     </html>`;  

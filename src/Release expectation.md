@@ -1,16 +1,9 @@
 # Planned release schedule
-### 0.2
-- [x] Git commit for known actions
-- [x] Add the following node types
-  - [x] User requirement
-  - [x] Non functional requirement
-  - [x] Design constraint
-  - [x] System test
-  - [x] Integration test
-  - [x] Unit test
-- [x] Filter new content options based on document type
-- [ ] Basic template for test protocol
-### 0.3
-- [x] Tracing entry
-- [x] Tracing modification
-- [ ] Tracing marked as suspicious if other end changes
+### 0.4
+- [ ] Document cover page
+- [ ] Document table of contents
+- [ ] Markdown export on export all
+- [ ] All templates
+- [ ] Tracing reports
+- [ ] Options to include tracing information in primary documents
+- [ ] Some instructions
