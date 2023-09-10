@@ -5,3 +5,18 @@ export function getMarkdownParagraphs(originalText:string):string {
   }
   return (originalText.concat("\n"));
 }
+
+export function getDataTypeDisplayName(dataType:string):string {
+  switch(dataType) {
+    case 'text':
+      return 'Text';
+    case 'translationRationale':
+      return 'Translation Rationale';
+    case 'expectedResults':
+      return 'Expected Results';
+    case 'documentType':
+      return 'Document Type';
+    default:
+      return 'unknown';
+  }
+}

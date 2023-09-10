@@ -1,4 +1,5 @@
 import { SmoresNode } from '../model/smoresNode';
+import { getDataTypeDisplayName } from '../utils/utils';
 
 const mdHelp:string = "some helpful instructions about Markdown syntax";
 const mermaidHelp:string = "some helpful instructions about the Mermaid syntax";
@@ -10,7 +11,8 @@ const testCaseHelp:string = "some helpful instructions about test cases";
 const expResHelp:string = "some helpful instructions about expected results";
 
 function getEditTextArea(divId:string, divContent:string, contentType:string):string {
-  return `
+  const label = getDataTypeDisplayName(contentType);
+  return `<h2>${label}</h2>
   <textarea id='${divId}' class="editBox" 
   data-vscode-context='{"preventDefaultContextMenuItems": false}' 
   data-content-type='${contentType}'>${divContent}</textarea>`;
@@ -24,73 +26,60 @@ function getButtons(nodeId:number) {
   `;
 }
 
-function getHelp(helpText:string, nodeId:number) {
+function getHelp(helpText:string, nodeId:number):string {
   return`<div id="help-${nodeId}" class="helpText">${helpText}</div>`;
 }
-function getCommentEditDivHtml(node:SmoresNode):string {
-  let helpText:string = `${commentHelp}<br/>${mdHelp}`;
-  const textArea = getEditTextArea(`textarea-${node.data.id}-1`, node.data.text, 'text');
-  const buttons = getButtons(node.data.id);
-  const help = getHelp(helpText, node.data.id);
-  const outerHtml = `
-  <div class="editDiv">${textArea}</div>
-  <div class="buttonContainer">${buttons}${help}</div>`;
-  return outerHtml;
-}
-function getMermaidEditDivHtml(node:SmoresNode):string {
-  let helpText:string = `${mermaidHelp}`;
-  const textArea = getEditTextArea(`textarea-${node.data.id}-1`, node.data.text, 'text');
-  const buttons = getButtons(node.data.id);
-  const help = getHelp(helpText, node.data.id);
-  const outerHtml = `
-  <div class="editDiv">${textArea}</div>
-  <div class="buttonContainer">${buttons}${help}</div>`;
-  return outerHtml;
-}
-function getRequirementEditDivHtml(node:SmoresNode):string {
-  let helpText:string = `${requirementHelp}<br/>${transRatHelp}<br/>${mdHelp}`;
-  const textArea1 = getEditTextArea(`textarea-${node.data.id}-1`, node.data.text, 'text');
+
+function getTranslationRationaleArea(node:SmoresNode):string {
   let tr = '-';
   if(node.data.requirementData) {
     tr=node.data.requirementData.translationRationale;
   }
-  const textArea2 = getEditTextArea(`textarea-${node.data.id}-2`, tr, 'translationRationale');
-  const buttons = getButtons(node.data.id);
-  const help = getHelp(helpText, node.data.id);
-  const outerHtml = `
-  <div class="editDiv">${textArea1}<br/>${textArea2}</div>
-  <div class="buttonContainer">${buttons}${help}</div>`;
-  return outerHtml;
+  return getEditTextArea(`textarea-${node.data.id}-2`, tr, 'translationRationale');
 }
-function getConstraintEditDivHtml(node:SmoresNode):string {
-  let helpText:string = `${desConHelp}<br/>${transRatHelp}<br/>${mdHelp}`;
-  const textArea1 = getEditTextArea(`textarea-${node.data.id}-1`, node.data.text, 'text');
-  let tr = '-';
-  if(node.data.requirementData) {
-    tr=node.data.requirementData.translationRationale;
-  }
-  const textArea2 = getEditTextArea(`textarea-${node.data.id}-2`, tr, 'translationRationale');
-  const buttons = getButtons(node.data.id);
-  const help = getHelp(helpText, node.data.id);
-  const outerHtml = `
-  <div class="editDiv">${textArea1}<br/>${textArea2}</div>
-  <div class="buttonContainer">${buttons}${help}</div>`;
-  return outerHtml;
-}
-function getTestCaseEditDivHtml(node:SmoresNode):string {
-  let helpText:string = `${testCaseHelp}<br/>${expResHelp}<br/>${mdHelp}`;
-  const textArea1 = getEditTextArea(`textarea-${node.data.id}-1`, node.data.text, 'text');
+
+function getExpectedResultsArea(node:SmoresNode):string {
   let er = 'TBD';
   if(node.data.testData) {
     er=node.data.testData.expectedResults;
   }
-  const textArea2 = getEditTextArea(`textarea-${node.data.id}-2`, er, 'expectedResults');
+  return getEditTextArea(`textarea-${node.data.id}-2`, er, 'expectedResults');
+}
+function getEditDivHtml(node:SmoresNode, editSection:string, helpText:string):string {
   const buttons = getButtons(node.data.id);
   const help = getHelp(helpText, node.data.id);
   const outerHtml = `
-  <div class="editDiv">${textArea1}<br/>${textArea2}</div>
+  <div class="editDiv">${editSection}</div>
   <div class="buttonContainer">${buttons}${help}</div>`;
   return outerHtml;
+}
+function getCommentEditDivHtml(node:SmoresNode):string {
+  const helpText:string = `${commentHelp}<br/>${mdHelp}`;
+  const textArea = getEditTextArea(`textarea-${node.data.id}-1`, node.data.text, 'text');
+  return getEditDivHtml(node, textArea, helpText);
+}
+function getMermaidEditDivHtml(node:SmoresNode):string {
+  let helpText:string = `${mermaidHelp}`;
+  const textArea = getEditTextArea(`textarea-${node.data.id}-1`, node.data.text, 'text');
+  return getEditDivHtml(node, textArea, helpText);
+}
+function getRequirementEditDivHtml(node:SmoresNode):string {
+  let helpText:string = `${requirementHelp}<br/>${transRatHelp}<br/>${mdHelp}`;
+  const textArea1 = getEditTextArea(`textarea-${node.data.id}-1`, node.data.text, 'text');
+  const textArea2 = getTranslationRationaleArea(node);
+  return getEditDivHtml(node, `${textArea1}<br/>${textArea2}`, helpText);
+}
+function getConstraintEditDivHtml(node:SmoresNode):string {
+  let helpText:string = `${desConHelp}<br/>${transRatHelp}<br/>${mdHelp}`;
+  const textArea1 = getEditTextArea(`textarea-${node.data.id}-1`, node.data.text, 'text');
+  const textArea2 = getTranslationRationaleArea(node);
+  return getEditDivHtml(node, `${textArea1}<br/>${textArea2}`, helpText);
+}
+function getTestCaseEditDivHtml(node:SmoresNode):string {
+  let helpText:string = `${testCaseHelp}<br/>${expResHelp}<br/>${mdHelp}`;
+  const textArea1 = getEditTextArea(`textarea-${node.data.id}-1`, node.data.text, 'text');
+  const textArea2 = getExpectedResultsArea(node);
+  return getEditDivHtml(node, `${textArea1}<br/>${textArea2}`, helpText);
 }
 
 export function getEditHtmlForNodeType(node:SmoresNode):string {
