@@ -11,6 +11,8 @@ vsc-extension-quickstart.md
 
 .vscode
 node_modules
+out
+!out/extension.js
 src/
 tsconfig.json
 webpack.config.js
