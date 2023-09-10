@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import { SmoresDataFile } from "../model/smoresDataFile";
 import { SmoresNode } from "../model/smoresNode";
 import { clearNonce, getNonce } from "../utils/getNonce";
-import * as utils from '../utils/utils';
+import * as schema from '../model/smoresDataSchema';
 import { getExtensionUri } from "../utils/getExtension";
 import { getBodyHtml } from "./bodyHtml";
 import { getMermaidBlock, getScriptBlock, getStyleBlock } from "./pageHtml";
@@ -86,9 +86,9 @@ export class DocumentViewer {
       const nodeId:number = Number(context.nodeId);
       const nodeFilepath = this._viewNode.getNodeFilepath(nodeId);
       const node = new SmoresNode(nodeFilepath);
-      if(node.data.category === "heading") {
+      if(node.data.category === schema.headingType) {
         this._editHeadingText(node);
-      } else if (node.data.category === "image") {
+      } else if (node.data.category === schema.imageType) {
         this._editImageSource(node);
       } else {
         this._editNode = node;
@@ -128,14 +128,14 @@ export class DocumentViewer {
   }
   private static getViewIdByDocumentType(docType:string) {
     switch (docType) {
-      case 'User Requirements Specification': return "smoresURSView";
-      case 'Software Requirements Specification': return "smoresSRSView";
-      case "Architecture Design Specification": return "smoresADSView";
-      case "Detailed Design Specification": return "smoresDDSView";
-      case "Software Acceptance Test Protocol": return "smoresATPView";
-      case "Software System Test Protocol": return "smoresSTPView";
-      case "Software Integration Test Protocol": return "smoresITPView";
-      case "Software Unit Test Protocol": return "smoresUTPView";
+      case schema.ursDocType: return "smoresURSView";
+      case schema.srsDocType: return "smoresSRSView";
+      case schema.adsDocType: return "smoresADSView";
+      case schema.ddsDocType: return "smoresDDSView";
+      case schema.atpDocType: return "smoresATPView";
+      case schema.stpDocType: return "smoresSTPView";
+      case schema.itpDocType: return "smoresITPView";
+      case schema.utpDocType: return "smoresUTPView";
       default: return "smoresNodeView";
     }
   }

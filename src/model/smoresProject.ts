@@ -1,7 +1,6 @@
 import * as vscode from "vscode";
-import {NodeDataModel} from "./smoresDataSchema";
+import * as schema from "./smoresDataSchema";
 import * as fs from "fs";
-import * as path from "path";
 import { SmoresDataFile } from "./smoresDataFile";
 import { getExtensionBasedUri } from "../utils/getExtension";
 
@@ -105,9 +104,9 @@ export class SmoresProject extends SmoresDataFile {
       return undefined;
     }
     const newDocument = new SmoresDataFile(newNodePath);
-    const newDocumentData:NodeDataModel = {
+    const newDocumentData:schema.NodeDataModel = {
       id:newId,
-      category:"document",
+      category:schema.documentType,
       text:title,
       parent:0,
       documentData:{documentType:docType}

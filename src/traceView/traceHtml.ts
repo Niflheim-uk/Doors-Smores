@@ -161,18 +161,26 @@ export function getUpstreamTestTraceHtml(node:SmoresNode):string {
 export function getTraceTargetHtml(node:SmoresNode):string {
   const title = `<br/><div class='traceTitle'><h3 class='tracing'>Tracing: ${node.data.id}</h3></div>`;
   switch(node.data.category) {
-    case "userRequirement":
-    case "functionalRequirement":
-    case "nonFunctionalRequirement":
-      return `<div class='tracing'>${title}${getInnerHtmlForRequirement(node)}</div>`;
-    case "designConstraint":
-      return `<div class='tracing'>${title}${getInnerHtmlForConstraint(node)}</div>`;
-    case "userAcceptanceTest":
-    case "softwareSystemTest":
-    case "softwareIntegrationTest":
-    case "softwareUnitTest":
-      return `<div class='tracing'>${title}${getInnerHtmlForTest(node)}</div>`;
-    default:
-      return "<H1>ERROR - Invalid Category</H1>";
+  case schema.userFRType:
+  case schema.userNFRType:
+  case schema.softFRType:
+  case schema.softNFRType:
+  case schema.archFRType:
+  case schema.archNFRType:
+  case schema.desFRType:
+  case schema.desNFRType:
+    return `<div class='tracing'>${title}${getInnerHtmlForRequirement(node)}</div>`;
+  case schema.userDCType:
+  case schema.softDCType:
+  case schema.archDCType:
+  case schema.desDCType:
+    return `<div class='tracing'>${title}${getInnerHtmlForConstraint(node)}</div>`;
+  case schema.userTestType:
+  case schema.softTestType:
+  case schema.archTestType:
+  case schema.desTestType:
+    return `<div class='tracing'>${title}${getInnerHtmlForTest(node)}</div>`;
+  default:
+    return "<H1>ERROR - Invalid Category</H1>";
   }
 }

@@ -1,5 +1,6 @@
 import { SmoresNode } from '../model/smoresNode';
 import { getDataTypeDisplayName } from '../utils/utils';
+import * as schema from '../model/smoresDataSchema';
 
 const mdHelp:string = "some helpful instructions about Markdown syntax";
 const mermaidHelp:string = "some helpful instructions about the Mermaid syntax";
@@ -84,26 +85,34 @@ function getTestCaseEditDivHtml(node:SmoresNode):string {
 
 export function getEditHtmlForNodeType(node:SmoresNode):string {
   switch(node.data.category) {
-    case "document":
-    case "heading":
-    case "image":
-      return "<H1>ERROR - Inconceivable!</H1>";
-    case "userRequirement":
-    case "functionalRequirement":
-    case "nonFunctionalRequirement":
-      return getRequirementEditDivHtml(node);
-    case "designConstraint":
-      return getConstraintEditDivHtml(node);
-    case "userAcceptanceTest":
-    case "softwareSystemTest":
-    case "softwareIntegrationTest":
-    case "softwareUnitTest":
-      return getTestCaseEditDivHtml(node);
-    case "comment":
-      return getCommentEditDivHtml(node);
-    case "mermaid":
-      return getMermaidEditDivHtml(node);
-    default:
-      return "<H1>ERROR - Unknown Category</H1>";
+  case schema.documentType:
+  case schema.headingType:
+  case schema.imageType:
+    return "<H1>ERROR - Inconceivable!</H1>";
+  case schema.userFRType:
+  case schema.userNFRType:
+  case schema.softFRType:
+  case schema.softNFRType:
+  case schema.archFRType:
+  case schema.archNFRType:
+  case schema.desFRType:
+  case schema.desNFRType:
+    return getRequirementEditDivHtml(node);
+  case schema.userDCType:
+  case schema.softDCType:
+  case schema.archDCType:
+  case schema.desDCType:
+    return getConstraintEditDivHtml(node);
+  case schema.userTestType:
+  case schema.softTestType:
+  case schema.archTestType:
+  case schema.desTestType:
+    return getTestCaseEditDivHtml(node);
+  case schema.commentType:
+    return getCommentEditDivHtml(node);
+  case schema.mermaidType:
+    return getMermaidEditDivHtml(node);
+  default:
+    return "<H1>ERROR - Unknown Category</H1>";
   }
 }

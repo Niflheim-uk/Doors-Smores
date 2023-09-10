@@ -4,27 +4,35 @@ import { SmoresDataFile } from '../model/smoresDataFile';
 import { DocumentViewer } from './documentViewer';
 import { join } from 'path';
 import { Uri } from 'vscode';
+import * as schema from '../model/smoresDataSchema';
 
 export function getIdLabel(node:SmoresNode) {
   switch(node.data.category) {
-  case "heading":
+  case schema.headingType:
     return `Heading<br/>Id:${node.data.id}`;
-  case "comment":
+  case schema.commentType:
     return `Comment<br/>Id:${node.data.id}`;
-  case "userRequirement":
-  case "functionalRequirement":
-  case "nonFunctionalRequirement":
+  case schema.userFRType:
+  case schema.userNFRType:
+  case schema.softFRType:
+  case schema.softNFRType:
+  case schema.archFRType:
+  case schema.archNFRType:
+  case schema.desFRType:
+  case schema.desNFRType:
     return `Requirement<br/>Id:${node.data.id}`;
-  case "designConstraint":
+  case schema.userDCType:
+  case schema.softDCType:
+  case schema.archDCType:
+  case schema.desDCType:
     return `Constraint<br/>Id:${node.data.id}`;
-  case "userAcceptanceTest":
-  case "softwareSystemTest":
-  case "softwareIntegrationTest":
-  case "softwareUnitTest":
+  case schema.userTestType:
+  case schema.softTestType:
+  case schema.archTestType:
+  case schema.desTestType:
     return `Test Case<br/>Id:${node.data.id}`;
-  case "image":
-    return `Image<br/>Id:${node.data.id}`;
-  case "mermaid":
+  case schema.imageType:
+  case schema.mermaidType:
     return `Image<br/>Id:${node.data.id}`;
   }
   return "";

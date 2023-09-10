@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from 'fs';
+import * as schema from '../model/smoresDataSchema';
 import { SmoresDataFile } from "../model/smoresDataFile";
 import { SmoresNode, getNodeFromId } from "../model/smoresNode";
 import * as utils from '../utils/utils';
@@ -15,7 +16,7 @@ import { getProject } from "../model/smoresProject";
 import { clearNonce, getNonce } from "../utils/getNonce";
 import { getExtensionUri } from "../utils/getExtension";
 import { getScriptPath, getTracingStylePaths } from "../utils/gui";
-import { TraceNode, TraceValidity, setTraceValidationOrigin, validateTraceInput, verifyTraceLink } from "../model/traceVerification";
+import { TraceNode, TraceValidity, setTraceValidationOrigin, validateTraceInput, verifyTraceLink } from "./traceVerification";
 
 export class TraceView {
   public static currentPanel: TraceView | undefined;
@@ -167,21 +168,29 @@ export class TraceView {
   }
   private getBodyHtml(node:SmoresNode):string {
     switch(node.data.category) {
-      case "userRequirement":
-      case "functionalRequirement":
-      case "nonFunctionalRequirement":
-      case "designConstraint":
+      case schema.userFRType:
+      case schema.userNFRType:
+      case schema.userDCType:
+      case schema.softFRType:
+      case schema.softNFRType:
+      case schema.softDCType:
+      case schema.archFRType:
+      case schema.archNFRType:
+      case schema.archDCType:
+      case schema.desFRType:
+      case schema.desNFRType:
+      case schema.desDCType:
         return this.getReqTracingGrid(node);
-      case "userAcceptanceTest":
-      case "softwareSystemTest":
-      case "softwareIntegrationTest":
-      case "softwareUnitTest":
+      case schema.userTestType:
+      case schema.softTestType:
+      case schema.archTestType:
+      case schema.desTestType:
         return this.getTestTracingGrid(node);
-      case "document":
-      case "heading":
-      case "comment":
-      case "image":
-      case "mermaid":
+      case schema.documentType:
+      case schema.headingType:
+      case schema.commentType:
+      case schema.imageType:
+      case schema.mermaidType:
       default:
         return "<H2>Invalid selection</H2>";
       }

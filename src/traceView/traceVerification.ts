@@ -1,10 +1,16 @@
 import { window } from "vscode";
-import { SmoresNode, getNodeFromId } from "./smoresNode";
+import { SmoresNode, getNodeFromId } from "../model/smoresNode";
 import * as schema from '../model/smoresDataSchema';
 
 export type TraceNode = {
   category:string;
   documentType:string;
+};
+export type DetailedTraceNode = {
+  category:string;
+  documentType:string;
+  nodeId:number;
+  documentId:number;
 };
 export enum TraceValidity {
   valid,
@@ -29,7 +35,7 @@ export function getTraceName(origin:TraceNode, target:TraceNode) {
   }
   return "Invalid";
 }
-function isTestTrace(trace:TraceNode):boolean {
+export function isTestTrace(trace:TraceNode):boolean {
   switch(trace.category) {
   case "userAcceptanceTest":
   case "softwareSystemTest":
@@ -40,7 +46,7 @@ function isTestTrace(trace:TraceNode):boolean {
     return false;
   }      
 }
-function isRequirementTrace(trace:TraceNode):boolean {
+export function isRequirementTrace(trace:TraceNode):boolean {
   switch(trace.category) {
   case 'userRequirement':
   case 'functionalRequirement':

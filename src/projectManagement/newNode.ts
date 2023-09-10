@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { SmoresDataFile } from "../model/smoresDataFile";
 import { SmoresNode } from "../model/smoresNode";
 import { TreeNode } from '../treeView/treeNode';
+import * as schema from '../model/smoresDataSchema';
 
 export function getNodeFromContext(context:any):SmoresNode|undefined {
   if(context.nodeId === undefined) {
@@ -15,7 +16,7 @@ export function getNodeFromContext(context:any):SmoresNode|undefined {
 }
 function getInsertionNodeAndPosition(originNode:SmoresNode|undefined):[SmoresNode|undefined, number] {
   if(originNode !== undefined) {
-    if(originNode.data.category === "heading" || originNode.data.category === "document") {
+    if(originNode.data.category === schema.headingType || originNode.data.category === schema.documentType) {
       return [originNode, -1];
     } else {
       const parent = originNode.getParentNode();
@@ -30,38 +31,62 @@ function getInsertionNodeAndPosition(originNode:SmoresNode|undefined):[SmoresNod
 export async function newHeading(node:SmoresNode, insertPos?:number) {
   const heading = await vscode.window.showInputBox({ placeHolder: 'new heading?' });
   if(heading) {
-    return node.newItem("heading", heading, insertPos);
+    return node.newItem(schema.headingType, heading, insertPos);
   }
 }
 export function newComment(node:SmoresNode, content?:string, insertPos?:number) {
   if(content === undefined) {
     content = "new comment";
   }
-  return node.newItem("comment", content, insertPos);
-}
-export function newUserReq(node:SmoresNode, insertPos?:number) {
-  return node.newItem("userRequirement", "new user requirement", insertPos);
+  return node.newItem(schema.commentType, content, insertPos);
 }
 export function newFuncReq(node:SmoresNode, insertPos?:number) {
-  return node.newItem("functionalRequirement", "new functional requirement", insertPos);
+  switch(node.getDocumentType()) {
+  case schema.ursDocType:
+    return node.newItem(schema.userFRType, "new functional requirement", insertPos);
+  case schema.srsDocType:
+    return node.newItem(schema.softFRType, "new functional requirement", insertPos);
+  case schema.adsDocType:
+    return node.newItem(schema.archFRType, "new functional requirement", insertPos);
+  case schema.ddsDocType:
+    return node.newItem(schema.desFRType, "new functional requirement", insertPos);
+  }
 }
 export function newNonFuncReq(node:SmoresNode, insertPos?:number) {
-  return node.newItem("nonFunctionalRequirement", "new non functional requirement", insertPos);
+  switch(node.getDocumentType()) {
+  case schema.ursDocType:
+    return node.newItem(schema.userNFRType, "new non functional requirement", insertPos);
+  case schema.srsDocType:
+    return node.newItem(schema.softNFRType, "new non functional requirement", insertPos);
+  case schema.adsDocType:
+    return node.newItem(schema.archNFRType, "new non functional requirement", insertPos);
+  case schema.ddsDocType:
+    return node.newItem(schema.desNFRType, "new non functional requirement", insertPos);
+  }
 }
 export function newDesCon(node:SmoresNode, insertPos?:number) {
-  return node.newItem("designConstraint", "new design constraint", insertPos);
+  switch(node.getDocumentType()) {
+  case schema.ursDocType:
+    return node.newItem(schema.userDCType, "new design constraint", insertPos);
+  case schema.srsDocType:
+    return node.newItem(schema.softDCType, "new design constraint", insertPos);
+  case schema.adsDocType:
+    return node.newItem(schema.archDCType, "new design constraint", insertPos);
+  case schema.ddsDocType:
+    return node.newItem(schema.desDCType, "new design constraint", insertPos);
+  }
 }
-export function newUserTest(node:SmoresNode, insertPos?:number) {
-  return node.newItem("userAcceptanceTest", "new user acceptance test", insertPos);
-}
-export function newSysTest(node:SmoresNode, insertPos?:number) {
-  return node.newItem("softwareSystemTest", "new software system test", insertPos);
-}
-export function newIntTest(node:SmoresNode, insertPos?:number) {
-  return node.newItem("softwareIntegrationTest", "new software integration test", insertPos);
-}
-export function newUnitTest(node:SmoresNode, insertPos?:number) {
-  return node.newItem("softwareUnitTest", "new software unit test", insertPos);
+export function newTest(node:SmoresNode, insertPos?:number) {
+  switch(node.getDocumentType()) {
+  case schema.atpDocType:
+    return node.newItem(schema.userTestType, "new user acceptance test", insertPos);
+  case schema.stpDocType:
+    return node.newItem(schema.softTestType, "new software system test", insertPos);
+  case schema.itpDocType:
+    return node.newItem(schema.archTestType, "new software integration test", insertPos);
+  case schema.utpDocType:
+    return node.newItem(schema.desTestType, "new unit test", insertPos);
+  }
 }
 export function newImage(node:SmoresNode, insertPos?:number) {
   return node.newItem("image", "../defaultImage.jpg", insertPos);
@@ -82,10 +107,6 @@ export function newTreeComment(node:TreeNode) {
   const [insertNode, insertPos] = getInsertionNodeAndPosition(node.smoresNode);
   newComment(insertNode!, undefined, insertPos);
 }
-export function newTreeUserReq(node:TreeNode) {
-  const [insertNode, insertPos] = getInsertionNodeAndPosition(node.smoresNode);
-  newUserReq(insertNode!, insertPos);
-}
 export function newTreeFuncReq(node:TreeNode) {
   const [insertNode, insertPos] = getInsertionNodeAndPosition(node.smoresNode);
   newFuncReq(insertNode!, insertPos);
@@ -98,17 +119,9 @@ export function newTreeDesCon(node:TreeNode) {
   const [insertNode, insertPos] = getInsertionNodeAndPosition(node.smoresNode);
   newDesCon(insertNode!, insertPos);
 }
-export function newTreeSysTest(node:TreeNode) {
+export function newTreeTest(node:TreeNode) {
   const [insertNode, insertPos] = getInsertionNodeAndPosition(node.smoresNode);
-  newSysTest(insertNode!, insertPos);
-}
-export function newTreeIntTest(node:TreeNode) {
-  const [insertNode, insertPos] = getInsertionNodeAndPosition(node.smoresNode);
-  newIntTest(node.smoresNode);
-}
-export function newTreeUnitTest(node:TreeNode) {
-  const [insertNode, insertPos] = getInsertionNodeAndPosition(node.smoresNode);
-  newUnitTest(insertNode!, insertPos);
+  newTest(insertNode!, insertPos);
 }
 export function newTreeImage(node:TreeNode) {
   const [insertNode, insertPos] = getInsertionNodeAndPosition(node.smoresNode);
@@ -129,11 +142,6 @@ export function newWebviewComment(context:any) {
   const [insertNode, insertPos] = getInsertionNodeAndPosition(originNode);
   newComment(insertNode!, undefined, insertPos);
 }
-export function newWebviewUserReq(context:any) {
-  const originNode = getNodeFromContext(context);
-  const [insertNode, insertPos] = getInsertionNodeAndPosition(originNode);
-  newUserReq(insertNode!, insertPos);
-}
 export function newWebviewFuncReq(context:any) {
   const originNode = getNodeFromContext(context);
   const [insertNode, insertPos] = getInsertionNodeAndPosition(originNode);
@@ -149,20 +157,10 @@ export function newWebviewDesCon(context:any) {
   const [insertNode, insertPos] = getInsertionNodeAndPosition(originNode);
   newDesCon(insertNode!, insertPos);
 }
-export function newWebviewSysTest(context:any) {
+export function newWebviewTest(context:any) {
   const originNode = getNodeFromContext(context);
   const [insertNode, insertPos] = getInsertionNodeAndPosition(originNode);
-  newSysTest(insertNode!, insertPos);
-}
-export function newWebviewIntTest(context:any) {
-  const originNode = getNodeFromContext(context);
-  const [insertNode, insertPos] = getInsertionNodeAndPosition(originNode);
-  newIntTest(insertNode!, insertPos);
-}
-export function newWebviewUnitTest(context:any) {
-  const originNode = getNodeFromContext(context);
-  const [insertNode, insertPos] = getInsertionNodeAndPosition(originNode);
-  newUnitTest(insertNode!, insertPos);
+  newTest(insertNode!, insertPos);
 }
 export function newWebviewImage(context:any) {
   const originNode = getNodeFromContext(context);

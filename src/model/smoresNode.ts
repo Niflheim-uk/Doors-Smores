@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
-import {NodeDataModel, TraceData} from "./smoresDataSchema";
+import * as schema from "./smoresDataSchema";
 import * as fs from "fs";
 import { SmoresProject, getProject } from "./smoresProject";
 import { SmoresDataFile } from "./smoresDataFile";
 import { VersionController } from "../versionControl/versionController";
-import { verifyTraceLink } from "./traceVerification";
+import { verifyTraceLink } from "../traceView/traceVerification";
 
 export function getNodeFromId(nodeId:number) {
   const filePath = SmoresDataFile.getNodeFilepath(nodeId);
@@ -16,7 +16,7 @@ export function getNodeFromId(nodeId:number) {
 
 export class SmoresNode extends SmoresDataFile {
 
-  declare public data:NodeDataModel;
+  declare public data:schema.NodeDataModel;
   constructor(filePath:fs.PathLike) {
     super(filePath);
   }
@@ -47,18 +47,21 @@ export class SmoresNode extends SmoresDataFile {
       return new SmoresNode(nodeFilepath);
     }
   }
-  getDocumentType():string {
+  getDocument():SmoresNode {
     var documentNode:SmoresNode = this;
     var parent = this.getParentNode();
     while(parent !== null) {
       documentNode = parent;
       parent = parent.getParentNode();
     }
+    return documentNode;
+  }
+  getDocumentType():string {
+    const documentNode = this.getDocument();
     if(documentNode.data.documentData) {
       return documentNode.data.documentData.documentType;
     }
-    return "Unknown";
- 
+    return schema.unknownType; 
   }
   delete() {
     const parent = this.getParentNode();
@@ -69,7 +72,7 @@ export class SmoresNode extends SmoresDataFile {
     if(parent !== null) {
       parent.removeChild(this.data.id);
     } else {
-      if(this.data.category === "document") {
+      if(this.data.category === schema.documentType) {
         const project = getProject();
         if(project) {
           project.deleteDocument(this.data.id);
@@ -145,7 +148,7 @@ export class SmoresNode extends SmoresDataFile {
           return false;
         }
         const prevSibling = new SmoresNode(prevSiblingPath);
-        if(prevSibling.data.category === "heading") {
+        if(prevSibling.data.category === schema.headingType) {
           return true;
         }
       }
@@ -154,11 +157,11 @@ export class SmoresNode extends SmoresDataFile {
   }
   public canPromoteNode():boolean {
     switch(this.data.category) {
-      case "project":
-      case "document":
-      case "unknown":
+      case schema.projectType:
+      case schema.documentType:
+      case schema.unknownType:
         return false;
-      case "heading":
+      case schema.headingType:
         return this.canPromoteHeading();
       default:
         return this.canPromoteOther();
@@ -314,7 +317,7 @@ export class SmoresNode extends SmoresDataFile {
       this.markTraceDataSuspect(this.data.traces.downstream);
     }
   }
-  private markTraceDataSuspect(traceData:TraceData) {
+  private markTraceDataSuspect(traceData:schema.TraceData) {
     if(traceData.decompose) {
       this.markTraceArraySuspect(traceData.decompose);
     }
@@ -341,7 +344,7 @@ export class SmoresNode extends SmoresDataFile {
       }
     }
   }
-  private addTraceEntry(traceData:TraceData, traceType:string, traceId:number) {
+  private addTraceEntry(traceData:schema.TraceData, traceType:string, traceId:number) {
     switch(traceType) {
       case "decompose":
         traceData.decompose = this.addTrace(traceData?.decompose, traceId);
@@ -363,7 +366,7 @@ export class SmoresNode extends SmoresDataFile {
     }
     return traceData;
   }
-  private removeTraceEntry(traceData:TraceData, traceType:string, traceId:number) {
+  private removeTraceEntry(traceData:schema.TraceData, traceType:string, traceId:number) {
     switch(traceType) {
       case "decompose":
         traceData.decompose = this.removeTrace(traceData?.decompose, traceId);
@@ -404,7 +407,7 @@ export class SmoresNode extends SmoresDataFile {
   }
   private canPromoteHeading():boolean {
     const parent = this.getParentNode();
-    if(parent !== null && parent.data.category === "heading") {
+    if(parent !== null && parent.data.category === schema.headingType) {
       return true;
     }
     return false;
@@ -416,7 +419,7 @@ export class SmoresNode extends SmoresDataFile {
     }
     return false;
   }
-  protected newChild(childData:NodeDataModel, insertPos?:number):string|undefined {
+  protected newChild(childData:schema.NodeDataModel, insertPos?:number):string|undefined {
     const project = getProject();
     if(project === undefined) {
       return;
