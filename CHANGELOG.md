@@ -2,28 +2,11 @@
 
 All notable changes to the "doors-smores" extension will be documented in this file.
 
-## 0.2.6
-- Bug fix for submit button when editing content
-
-## 0.2.5 
-- purged local svg files and switched to using codicon for all icons
-- coloured verified/unverified badges
-  
-## 0.2.4
-- Fixed trace arrows so arrowhead lines were always 45 degrees and weren't clipped
-- Bug fix for trace view for tests before the trace array object had been instantiated.
-
-## 0.2.3
-- Bug fixes for tracing 'Empty' documents
-- Icon changes
-
-## 0.2.2
-- 3 of 3 tracing lines/arrows
-
-## 0.2.1
-- Filtered the type of tracing allowed by document type
-- Filtered the availability of the trace command by node type
-- Added 2 of 3 tracing arrows
+## 0.3.0
+- Implemented tracing between documents
+- Implemented trace suspicion on content change and verification process
+- Restructured internal categories to include documentation level (facilitates trace validation)
+- Switched from local svg files to codicon icons
 
 ## 0.2.0
 
