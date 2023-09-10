@@ -244,7 +244,7 @@ export class VersionController {
   private static async getDiffRecordDetail(filepath:string, tag:string, mod:string) {
     var detailResponse;
     detailResponse  = await simpleGit(_gitOptions).raw('diff', '--no-renames', '--exit-code', `${tag}..HEAD`, '--', filepath);
-    const detailArray = detailResponse.split("\n");
+    const detailArray = VersionController.detailResponseCleanSplit(detailResponse);
     if(mod === "M") {
       detailResponse = detailArray.slice(4).join("\n");
     } else if (mod === "D" || mod === "A") {
@@ -253,6 +253,17 @@ export class VersionController {
       detailResponse = detailArray.join("\n");
     }
     return detailResponse.replace(/"/g,"&#34;");
+  }
+  private static detailResponseCleanSplit(response:string):string[] {
+    const failedSplitPattern = "^(@@[^@]*@@)(.+)";
+    var splitResponse = response.split("\n");
+    for(let i=0; i<splitResponse.length; i++) {
+      const matches = splitResponse[i].match(failedSplitPattern);
+      if(matches !== null) {
+        splitResponse.splice(i, 1, matches[1], matches[2]);
+      }
+    }
+    return splitResponse;
   }
   private static async tagIssue(tag:string, message:string) {
     clearTimeout(_commitTimer);

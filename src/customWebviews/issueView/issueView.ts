@@ -162,12 +162,18 @@ export class IssueView {
       background-color:var(--vscode-editor-background);
       border: solid;
       border-color: var(--vscode-input-border);
-      padding: 5px 5px;
-      border-radius: 6px;
+      padding: 15px 15px;
+      border-radius: 5px;
       z-index:1;
       visibility:hidden;
     }
     button {width:unset !important;}
+    button#detailButton {
+      position:absolute;
+      border-radius: 5px;
+      right:0;
+      top:0;
+    }
     span.deltaSpan:hover {
       background-color:var(--vscode-editor-hoverHighlightBackground);
     }
