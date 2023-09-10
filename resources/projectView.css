@@ -1,0 +1,7 @@
+body.projectView {
+  position: absolute;
+  color: var(--vscode-sideBar-foreground);
+  background: var(--vscode-sideBar-background);
+  margin: 0;
+  padding: 0;
+}

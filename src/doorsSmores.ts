@@ -3,11 +3,7 @@ import { TreeNode } from "./treeView/treeNode";
 import { TreeNodeProvider } from './treeView/treeNodeProvider';
 import { DocumentViewer } from './documentViewer/documentViewer';
 import { TraceView } from './traceView/traceView';
-import { VersionController } from './versionControl/versionController';
-import { newDocumentFromTemplate } from "./projectManagement/newDocument";
-import { newProjectWorkspace } from "./projectManagement/newProject";
-import { openProjectWorkspace } from "./projectManagement/openProject";
-import { closeProjectWorkspace } from "./projectManagement/closeProject";
+import { ProjectManagement } from './projectManagement/projectManagement';
 import { deleteNode } from "./projectManagement/deleteNode";
 import { 
   newTreeHeading, newWebviewHeading,
@@ -23,20 +19,22 @@ import { promoteNode, demoteNode, moveNodeDown, moveNodeUp } from './projectMana
 import { getProject } from './model/smoresProject';
 import { SmoresNode } from './model/smoresNode';
 
-
 export class DoorsSmores {
   static treeView:TreeNodeProvider;
   static documentView:DocumentViewer;
   static traceView:TraceView;
+  public static extensionContext:vscode.ExtensionContext;
   constructor(context: vscode.ExtensionContext) {
+    DoorsSmores.extensionContext = context;
     DoorsSmores.treeView = new TreeNodeProvider();
+    ProjectManagement.createAndRegister(context);
     this.register(context);
   }
 
   private register(context: vscode.ExtensionContext) {
     const registrations = [
-      vscode.window.registerTreeDataProvider('smoresTreeView', DoorsSmores.treeView),
-      vscode.window.createTreeView('smoresTreeView', {treeDataProvider: DoorsSmores.treeView, showCollapseAll: false}),
+      vscode.window.registerTreeDataProvider('doors-smores.documentTree', DoorsSmores.treeView),
+      vscode.window.createTreeView('doors-smores.documentTree', {treeDataProvider: DoorsSmores.treeView, showCollapseAll: false}),
       ...this.registerTreeViewCommands(),
       ...this.registerDocumentViewerCommands(),
       ...this.registerProjectCommands(),
@@ -50,6 +48,7 @@ export class DoorsSmores {
     if(DocumentViewer.currentPanel) {
       DocumentViewer.currentPanel.refresh();
     }
+    ProjectManagement.refresh();
     DoorsSmores.treeView.refresh();
   }
   static viewTreeNode(node:TreeNode) {
@@ -87,30 +86,11 @@ export class DoorsSmores {
   
   private registerProjectCommands():vscode.Disposable[] {
     const registrations = [
-      vscode.commands.registerCommand("doors-smores.New-Project", async () => {
-        if(await newProjectWorkspace()) {
-          if(await VersionController.repoExists()) {
-            VersionController.queryExistingRepoUse();
-          } else {
-            VersionController.queryStartRepoUse();
-          }
-        }
-        DoorsSmores.treeView.refresh();
-      }),
-      vscode.commands.registerCommand("doors-smores.Open-Project", async () => {
-        if(await openProjectWorkspace()) {
-          VersionController.initialise();
-        }
-        DoorsSmores.treeView.refresh();
-      }),
-      vscode.commands.registerCommand("doors-smores.Close-Project", () => {
-        closeProjectWorkspace();
-        DoorsSmores.treeView.refresh();
-      }),
-      vscode.commands.registerCommand("doors-smores.New-Document", async () => {
-        await newDocumentFromTemplate();
-        DoorsSmores.refreshViews();
-      }),
+      vscode.commands.registerCommand("doors-smores.New-Project", ProjectManagement.newProject),
+      vscode.commands.registerCommand("doors-smores.Open-Project", ProjectManagement.openProject),
+      vscode.commands.registerCommand("doors-smores.Set-Active-Project", ProjectManagement.setActiveProject),
+      vscode.commands.registerCommand("doors-smores.Close-Project", ProjectManagement.closeProject),
+      vscode.commands.registerCommand("doors-smores.New-Document", ProjectManagement.newDocument),
     ];
     return registrations;
   }

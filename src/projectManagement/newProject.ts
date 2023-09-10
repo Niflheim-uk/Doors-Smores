@@ -4,6 +4,8 @@ import * as fs from 'fs';
 import { SmoresDataFile } from '../model/smoresDataFile';
 import { SmoresProject } from '../model/smoresProject';
 import { getWorkspaceRoot } from '../utils/getWorkspaceRoot';
+import { VersionController } from '../versionControl/versionController';
+import { ProjectManagement } from './projectManagement';
 
 async function getProjectName():Promise<string|undefined> {
   return await vscode.window.showInputBox({
@@ -40,7 +42,7 @@ function createNewWorkspace(parentPath:string, projName:string) {
   SmoresDataFile.setProjectFilepath(projPath);
   return new SmoresProject(projPath);
 }
-export async function newProjectWorkspace():Promise<boolean> {
+async function newProjectWorkspace():Promise<boolean> {
   const projName = await getProjectName();
   if(projName === undefined) {
     return false;
@@ -57,3 +59,15 @@ export async function newProjectWorkspace():Promise<boolean> {
   vscode.commands.executeCommand('setContext', 'doors-smores.projectOpen', true);
   return true;
 }
+
+export async function newProject() {
+  console.log('ffs');
+  if(await newProjectWorkspace()) {
+    if(await VersionController.repoExists()) {
+      VersionController.queryExistingRepoUse();
+    } else {
+      VersionController.queryStartRepoUse();
+      }
+    }
+    vscode.commands.executeCommand('doors-smores.Update-Views');
+  }

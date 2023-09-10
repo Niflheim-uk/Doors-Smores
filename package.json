@@ -17,19 +17,35 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "configuration":[
+      {
+        "title": "Maximum Recent Projects",
+        "properties": {
+          "doors-smores.max-recent-projects" : {
+            "default": "5",
+            "type":"integer"
+          }
+        }
+      }
+    ],
     "viewsWelcome": [
       {
-        "view": "smoresTreeView",
+        "view": "doors-smores.documentTree",
         "when": "workspaceFolderCount > 0 && !doors-smores.projectOpen",
         "contents": "No current doors-smores project.\n[learn more](https://xkcd.com/1319/).\n[Start New Project](command:doors-smores.New-Project)\n[Open Existing Project](command:doors-smores.Open-Project)"
       },
       {
-        "view": "smoresTreeView",
+        "view": "doors-smores.projectView",
+        "when": "workspaceFolderCount > 0 && !doors-smores.projectOpen",
+        "contents": "No current doors-smores project.\n[learn more](https://xkcd.com/1319/).\n[Start New Project](command:doors-smores.New-Project)\n[Open Existing Project](command:doors-smores.Open-Project)"
+      },
+      {
+        "view": "doors-smores.documentTree",
         "when": "workspaceFolderCount > 0 && doors-smores.projectOpen",
         "contents": "Empty project found.\n[New Document](command:doors-smores.New-Document)"
       },
       {
-        "view": "smoresTreeView",
+        "view": "doors-smores.documentTree",
         "when": "workspaceFolderCount == 0",
         "contents": "You have not yet opened a folder.\n[Open Folder](command:vscode.openFolder)"
       }
@@ -37,19 +53,25 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "smoresTreeView",
+          "id": "doors-smores",
           "title": "Doors Smores",
           "icon": "$(flame)"
         }
       ]
     },
     "views": {
-      "smoresTreeView": [
+      "doors-smores": [
         {
-          "id": "smoresTreeView",
+          "id": "doors-smores.documentTree",
           "name": "Smores Document Tree",
           "icon": "$(flame)",
-          "contextualTitle": "Doors Smores"
+          "contextualTitle": "Doors Smores: Document Tree"
+        },
+        {
+          "id": "doors-smores.projectView",
+          "name": "Smores Project View",
+          "icon": "$(flame)",
+          "contextualTitle": "Doors Smores: Project View"
         }
       ]
     },
@@ -62,12 +84,19 @@
       {
         "command": "doors-smores.Open-Project",
         "category": "Smores",
-        "title": "Open Project"
+        "title": "Open Project",
+        "icon": "$(folder-opened)"
+      },
+      {
+        "command": "doors-smores.Set-Active-Project",
+        "category": "Smores",
+        "title": "Set Active Project"
       },
       {
         "command": "doors-smores.Close-Project",
         "category": "Smores",
-        "title": "Close Project"
+        "title": "Close Project",
+        "icon": "$(folder)"
       },
       {
         "command": "doors-smores.New-Document",
@@ -223,6 +252,10 @@
     "menus": {
       "webview/context": [
         {
+          "command": "doors-smores.New-Project",
+          "when": "webviewId=='doors-smores.projectView'"
+        },
+        {
           "command": "doors-smores.Edit-Section",
           "when": "webviewId =~ /smores[A-Z]{3,4}View/ && webviewSection =~ /Node-/",
           "group": "smores0@1"
@@ -276,97 +309,111 @@
       "view/title": [
         {
           "command": "doors-smores.Update-Views",
-          "when": "view == smoresTreeView",
+          "when": "view == doors-smores.documentTree",
           "group": "navigation"
         },
         {
           "command": "doors-smores.Close-Project",
-          "when": "view == smoresTreeView"
+          "when": "view == doors-smores.projectView && doors-smores.projectOpen"
+        },
+        {
+          "command": "doors-smores.Open-Project",
+          "when": "view == doors-smores.projectView"
+        },
+        {
+          "command": "doors-smores.Close-Project",
+          "when": "view == doors-smores.projectView && doors-smores.projectOpen",
+          "group": "navigation@2"
+        },
+        {
+          "command": "doors-smores.Open-Project",
+          "when": "view == doors-smores.projectView",
+          "group": "navigation@1"
         },
         {
           "command": "doors-smores.New-Document",
-          "when": "view == smoresTreeView"
+          "when": "view == doors-smores.documentTree"
         }
       ],
       "view/item/context": [
         {
           "command": "doors-smores.Promote-Node",
-          "when": "view == smoresTreeView && viewItem =~ /PROMOTE/",
+          "when": "view == doors-smores.documentTree && viewItem =~ /PROMOTE/",
           "group": "inline@1"
         },
         {
           "command": "doors-smores.Demote-Node",
-          "when": "view == smoresTreeView && viewItem =~ /DEMOTE/",
+          "when": "view == doors-smores.documentTree && viewItem =~ /DEMOTE/",
           "group": "inline@2"
         },
         {
           "command": "doors-smores.Move-Node-Up",
-          "when": "view == smoresTreeView && !(viewItem =~ /MIN_CHILD/)",
+          "when": "view == doors-smores.documentTree && !(viewItem =~ /MIN_CHILD/)",
           "group": "inline@3"
         },
         {
           "command": "doors-smores.Move-Node-Down",
-          "when": "view == smoresTreeView && !(viewItem =~ /MAX_CHILD/)",
+          "when": "view == doors-smores.documentTree && !(viewItem =~ /MAX_CHILD/)",
           "group": "inline@4"
         },
         {
           "command": "doors-smores.View-TreeNode",
-          "when": "view == smoresTreeView",
+          "when": "view == doors-smores.documentTree",
           "group": "inline@5"
         },
         {
           "command": "doors-smores.Trace-TreeNode",
-          "when": "view == smoresTreeView && (viewItem =~ /^[USAD]N?FR/ || viewItem =~ /^[USAD]DC/ || viewItem =~ /^[USAD]T/)",
+          "when": "view == doors-smores.documentTree && (viewItem =~ /^[USAD]N?FR/ || viewItem =~ /^[USAD]DC/ || viewItem =~ /^[USAD]T/)",
           "group": "inline@6"
         },
         {
           "command": "doors-smores.Export-Document",
-          "when": "view == smoresTreeView",
+          "when": "view == doors-smores.documentTree",
           "group": "inline@7"
         },
         {
           "command": "doors-smores.Delete-TreeNode",
-          "when": "view == smoresTreeView",
+          "when": "view == doors-smores.documentTree",
           "group": "inline@8"
         },
         {
           "command": "doors-smores.New-TreeHeading",
-          "when": "view == smoresTreeView",
+          "when": "view == doors-smores.documentTree",
           "group": "smores1@1"
         },
         {
           "command": "doors-smores.New-TreeComment",
-          "when": "view == smoresTreeView",
+          "when": "view == doors-smores.documentTree",
           "group": "smores1@2"
         },
         {
           "command": "doors-smores.New-TreeFuncReq",
-          "when": "view == smoresTreeView && (viewItem =~ /((URS)|(SRS)|(ADS)|(DDS)|(UKN))/)",
+          "when": "view == doors-smores.documentTree && (viewItem =~ /((URS)|(SRS)|(ADS)|(DDS)|(UKN))/)",
           "group": "smores2@1"
         },
         {
           "command": "doors-smores.New-TreeNonFuncReq",
-          "when": "view == smoresTreeView && (viewItem =~ /((URS)|(SRS)|(ADS)|(DDS)|(UKN))/)",
+          "when": "view == doors-smores.documentTree && (viewItem =~ /((URS)|(SRS)|(ADS)|(DDS)|(UKN))/)",
           "group": "smores2@2"
         },
         {
           "command": "doors-smores.New-TreeDesCon",
-          "when": "view == smoresTreeView && (viewItem =~ /((URS)|(SRS)|(ADS)|(DDS)|(UKN))/)",
+          "when": "view == doors-smores.documentTree && (viewItem =~ /((URS)|(SRS)|(ADS)|(DDS)|(UKN))/)",
           "group": "smores2@3"
         },
         {
           "command": "doors-smores.New-TreeTest",
-          "when": "view == smoresTreeView && (viewItem =~ /((ATP)|(STP)|(ITP)|(UTP)|(UKN))/)",
+          "when": "view == doors-smores.documentTree && (viewItem =~ /((ATP)|(STP)|(ITP)|(UTP)|(UKN))/)",
           "group": "smores3@1"
         },
         {
           "command": "doors-smores.New-TreeImage",
-          "when": "view == smoresTreeView",
+          "when": "view == doors-smores.documentTree",
           "group": "smores4@1"
         },
         {
           "command": "doors-smores.New-TreeMermaidImage",
-          "when": "view == smoresTreeView",
+          "when": "view == doors-smores.documentTree",
           "group": "smores4@2"
         }
       ]

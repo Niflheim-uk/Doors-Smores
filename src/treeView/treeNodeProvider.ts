@@ -23,7 +23,7 @@ export class TreeNodeProvider implements vscode.TreeDataProvider<TreeNode> {
   }
 
   getChildren(element?: TreeNode): Thenable<TreeNode[]> {
-    return vscode.window.withProgress({location:{viewId:"smoresTreeView"}}, () => {
+    return vscode.window.withProgress({location:{viewId:"doors-smores.documentTree"}}, () => {
       const project = getProject();
       if(project) {
         if (!element) {

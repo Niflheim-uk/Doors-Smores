@@ -114,7 +114,7 @@ function createTemplateNodes(docNode:SmoresNode, docType:string) {
   }
 }
 
-export async function newDocumentFromTemplate() {
+export async function newDocument() {
   const title = await getDocumentTitle();
   if(title === undefined) {
     return;

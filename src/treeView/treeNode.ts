@@ -3,7 +3,6 @@ import * as fs from "fs";
 import * as guiStyle from '../utils/gui';
 import * as schema from '../model/smoresDataSchema';
 import { SmoresNode } from "../model/smoresNode";
-import { SmoresDataFile } from "../model/smoresDataFile";
 
 export class TreeNode extends vscode.TreeItem {
   public smoresNode:SmoresNode;
@@ -16,7 +15,10 @@ export class TreeNode extends vscode.TreeItem {
     if(node.data.children && node.data.children.length > 0) {
       state = vscode.TreeItemCollapsibleState.Expanded;
     }
-    const nodeLabel = `${schema.getLabelPrefix(node.data.category)}${node.data.id} - ${node.data.text.split("\n")[0]}`;
+    let nodeLabel = "";
+    if(node.data.text && node.data.id) {
+      nodeLabel = `${schema.getLabelPrefix(node.data.category)}${node.data.id} - ${node.data.text.split("\n")[0]}`;
+    }
     super(nodeLabel, state);
     this.smoresNode = node;
     this.description = node.data.text;

@@ -1,8 +1,8 @@
 /* Heading number scheme */
 body {
   width:21cm;
-  color: var(--webview-foreground);
-  background: var(--webview-background)
+  color: var(--vscode-editor-foreground);
+  background: var(--vscode-editor-background)
 }
 
 div.section {

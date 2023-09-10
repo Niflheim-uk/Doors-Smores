@@ -4,7 +4,7 @@ import * as schema from "../model/smoresDataSchema";
 import { getExtensionBasedPath } from './getExtension';
 
 
-const ursLevelColour = 'debugConsole.sourceForeground';
+const ursLevelColour = 'terminal.ansiGreen';
 const srsLevelColour = 'debugConsole.errorForeground';
 const adsLevelColour = 'debugConsole.infoForeground';
 const ddsLevelColour = 'debugConsole.warningForeground';
@@ -44,7 +44,13 @@ export function getDocumentColour(node:SmoresNode):vscode.ThemeColor|undefined {
 
 export function getNodeIcon(node:SmoresNode):vscode.ThemeIcon {
   var iconColour:vscode.ThemeColor|undefined;
+  const projectData:any = node.data;
+  if(projectData.documentIds) {
+    return vscode.ThemeIcon.Folder;
+  }
   switch(node.data.category) {
+  case schema.projectType:
+    return vscode.ThemeIcon.Folder;
   case schema.documentType:
     iconColour = getDocumentColour(node);
     return new vscode.ThemeIcon('book', iconColour);
@@ -111,6 +117,14 @@ export function getTracingStylePaths():string[] {
     getExtensionBasedPath(['resources', 'tracing.css']),
     getExtensionBasedPath(['resources', 'displayStyle.css']),
     getExtensionBasedPath(['resources', 'pagination.css']),
+    getExtensionBasedPath(['resources', 'vendor', 'vscode', 'codicon.css'])
+  ];
+  return stylesPaths;
+}
+export function getProjectStylePaths():string[] {
+  const stylesPaths:string[] = [
+    getExtensionBasedPath(['resources', 'displayStyle.css']),
+    getExtensionBasedPath(['resources', 'projectView.css']),
     getExtensionBasedPath(['resources', 'vendor', 'vscode', 'codicon.css'])
   ];
   return stylesPaths;

@@ -1,20 +1,13 @@
 import { join } from "path";
-import { Uri, extensions } from "vscode";
+import { Uri } from "vscode";
+import { DoorsSmores } from "../doorsSmores";
 
 export function getExtensionPath():string {
-  const _extension = extensions.getExtension("Niflheim.doors-smores");
-  if(_extension) {
-    return _extension.extensionPath;
-  }
-  return "";
+  return DoorsSmores.extensionContext.extensionPath;
 }
 
 export function getExtensionUri():Uri {
-  const _extension = extensions.getExtension("Niflheim.doors-smores");
-  if(_extension) {
-    return Uri.file(_extension.extensionPath);
-  }
-  return Uri.file("");
+  return DoorsSmores.extensionContext.extensionUri;
 }
 
 export function getExtensionBasedPath(pathList:string[]) {

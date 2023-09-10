@@ -50,14 +50,14 @@ export class TraceView {
     } else {
       const extensionUri = getExtensionUri();
       const panel = vscode.window.createWebviewPanel(
-        "smoresTraceView", // Identifies the type of the webview. Used internally
+        "doors-smores.traceView", // Identifies the type of the webview. Used internally
         "Trace View", // Title of the panel displayed to the user
         vscode.ViewColumn.One, // Editor column to show the new webview panel in.
         {
           enableScripts: true,
           localResourceRoots:[
             vscode.Uri.joinPath(extensionUri, 'resources'),
-            vscode.Uri.joinPath(extensionUri, 'node_modules', '@vscode', 'codicons', 'dist')
+            vscode.Uri.joinPath(extensionUri, 'resources', 'vendor', 'vscode')
           ]
         }
       );
