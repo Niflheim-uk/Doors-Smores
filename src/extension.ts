@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
-import { SmoresTreeView } from './treeView';
-import { NodeViewer } from './nodeViewer';
+import { SmoresTreeView } from './treeView/treeView';
+import { NodeViewer } from './webView/nodeViewer';
 
 export function activate(context: vscode.ExtensionContext) {
 	console.log('Congratulations, your extension "doors-smores" is now active!');

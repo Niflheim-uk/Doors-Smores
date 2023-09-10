@@ -1,8 +1,7 @@
 import * as vscode from "vscode";
 import * as fs from "fs";
-import * as dataModel from './dataModel';
-import { SmoresNode } from "./smoresNode";
-import { SmoresProject } from "./smoresProject";
+import * as dataModel from '../model/smoresDataSchema';
+import { SmoresNode } from "../model/smoresNode";
 
 export class TreeNode extends vscode.TreeItem {
   public smoresNode:SmoresNode;

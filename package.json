@@ -42,6 +42,10 @@
     },
     "commands": [
       {
+        "command": "smores.initialise",
+        "title": "Smores: Initialise Workspace"
+      },
+      {
         "command": "doors-smores.Update-TreeView",
         "category": "Smores",
         "title": "Actively update the tree view",
@@ -56,6 +60,57 @@
         "command": "doors-smores.Edit-Section",
         "category": "Smores",
         "title": "Edit document section"
+      },
+      {
+        "command": "doors-smores.Promote-Node",
+        "category": "Smores",
+        "title": "Smores: Promote",
+        "icon": {
+          "light": "resources/light/arrow-small-left.png",
+          "dark": "resources/dark/arrow-small-left.png"
+        }
+      },
+      {
+        "command": "doors-smores.Demote-Node",
+        "category": "Smores",
+        "title": "Smores: Demote",
+        "icon": {
+          "light": "resources/light/arrow-small-right.png",
+          "dark": "resources/dark/arrow-small-right.png"
+        }
+      },
+      {
+        "command": "doors-smores.Move-Node-Up",
+        "category": "Smores",
+        "title": "Smores: Move Up",
+        "icon": {
+          "light": "resources/light/arrow-small-up.png",
+          "dark": "resources/dark/arrow-small-up.png"
+        }
+      },
+      {
+        "command": "doors-smores.Move-Node-Down",
+        "category": "Smores",
+        "title": "Smores: Move Down",
+        "icon": {
+          "light": "resources/light/arrow-small-down.png",
+          "dark": "resources/dark/arrow-small-down.png"
+        }
+      },
+      {
+        "command": "doors-smores.New-Heading",
+        "category": "Smores",
+        "title": "New Heading"
+      },
+      {
+        "command": "doors-smores.New-Comment",
+        "category": "Smores",
+        "title": "New Comment"
+      },
+      {
+        "command": "doors-smores.New-Functional-Requirement",
+        "category": "Smores",
+        "title": "New Functional Requirement"
       }
     ],
     "menus": {
@@ -71,6 +126,40 @@
           "when": "view == smoresTreeView",
           "group": "navigation"
         }
+      ],
+      "view/item/context": [
+				{
+					"command": "doors-smores.Promote-Node",
+					"when": "view == smoresTreeView && viewItem =~ /PROMOTE/",
+					"group": "inline@1"
+				},
+				{
+					"command": "doors-smores.Demote-Node",
+					"when": "view == smoresTreeView && viewItem =~ /DEMOTE/",
+					"group": "inline@2"
+				},
+				{
+					"command": "doors-smores.Move-Node-Up",
+					"when": "view == smoresTreeView && !(viewItem =~ /MIN_CHILD/)",
+					"group": "inline@3"
+				},
+				{
+					"command": "doors-smores.Move-Node-Down",
+					"when": "view == smoresTreeView && !(viewItem =~ /MAX_CHILD/)",
+					"group": "inline@4"
+				},
+				{
+					"command": "doors-smores.New-Heading",
+					"when": "view == smoresTreeView && ((viewItem =~ /document/) || (viewItem =~ /heading/))"
+				},
+				{
+					"command": "doors-smores.New-Comment",
+					"when": "view == smoresTreeView && (viewItem =~ /heading/)"
+				},
+				{
+					"command": "doors-smores.New-Functional-Requirement",
+					"when": "view == smoresTreeView && (viewItem =~ /heading/)"
+				}
       ]
     }
   },

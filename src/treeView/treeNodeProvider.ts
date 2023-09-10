@@ -1,8 +1,8 @@
 import * as vscode from "vscode";
 import * as fs from "fs";
 import { TreeNode } from "./treeNode";
-import { SmoresProject } from "./smoresProject";
-import { SmoresNode } from "./smoresNode";
+import { SmoresProject } from "../model/smoresProject";
+import { SmoresNode } from "../model/smoresNode";
 
 export class TreeNodeProvider implements vscode.TreeDataProvider<TreeNode> {
   private _onDidChangeTreeData: vscode.EventEmitter<TreeNode | undefined> =

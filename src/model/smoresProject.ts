@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import * as dataModel from "./dataModel";
+import * as dataModel from "./smoresDataSchema";
 import * as fs from "fs";
 import * as path from "path";
 import { SmoresNode } from "./smoresNode";
