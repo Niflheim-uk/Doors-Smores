@@ -79,7 +79,7 @@ export class NodeViewer {
       if(workspaceRoot && filename) {
         const filePath = path.join(workspaceRoot, filename);
         this._showNode(documentNode);
-        const html = this._updatePanel();
+        const html = getPageHtml(documentNode, false);
         if(html !== undefined) {
           fs.writeFileSync(filePath,html);
         }
@@ -164,7 +164,7 @@ export class NodeViewer {
     if(this._viewPanel === undefined || this._referenceNode === undefined) {
       return;
     }
-    const html = getPageHtml(this._referenceNode, this._nodeToEdit);
+    const html = getPageHtml(this._referenceNode, true, this._nodeToEdit);
     this._viewPanel.webview.html = html;
     return html;
   }
