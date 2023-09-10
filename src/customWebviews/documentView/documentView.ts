@@ -137,6 +137,14 @@ export class DocumentView {
   }
   private handleMessageFromPanel(message:any) {
     switch (message.command) {
+      case 'render':
+        const renderedNode = DocumentNode.createFromId(message.id);
+        if(renderedNode) {
+          const nodePath = DoorsSmores.getNodeDirectory(renderedNode.data.id);
+          const renderedFilepath = path.join(nodePath, 'rendered.svg');
+          fs.writeFileSync(renderedFilepath, message.svg);
+        }
+        break;
       case 'edit':
         DocumentView.editNode(message.context);
         break;

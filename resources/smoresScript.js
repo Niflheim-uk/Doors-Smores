@@ -6,15 +6,22 @@ function delayedInit() {
   setTimeout(initialize, 50);
 }
 function initialize() {
-  /* Trace view */
+  addDocumentViewClickHandlers();
+  exportMermaidImages();
+  addTracingViewClickHandlers();
+  addTracingArrows();
+}
+function addTracingViewClickHandlers() {
+  var el;
+  var matches;
   var elements = document.getElementsByClassName('tracing');
   for (let i = 0; i < elements.length; i++) {
-    var el = elements[i];
-    var matches = el.id.match(/ViewTd-([\d]+)/);
+    el = elements[i];
+    matches = el.id.match(/ViewTd-([\d]+)/);
     if(Array.isArray(matches)) {
       el.addEventListener('click', traceViewOnClick);
     }
-    var matches = el.id.match(/VerifyTd-([\d]+)/);
+    matches = el.id.match(/VerifyTd-([\d]+)/);
     if(Array.isArray(matches)) {
       el.addEventListener('click', traceVerifyOnClick);
     }
@@ -23,14 +30,21 @@ function initialize() {
       el.addEventListener('click', traceDeleteOnClick);
     }
   }
+  el = document.getElementById('NewTrace');
+  if(el !== null) {
+    el.addEventListener('click', traceAddOnClick);
+  }
+}
+function addTracingArrows() {
+  addUpstreamArrow();
+  addDownstreamArrow();
+  addTestArrow();
+}
+function addDocumentViewClickHandlers() {
   var elements = document.getElementsByClassName('viewDiv');
   for (let i = 0; i < elements.length; i++) {
     var el = elements[i];
     el.addEventListener('click', viewDivOnClick);
-  }
-  el = document.getElementById('NewTrace');
-  if(el !== null) {
-    el.addEventListener('click', traceAddOnClick);
   }
   elements = document.getElementsByClassName('editSubmit');
   for (let i = 0; i < elements.length; i++) {
@@ -47,9 +61,6 @@ function initialize() {
     var el = elements[i];
     el.addEventListener('click', showHelp);
   }
-  addUpstreamArrow();
-  addDownstreamArrow();
-  addTestArrow();
 }
 const arrowGap = 10;
 const arrowMargin = 50;
@@ -174,5 +185,20 @@ function showHelp(event) {
     element.style.visibility = 'hidden';
   } else {
     element.style.visibility = 'visible';
+  }
+}
+
+function exportMermaidImages() {
+  var elements = document.getElementsByClassName('mermaid');
+  for (let i = 0; i < elements.length; i++) {
+    var el = elements[i];
+    const id = el.id.split('mermaid-')[1];
+    const svg = el.innerHTML;
+    var message = {
+      command:'render',
+      id: Number(id), 
+      svg: svg
+    };
+    vscode.postMessage(message);
   }
 }

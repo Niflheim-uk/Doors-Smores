@@ -6,6 +6,7 @@ import * as schema from '../model/schema';
 import { DoorsSmores } from '../doorsSmores';
 import { DocumentView } from './documentView/documentView';
 import { getTraceReportDownstreamContent, getTraceReportTestsContent, getTraceReportUpstreamContent } from './traceReportView/traceReportContent';
+import { existsSync } from 'fs';
 
 export function getIdLabel(node:DocumentNode) {
   if(node.data.category === schema.headingCategory) {
@@ -32,8 +33,26 @@ export function getInnerHtmlForImage(node:DocumentNode, exporting:boolean) {
     imageFileUri = DocumentView.getWebviewUri(imageFileUri);
   }
   return `<div Id='image-${node.data.id}' class='imageHolder'>
-    <img src=${imageFileUri}>
+    <img src=${imageFileUri}/>
   </div>`;
+}
+
+export function getInnerHtmlForMermaid(node:DocumentNode, exporting:boolean) {
+  var html = '<div class="imageHolder">';
+  const nodePath = DoorsSmores.getNodeDirectory(node.data.id);
+  const renderedFilepath = join(nodePath, 'rendered.svg');
+  if(existsSync(renderedFilepath)) {
+    let imageFileUri = Uri.file(renderedFilepath);
+    if(exporting===false) {
+      imageFileUri = DocumentView.getWebviewUri(imageFileUri);
+    }
+    html = html.concat(`<img src="${imageFileUri}"/>`);
+  } else {
+    html = html.concat(`<pre class="mermaid" id="mermaid-${node.data.id}">`);
+    html = html.concat(`${node.data.text}`);
+    html = html.concat(`</pre>`);
+  }
+  return html.concat('</div>');
 }
 
 export function getInnerHtmlForRequirement(node:DocumentNode, hideTracing:boolean=false):string {

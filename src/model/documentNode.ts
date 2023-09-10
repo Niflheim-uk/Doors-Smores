@@ -2,7 +2,8 @@ import { DoorsSmores } from "../doorsSmores";
 import { SmoresFile } from "./smoresFile";
 import * as schema from './schema';
 import { VersionController } from "../versionControl/versionController";
-import { basename } from "path";
+import { basename, join } from "path";
+import { rmSync } from "fs";
 
 interface DocumentData {
   documentType: string;
@@ -148,6 +149,11 @@ export class DocumentNode extends SmoresFile {
     if(dataMap.text) {
       this.data.text = dataMap.text;
       commitMessage = commitMessage.concat(`Updated text field on ${this.data.id}\n`);  
+      if(this.data.category === schema.mermaidCategory) {
+        const dirPath = this.getDirPath();
+        const renderedPath = join(dirPath, 'rendered.svg');
+        rmSync(renderedPath);
+      }
     }
     if(dataMap.translationRationale) {
       this.data.requirementData = {translationRationale:dataMap.translationRationale};
