@@ -24,7 +24,7 @@ function initialize() {
     }
   }
   el = document.getElementById('NewTrace');
-  if(el !== undefined) {
+  if(el !== null) {
     el.addEventListener('click', traceAddOnClick);
   }
   elements = document.getElementsByClassName('editSubmit');
