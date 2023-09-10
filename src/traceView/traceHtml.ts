@@ -199,11 +199,9 @@ export function getUpstreamReqTraceHtml(node:SmoresNode):string {
 }
 export function getUpstreamTestTraceHtml(node:SmoresNode):string {
   let html = "";
-  if(node.data.traces && node.data.traces.upstream) {
-    const upstream = node.data.traces.upstream;
-    const suspectTraces = node.data.traces.suspectTrace;
-    html = html.concat(getTraceTable(upstream.verify, suspectTraces, "Verifies"));
-  }
+  const upstream = node.data.traces?.upstream;
+  const suspectTraces = node.data.traces?.suspectTrace;
+  html = html.concat(getTraceTable(upstream?.verify, suspectTraces, "Verifies"));
   return html;
 }
 export function getTraceTargetHtml(node:SmoresNode):string {
