@@ -3,10 +3,9 @@ import * as path from "path";
 import * as fs from 'fs';
 import { TreeNode } from "../treeView/treeNode";
 import { SmoresNode } from "../model/smoresNode";
-import { getBodyHtml } from './bodyHtml';
+import { getPageHtml } from './pageHtml';
 import { getWorkspaceRoot } from '../utils/utils';
 import { setWebview, setImagesUri } from "./imageInnerHtml";
-import { getPageHtmlFromTemplate } from "../utils/htmlPageTemplate";
 
 export class DocumentViewer {
   private _extensionUri!:vscode.Uri;
@@ -80,8 +79,7 @@ export class DocumentViewer {
       if(workspaceRoot && filename) {
         const filePath = path.join(workspaceRoot, filename);
         this._showNode(documentNode);
-        const bodyHtml = getBodyHtml(documentNode, true);
-        const html = getPageHtmlFromTemplate(false, bodyHtml);
+        const html = getPageHtml(documentNode, true);
         if(html !== undefined) {
           fs.writeFileSync(filePath,html);
         }
@@ -167,7 +165,6 @@ export class DocumentViewer {
     if(this._viewPanel === undefined || this._referenceNode === undefined) {
       return;
     }
-    const bodyHtml = getBodyHtml(this._referenceNode, false, this._nodeToEdit);
-    this._viewPanel.webview.html = getPageHtmlFromTemplate(true, bodyHtml);
+    this._viewPanel.webview.html = getPageHtml(this._referenceNode, false, this._nodeToEdit);
   }
 }

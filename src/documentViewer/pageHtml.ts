@@ -32,7 +32,7 @@ export function getPageHtml(node:SmoresNode, exporting:boolean, editNode?:Smores
   const bodyHtml = getBodyHtml(node, exporting, editNode);
   let scripts = "";
   if(exporting===false) {
-    scripts = `<script>${_scriptJs}</script>`;
+    scripts = `<script nonce="${nonce}">${_scriptJs}</script>`;
   }
   return `
   <!DOCTYPE html>
@@ -41,12 +41,12 @@ export function getPageHtml(node:SmoresNode, exporting:boolean, editNode?:Smores
       <meta charset="UTF-8">
       <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'nonce-${nonce}';">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <style>${_stylesCss[0]}</style>
-      <style>${_stylesCss[1]}</style>
-      <style>${_stylesCss[2]}</style>
-      <style>${_stylesCss[3]}</style>
+      <style nonce="${nonce}">${_stylesCss[0]}</style>
+      <style nonce="${nonce}">${_stylesCss[1]}</style>
+      <style nonce="${nonce}">${_stylesCss[2]}</style>
+      <style nonce="${nonce}">${_stylesCss[3]}</style>
       ${scripts}
-      <title>Smores Preview</title>
+      <title>${node.data.text}</title>
     </head>
     <body>${bodyHtml}</body>
   </html>`;  
