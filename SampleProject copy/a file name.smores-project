@@ -1,0 +1,12 @@
+{
+  "idBase": 10000,
+  "maxContributors": 100,
+  "knownContributors": [],
+  "uniqueIds": [
+    0,
+    10000,
+    10100,
+    10200,
+    10300
+  ]
+}

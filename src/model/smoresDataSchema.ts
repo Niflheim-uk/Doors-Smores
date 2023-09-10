@@ -5,17 +5,12 @@ export interface BaseNodeDataModel {
   text: string;
   children?: number[];
 }
-export interface ProjectDataModel extends BaseNodeDataModel {
-  idBase: number;
-  maxContributors: number;
-  knownContributors: string[];
-  uniqueIds: number[];
-}
 export interface DocumentDataModel extends BaseNodeDataModel {
-  documentType: string;
+  documentType?: string;
 }
 export interface RequirementDataModel extends BaseNodeDataModel {
   translationRationale?: string;
 }
 export interface CommentDataModel extends BaseNodeDataModel {}
+export interface HeadingDataModel extends BaseNodeDataModel {}
 

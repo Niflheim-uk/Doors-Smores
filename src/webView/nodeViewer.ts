@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import * as showdown from "showdown";
-import { SmoresNode } from "../smoresNode";
+import { SmoresNode } from "../model/smoresNode";
 const test: vscode.MarkdownString = new vscode.MarkdownString("# Hello World");
 
 export class NodeViewer {

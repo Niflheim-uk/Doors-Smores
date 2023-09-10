@@ -5,8 +5,8 @@ import { SmoresNode } from "../model/smoresNode";
 
 export class TreeNode extends vscode.TreeItem {
   public smoresNode:SmoresNode;
-  constructor(filePath:fs.PathLike, projectNode?:SmoresNode) {
-    const node = new SmoresNode(filePath, projectNode);
+  constructor(filePath:fs.PathLike) {
+    const node = new SmoresNode(filePath);
     let state = vscode.TreeItemCollapsibleState.None;
     if(node.data === undefined) {
       console.log("WTF?");

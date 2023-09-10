@@ -2,6 +2,20 @@ import * as fs from "fs";
 import * as path from "path";
 
 export class SmoresDataFile {
+  private static _projectFilepath:fs.PathLike;
+  static setProjectFilePath(projectFilepath:fs.PathLike):void {
+    SmoresDataFile._projectFilepath = projectFilepath;
+  }
+  static getProjectFilePath():fs.PathLike {
+    return SmoresDataFile._projectFilepath;
+  }
+  static getNodeFilepath(nodeId:number) {
+    const baseFolder = path.dirname(SmoresDataFile._projectFilepath.toString());
+    const dataFolder = path.basename(SmoresDataFile._projectFilepath.toString(), '.smores-project');
+    const nodePath = path.join(baseFolder, dataFolder, `${nodeId}.smores`);
+    return nodePath;
+  }
+
   public data:any;
   constructor(readonly filePath:fs.PathLike) {
     this.read();

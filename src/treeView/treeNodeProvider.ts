@@ -29,7 +29,7 @@ export class TreeNodeProvider implements vscode.TreeDataProvider<TreeNode> {
     return vscode.window.withProgress({location:{viewId:"smoresTreeView"}}, () => {
       if(this.project) {
         if (!element) {
-          return Promise.resolve(this.getTreeNodesFromSmoresNodes(this.project.getChildNodes()));
+          return Promise.resolve(this.getTreeNodesFromPaths(this.project.getDocumentPaths()));
         } else {
           return Promise.resolve(this.getTreeNodesFromSmoresNodes(element.smoresNode.getChildNodes()));
         }
@@ -38,13 +38,28 @@ export class TreeNodeProvider implements vscode.TreeDataProvider<TreeNode> {
       }  
     });
   }
+  getTreeNodesFromPaths(filePaths:fs.PathLike[]) {
+    var smores:SmoresNode[]|undefined;
+    filePaths.forEach(path => {
+      const smoresNode = new SmoresNode(path);
+      if(smores) {
+        smores.push(smoresNode);
+      } else {
+        smores = [smoresNode];
+      }
+    });
+    if(smores) {
+      return this.getTreeNodesFromSmoresNodes(smores);
+    }
+    return [];
+  }
   getTreeNodesFromSmoresNodes(smores:SmoresNode[]):TreeNode[] {
     var nodes:TreeNode[]|undefined;
     smores.forEach(smoresNode => {
       if(nodes){
-        nodes.push(new TreeNode(smoresNode.filePath,this.project));
+        nodes.push(new TreeNode(smoresNode.filePath));
       } else {
-        nodes = [new TreeNode(smoresNode.filePath, this.project)];
+        nodes = [new TreeNode(smoresNode.filePath)];
       }
     });
     if(nodes) {

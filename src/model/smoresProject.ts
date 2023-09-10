@@ -1,46 +1,33 @@
 import * as vscode from "vscode";
-import * as dataModel from "./smoresDataSchema";
+import * as smoresDataSchema from "./smoresDataSchema";
 import * as fs from "fs";
-import * as path from "path";
-import { SmoresNode } from "./smoresNode";
+import { SmoresDataFile } from "./smoresDataFile";
 
-export class SmoresProject extends SmoresNode{
-  declare readonly data:dataModel.ProjectDataModel;
+export interface ProjectDataModel {
+  idBase: number;
+  maxContributors: number;
+  knownContributors: string[];
+  uniqueIds: number[];
+  documentIds: number[];
+}
+export function getProject():SmoresProject {
+  return new SmoresProject(SmoresDataFile.getProjectFilePath());
+}
+export class SmoresProject extends SmoresDataFile {
+  declare readonly data:ProjectDataModel;
   constructor (readonly projectFilepath:fs.PathLike) {
-    const baseFolder = path.dirname(projectFilepath.toString());
-    const dataFolder = path.basename(projectFilepath.toString(), '.smores-project');
-    const projectNodePath = path.join(baseFolder, dataFolder, '0.smores');
-    super(projectNodePath);
-    super.projectNode = this;
+    super(projectFilepath);
+    SmoresDataFile.setProjectFilePath(projectFilepath);
     this.setDefaults();
   }
   private setDefaults() {
     let change = false;
-    if(this.data.parent === undefined) {
-      this.data.parent = null;
-      change = true;
-    }
-    if(this.data.category === undefined) {
-      this.data.category = "project";
-      change = true;
-    }
-    if(this.data.text === undefined) {
-      const name = path.basename(this.filePath.toString()).split('.')[0];
-      this.data.text = `${name}`;
-      change = true;
-    }
-  
-    if(this.data.idBase === undefined) {
+      if(this.data.idBase === undefined) {
       this.data.idBase = 10000;
       change = true;
     }
     if(this.data.maxContributors === undefined) {
       this.data.maxContributors = 100;
-      change = true;
-    }
-  
-    if(this.data.id === undefined) {
-      this.data.id = this.getUniqueId();
       change = true;
     }
     if(change) {
@@ -58,6 +45,29 @@ export class SmoresProject extends SmoresNode{
     this.write();
     return nextId;
   }
+  getDocumentPaths():fs.PathLike[] {
+    let documentPaths = undefined;
+    if(this.data.documentIds && this.data.documentIds.length > 0) {
+      const documentIds = this.data.documentIds;
+      for (let index = 0; index < documentIds.length; index++) {
+        const childId = documentIds[index];
+        const nodeFilepath = SmoresDataFile.getNodeFilepath(childId);
+        if(Array.isArray(documentPaths)) {
+          documentPaths.push(nodeFilepath);
+        } else {
+          documentPaths = [nodeFilepath];
+        }
+      }
+    }
+    if(documentPaths) {
+      return documentPaths;
+    }
+    return [];
+  }
+
+
+
+
   private getUserId():string {
     return vscode.env.machineId;
   }
@@ -91,4 +101,22 @@ export class SmoresProject extends SmoresNode{
     }
     return testNumber;
   }
+  newDocument(documentName:string) {
+    console.log("New document called");
+    const newId = this.getUniqueId();
+    const newNodePath = SmoresDataFile.getNodeFilepath(newId);
+    const newDocument = new SmoresDataFile(newNodePath);
+    const newDocumentData:smoresDataSchema.DocumentDataModel = {
+      id:newId,
+      category:"document",
+      text:documentName,
+      parent:null
+    };
+    newDocument.data = newDocumentData;
+    newDocument.write();
+    this.data.documentIds.push(newId);
+    this.write();
+  }
+
+
 }
