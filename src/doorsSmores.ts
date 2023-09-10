@@ -67,6 +67,9 @@ export class DoorsSmores {
       DoorsSmores.traceView.showTraceView(node);
     }
   }
+  static editWebviewNode(context:any) {
+    DoorsSmores.documentView.editNode(context);
+  }
   
   private registerProjectCommands():vscode.Disposable[] {
     const registrations = [
@@ -121,7 +124,7 @@ export class DoorsSmores {
   }
   private registerDocumentViewerCommands():vscode.Disposable[] {
     const registrations = [
-      vscode.commands.registerCommand("doors-smores.Edit-Section", DoorsSmores.documentView.editNode),
+      vscode.commands.registerCommand("doors-smores.Edit-Section", DoorsSmores.editWebviewNode),
       vscode.commands.registerCommand("doors-smores.Trace-WebviewNode", DoorsSmores.traceWebviewNode),
       vscode.commands.registerCommand("doors-smores.New-WebHeading", newWebviewHeading),
       vscode.commands.registerCommand("doors-smores.New-WebComment", newWebviewComment),

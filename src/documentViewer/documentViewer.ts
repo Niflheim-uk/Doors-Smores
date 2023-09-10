@@ -70,12 +70,11 @@ export class DocumentViewer {
     switch (message.command) {
       case 'submit':
         if(this._nodeToEdit) {
-          this._nodeToEdit.setNewData(message.submitData);
+          this._nodeToEdit.setNewData(message);
           this._nodeToEdit = undefined;
           vscode.commands.executeCommand('doors-smores.Update-Views');
         }
         this.updatePanel();
-        vscode.window.showErrorMessage(message.text);
         return;
       case 'cancel':
         this._nodeToEdit=undefined;

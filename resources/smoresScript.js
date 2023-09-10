@@ -10,28 +10,31 @@ function initialize() {
     var matches = el.id.match(/ViewTd-([\d]+)/);
     if(Array.isArray(matches)) {
       el.addEventListener('click', traceViewOnClick);
-      console.log("view");
     }
     matches = el.id.match(/DeleteTd-([\d]+)/);
     if(Array.isArray(matches)) {
       el.addEventListener('click', traceDeleteOnClick);
-      console.log("del");
     }
     matches = el.id.match(/New-([\S]+)/);
     if(Array.isArray(matches)) {
       el.addEventListener('click', traceAddOnClick);
-      console.log("new");
     }
+  }
+  elements = document.getElementsByClassName('editSubmit');
+  for (let i = 0; i < elements.length; i++) {
+    var el = elements[i];
+    el.addEventListener('click', editOnSubmit);
   }
   elements = document.getElementsByClassName('editCancel');
   for (let i = 0; i < elements.length; i++) {
-    el.addEventListener('click', editOnCancel());
-    console.log("cancel");
+    var el = elements[i];
+    el.addEventListener('click', editOnCancel);
   }
-  // elements = document.getElementsByClassName('editCancel');
-  // for (let i = 0; i < elements.length; i++) {
-  //   el.addEventListener('click', editOnCancel());
-  // }
+  elements = document.getElementsByClassName('helpButton');
+  for (let i = 0; i < elements.length; i++) {
+    var el = elements[i];
+    el.addEventListener('click', showHelp);
+  }
   addUpstreamArrow();
   addDownstreamArrow();
   addTestArrow();
@@ -133,19 +136,28 @@ function traceAddOnClick(event) {
   }
   vscode.postMessage({command: 'addTrace', traceType:traceType, traceUpstream:upstream});
 }
-function editOnSubmit(submitDataMap) {
-  var submitData={};
-  Object.keys(submitDataMap).map(dataType =>{
-    const dataElementId = submitDataMap[dataType];
-    const newText = document.getElementById(dataElementId).value;
-    submitData[dataType] = newText;
-  });
-  vscode.postMessage({command: 'submit', submitData});
+function editOnSubmit(event) {
+  const nodeId = Number(event.currentTarget.dataset["nodeId"]);
+  const textAreas = document.getElementsByTagName('textarea');
+  var message = {command:'submit', text: undefined, translationRationale: undefined};
+  for (let i = 0; i < textAreas.length; i++) {
+    var el = textAreas[i];
+    const dataType = el.dataset["contentType"];
+    const dataValue = el.value;
+    if(dataType === 'text') {
+      message.text = dataValue;
+    } else if(dataType === 'translationRationale') {
+      message.translationRationale = dataValue;
+    }
+  }
+  vscode.postMessage(message);
 }
 function editOnCancel() {
   vscode.postMessage({command: 'cancel'});
 }
-function showHelp(helpId) {
+function showHelp(event) {
+  const nodeId = Number(event.currentTarget.dataset["nodeId"]);
+  const helpId = `help-${nodeId}`;
   const element = document.getElementById(helpId);
   if(element.style.visibility === 'visible') {
     element.style.visibility = 'hidden';

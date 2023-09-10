@@ -94,22 +94,16 @@ export class SmoresNode extends SmoresDataFile {
     this.write();    
   }
   setNewData(dataMap:any) {
-    Object.keys(dataMap).map(dataType =>{
-      const dataValue = dataMap[dataType];
-      switch(dataType) {
-        case 'text': this.data.text = dataValue;
-        break;
-        case 'translationRationale':
-          if(this.data.requirementData === undefined) {
-            this.data.requirementData = {translationRationale:dataValue};
-          } else {
-            this.data.requirementData.translationRationale = dataValue;
-          }
-          break;
-        default:
-          console.error(`Unknown new data key ${dataType}`);
+    if(dataMap.text) {
+      this.data.text = dataMap.text;
+    }
+    if(dataMap.translationRationale) {
+      if(this.data.requirementData === undefined) {
+        this.data.requirementData = {translationRationale:dataMap.translationRationale};
+      } else {
+        this.data.requirementData.translationRationale = dataMap.translationRationale;
       }
-    });
+    }
     this.write();
   }
   public newItem(category:string,defaultText:string, insertPos?:number):string|undefined {
