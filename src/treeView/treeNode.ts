@@ -19,7 +19,7 @@ export class TreeNode extends vscode.TreeItem {
     this.smoresNode = node;
     this.description = node.data.text;
     this.tooltip = this.description;
-    this.iconPath = vscode.ThemeIcon.Folder;
+//    this.iconPath = `$(eye)`;
     this.contextValue = node.getContextString();
   }
 }
@@ -34,6 +34,8 @@ function getLabelPrefix(nodeData:dataModel.BaseNodeDataModel):string {
       return "H";
     case "comment":
       return "C";
+    case "mermaidImage":
+      return "MI";
     case "functionalRequirement":
       return "FR";
     default:

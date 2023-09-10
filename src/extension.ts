@@ -7,14 +7,13 @@ import { NodeViewer } from './webView/nodeViewer';
 export function activate(context: vscode.ExtensionContext) {
 	console.log('Congratulations, your extension "doors-smores" is now active!');
   vscode.commands.executeCommand('setContext', 'doors-smores.projectOpen', false);
-
-  let cheat = undefined;
-  const root = utils.getWorkspaceRoot();
-  if(root) {
-    cheat = root.concat("\\a file name.smores-project");
-  }
   
-  new TreeNodeProvider(cheat).register(context);
+  // let cheat = undefined;
+  // const root = utils.getWorkspaceRoot();
+  // if(root) {
+  //   cheat = root.concat("\\a file name.smores-project");
+  // }
+  new TreeNodeProvider().register(context);
   new NodeViewer().register(context); 
 }
 

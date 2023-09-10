@@ -44,33 +44,17 @@ export class SmoresNode extends SmoresDataFile {
     return `${this.data.category}${context}`;
   }
   newHeading(title:string) {
-    console.log("New heading called");
-    const newData:smoresDataSchema.HeadingDataModel = {
-      id:0,
-      category:"heading",
-      text:title,
-      parent:this.data.id
-    };
-    this.newChild(newData);
+    this.newItem("heading", title);
   }
   newComment() {
-    console.log("New comment called");
-    const newData:smoresDataSchema.CommentDataModel = {
-      id:0,
-      category:"comment",
-      text:"new comment",
-      parent:this.data.id
-    };
-    this.newChild(newData);    
+    this.newItem("comment", "new comment");
   }
   newFunctionalRequirement() {
-    const newData:smoresDataSchema.RequirementDataModel = {
-      id:0,
-      category:"functionalRequirement",
-      text:"new functional requirement",
-      parent:this.data.id
-    };
-    this.newChild(newData);    
+    this.newItem("functionalRequirement", "new functional requirement");
+  }
+  newMermaidImage() {
+    const defaultImage = "---\ntitle: Node\n---\nflowchart LR\n    id\n";
+    this.newItem("mermaidImage", `${defaultImage}`);
   }
   promote() {
     const parent = this.getParentNode();
@@ -134,6 +118,16 @@ export class SmoresNode extends SmoresDataFile {
   ///////////////////////////////////////////
   // Private methods
   ///////////////////////////////////////////
+  private newItem(category:string,defaultText:string) {
+    console.log(`New ${category} called`);
+    const newData = {
+      id:0,
+      category:`${category}`,
+      text:`${defaultText}`,
+      parent:this.data.id
+    };
+    this.newChild(newData);
+  }  
   private setContextAddOrderStatus(context:string) :string {
     const parent = this.getParentNode();
     if((parent !== null) && (parent.data.children !== undefined)){

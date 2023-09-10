@@ -13,4 +13,5 @@ export interface RequirementDataModel extends BaseNodeDataModel {
 }
 export interface CommentDataModel extends BaseNodeDataModel {}
 export interface HeadingDataModel extends BaseNodeDataModel {}
+export interface ImageDataModel extends BaseNodeDataModel {}
 

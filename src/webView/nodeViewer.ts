@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import * as showdown from "showdown";
+import {Converter} from "showdown";
 import { TreeNode } from "../treeView/treeNode";
 import { SmoresNode } from "../model/smoresNode";
 const test: vscode.MarkdownString = new vscode.MarkdownString("# Hello World");
@@ -17,28 +17,29 @@ export class NodeViewer {
     const registrations = (
       vscode.commands.registerCommand(
         "doors-smores.View-TreeNode",
-        (node: TreeNode) => {
-          this.showNode(node.smoresNode);
+        async (node: TreeNode) => {
+          await this.showNode(node.smoresNode);
         }
       ),
       vscode.commands.registerCommand(
-        "doors-smores.Edit-Section",(context:any) => {
-          this.editNode(context);
+        "doors-smores.Edit-Section", 
+        async (context:any) => {
+          await this.editNode(context);
         }
       )
     );
     context.subscriptions.push(registrations);
   }
-  editNode(context:any) {
+  async editNode(context:any) {
     if(context.webviewSection && this.referenceNode) {
       const webviewSection:string = context.webviewSection;
       const nodeId:number = Number(webviewSection.replace("Node-",""));
       const nodeFilepath = this.referenceNode.getNodeFilepath(nodeId);
       const node = new SmoresNode(nodeFilepath);
-      this.editSingleOrMultilineNode(node);
+      await this.editSingleOrMultilineNode(node);
     }
   }
-  showNode(node: SmoresNode) {
+  async showNode(node: SmoresNode) {
     this.referenceNode = node;
     if (this.viewPanel === undefined) {
       this.viewPanel = vscode.window.createWebviewPanel(
@@ -49,7 +50,7 @@ export class NodeViewer {
       );
       
       // Handle messages from the webview
-      this.viewPanel.webview.onDidReceiveMessage(message => {
+      this.viewPanel.webview.onDidReceiveMessage(async (message) => {
         switch (message.command) {
           case 'submit':
             if(this.nodeToEdit) {
@@ -58,12 +59,12 @@ export class NodeViewer {
               this.nodeToEdit = undefined;
               vscode.commands.executeCommand('doors-smores.Update-TreeView');
             }
-            this.updatePanel();
+            await this.updatePanel();
             vscode.window.showErrorMessage(message.text);
             return;
           case 'cancel':
             this.nodeToEdit=undefined;
-            this.updatePanel();
+            await this.updatePanel();
             return;
           }
       });
@@ -74,7 +75,7 @@ export class NodeViewer {
     } else {
       this.viewPanel.reveal();
     }
-    this.updatePanel();
+    await this.updatePanel();
   }
   private async editSingleOrMultilineNode(node: SmoresNode) {
     if(node.data.category === "heading") {
@@ -84,17 +85,17 @@ export class NodeViewer {
         node.data.text = newValue;
         node.write();
         vscode.commands.executeCommand('doors-smores.Update-TreeView');
-        this.updatePanel();
+        await this.updatePanel();
       }
     } else {
       this.nodeToEdit = node;
-      this.updatePanel();
+      await this.updatePanel();
     }
   }
-  private getHtmlForNode(node: SmoresNode):string {
+  private async getHtmlForNode(node: SmoresNode):Promise<string> {
     let html:string = "";
-    html = html.concat(this.getHtmlForNodeType(node));
-    html = html.concat(this.getHtmlForNodeChildren(node));
+    html = html.concat(await this.getHtmlForNodeType(node));
+    html = html.concat(await this.getHtmlForNodeChildren(node));
     return html;
   }
   private getHtmlForEditor(nodeId:number, content:string, helpText:string) {
@@ -117,34 +118,48 @@ export class NodeViewer {
     return outerHtml;
   
   }
-  private getHtmlForNodeType(node:SmoresNode):string {
-    let mdString:string = "";
-    let helpText:string = "some helpful instructions";
-    switch(node.data.category) {
-      case "document":
-        return "";
-      case "heading":
-        mdString = this.getMdForHeading(node);
-        break;
-      default:
-        mdString = node.data.text;
-    }
-    const converter = new showdown.Converter();
-    const innerHtml =  converter.makeHtml(mdString);
-    const tooltip = `<b>category</b>: ${node.data.category}<br/><b>id</b>: ${node.data.id}`;
+  private async getHtmlForMermaid(node:SmoresNode, tooltip:string) {
     if(node.data.id === this.nodeToEdit?.data.id) {
-      return this.getHtmlForEditor(node.data.id, node.data.text, helpText);
+      return this.getHtmlForEditor(node.data.id, node.data.text, "use mermaid syntax");
     } else {
+      const innerHtml = `<div Id='mermaid-${node.data.id}' class='mermaidHolder'>
+          <pre  class='mermaid'>${node.data.text}</pre>
+        </div>`;
       return this.getHtmlForViewing(node.data.id, innerHtml, tooltip);
     }
   }
-  private getHtmlForNodeChildren(node:SmoresNode):string {
+  private getHtmlFromMd(node:SmoresNode, mdString:string, tooltip:string) {
+    if(node.data.id === this.nodeToEdit?.data.id) {
+      let helpText:string = "some helpful instructions";
+      return this.getHtmlForEditor(node.data.id, node.data.text, helpText);
+    } else {
+      const converter = new Converter();
+      const innerHtml =  converter.makeHtml(mdString);
+      return this.getHtmlForViewing(node.data.id, innerHtml, tooltip);
+    }
+  }
+  private async getHtmlForNodeType(node:SmoresNode):Promise<string> {
+    let mdString:string = "";
+    const tooltip = `<b>category</b>: ${node.data.category}<br/><b>id</b>: ${node.data.id}`;
+    switch(node.data.category) {
+      case "document":
+        return "";
+      case "mermaidImage":
+        return await this.getHtmlForMermaid(node, tooltip);
+      case "heading":
+        mdString = this.getMdForHeading(node);
+        return this.getHtmlFromMd(node, mdString, tooltip);
+      default:
+        return this.getHtmlFromMd(node, node.data.text, tooltip);
+    }
+  }
+  private async getHtmlForNodeChildren(node:SmoresNode):Promise<string> {
     let html:string = "";
     if(node.data.children && node.data.children.length > 0) {
       const childNodes = node.getChildNodes();
       for (let index = 0; index < childNodes.length; index++) {
         const child = childNodes[index];
-        html = html.concat(this.getHtmlForNode(child));
+        html = html.concat(await this.getHtmlForNode(child));
       }
     }
     return html;
@@ -164,19 +179,19 @@ export class NodeViewer {
     mdString = mdString.concat(" ", node.data.text.split("\n")[0]);
     return mdString;
   }
-  private updatePanel() {
+  private async updatePanel() {
     if(this.viewPanel === undefined || this.referenceNode === undefined) {
       return;
     }
     // Local path to css styles
 		const stylesPath = vscode.Uri.joinPath(this._extensionUri, 'resources', 'smores.css');
 		const scriptPath = vscode.Uri.joinPath(this._extensionUri, 'resources', 'smoresScript.js');
-    const editIconPath = vscode.Uri.joinPath(this._extensionUri, 'resources', 'edit.svg');
+    const mermaidPath = vscode.Uri.joinPath(this._extensionUri, 'resources', 'mermaid.min.js');
 		// Convert to webviewUri
 		const stylesUri = this.viewPanel.webview.asWebviewUri(stylesPath);
 		const scriptUri = this.viewPanel.webview.asWebviewUri(scriptPath);
-    const editIconUri = this.viewPanel.webview.asWebviewUri(editIconPath);
-    const nodeHtml = this.getHtmlForNode(this.referenceNode);
+		const mermaidUri = this.viewPanel.webview.asWebviewUri(mermaidPath);
+    const bodyHtml = await this.getHtmlForNode(this.referenceNode);
     
     this.viewPanel!.webview.html =`
     <!DOCTYPE html>
@@ -185,10 +200,11 @@ export class NodeViewer {
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link href="${stylesUri}" rel="stylesheet">
+        <script src="${mermaidUri}"></script>
         <script src="${scriptUri}"></script>
 				<title>Smores Preview</title>
-    </head>
-      <body>${nodeHtml}</body>
+      </head>
+      <body onLoad="renderAllMermaidImages()">${bodyHtml}</body>
     </html>`;  
   }
 }

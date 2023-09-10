@@ -1,7 +1,0 @@
-{
-  "id": 10000,
-  "text": "my document",
-  "children": [10100,10200],
-  "parent": 0,
-  "category": "document"
-}

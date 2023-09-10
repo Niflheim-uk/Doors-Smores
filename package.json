@@ -1,6 +1,6 @@
 {
   "name": "doors-smores",
-  "publisher": "Nilfheim",
+  "publisher": "Niflheim",
   "displayName": "Doors Smores",
   "description": "Requirements simplified",
   "version": "0.0.1",
@@ -37,7 +37,7 @@
         {
           "id": "smoresTreeView",
           "title": "Doors Smores",
-          "icon": "resources/activitybaricon.png"
+          "icon": "$(book)"
         }
       ]
     },
@@ -46,7 +46,7 @@
         {
           "id": "smoresTreeView",
           "name": "Smores Document Tree",
-          "icon": "resources/book.svg",
+          "icon": "$(book)",
           "contextualTitle": "Doors Smores"
         }
       ]
@@ -83,37 +83,25 @@
         "command": "doors-smores.Promote-Node",
         "category": "Smores",
         "title": "Promote",
-        "icon": {
-          "light": "resources/light/arrow-small-left.png",
-          "dark": "resources/dark/arrow-small-left.png"
-        }
+        "icon": "$(arrow-small-left)"
       },
       {
         "command": "doors-smores.Demote-Node",
         "category": "Smores",
         "title": "Demote",
-        "icon": {
-          "light": "resources/light/arrow-small-right.png",
-          "dark": "resources/dark/arrow-small-right.png"
-        }
+        "icon": "$(arrow-small-right)"
       },
       {
         "command": "doors-smores.Move-Node-Up",
         "category": "Smores",
         "title": "Move Up",
-        "icon": {
-          "light": "resources/light/arrow-small-up.png",
-          "dark": "resources/dark/arrow-small-up.png"
-        }
+        "icon": "$(arrow-small-up)"
       },
       {
         "command": "doors-smores.Move-Node-Down",
         "category": "Smores",
         "title": "Move Down",
-        "icon": {
-          "light": "resources/light/arrow-small-down.png",
-          "dark": "resources/dark/arrow-small-down.png"
-        }
+        "icon": "$(arrow-small-down)"
       },
       {
         "command": "doors-smores.New-Heading",
@@ -209,6 +197,7 @@
     "typescript": "^5.1.3"
   },
   "dependencies": {
+    "mermaid": "^10.2.4",
     "showdown": "^2.1.0",
     "xss": "^1.0.14"
   }
