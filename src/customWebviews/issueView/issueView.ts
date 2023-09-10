@@ -175,7 +175,7 @@ export class IssueView {
     .insertion {color:green;}
     .notation {color:blue;}
     .deletion {color:red;}
-    .whitespace {white-space:pre;}
+    .whitespace {white-space:pre-wrap;}
   </style>
   ${styleBlock}
 </head>

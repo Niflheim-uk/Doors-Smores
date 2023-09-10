@@ -133,8 +133,8 @@ export class SmoresProject extends SmoresFile {
     return false;
   }
   private async exportDocument(document:DocumentNode) {
-    const defaultFilename = `${document.data.text}.Md`;
-    const filePath = join(this.getDirPath(), defaultFilename);
+    const defaultFilename = `Document-${document.data.id}-${document.data.text}.Md`;
+    const filePath = join(DoorsSmores.getDataDirectory(), defaultFilename);
     const content = await getMdForDocument(document!);
     writeFileSync(filePath, content);
   }
