@@ -1,7 +1,7 @@
 
 import * as vscode from 'vscode';
-import { ProjectTreeItem } from './projectTreeItem';
-import { DoorsSmores } from '../../doorsSmores';
+import { ProjectTreeItem, ProjectTreeItemType } from './projectTreeItem';
+import { DoorsSmores, ProjectInfo } from '../../doorsSmores';
 
 
 export class ProjectTreeProvider implements vscode.TreeDataProvider<ProjectTreeItem> {
@@ -21,14 +21,44 @@ export class ProjectTreeProvider implements vscode.TreeDataProvider<ProjectTreeI
 	public getChildren(element?: ProjectTreeItem): Thenable<ProjectTreeItem[]> {
     const activeProject = DoorsSmores.getActiveProject();
 		if(element) {
-      return Promise.resolve(element.getChildren());
-		} else {
-      const recentProjects = DoorsSmores.getRecentProjects();
+      switch(element.getType()) {
+      case ProjectTreeItemType.current:
+        if(activeProject) {
+          const info = {name:activeProject.getFilenameNoExt(),path:activeProject.getFilepath()};
+          const item = new ProjectTreeItem(info, ProjectTreeItemType.project);
+          return Promise.resolve([item]);
+        }
+        break;
+      case ProjectTreeItemType.recent:
+        var children:ProjectTreeItem[] = [];
+        var minRecent = 0;
+        const recentProjects = DoorsSmores.getRecentProjects();
+        if(activeProject) {
+          minRecent = 1;
+        }
+        for(let i=minRecent; i<recentProjects.length; i++) {
+          children.push(new ProjectTreeItem(recentProjects[i], ProjectTreeItemType.project));
+        }
+        return Promise.resolve(children);
+      case ProjectTreeItemType.project:
+        return Promise.resolve(element.getChildren());
+      case ProjectTreeItemType.document:
+        break;
+      }
+      return Promise.resolve([]);
+    } else {
       var children:ProjectTreeItem[] = [];
-      recentProjects.forEach(info => {
-        const item = new ProjectTreeItem(info, true);
-        children.push(item);
-      });
+      var minRecent = 0;
+      if(activeProject) {
+        const info:ProjectInfo = {name:"Current Project",path:""};
+        children.push(new ProjectTreeItem(info, ProjectTreeItemType.current));
+        minRecent = 1;
+      }
+      const recentProjects = DoorsSmores.getRecentProjects();
+      if(recentProjects.length > minRecent) {
+        const info:ProjectInfo = {name:"Recent Projects",path:""};
+        children.push(new ProjectTreeItem(info, ProjectTreeItemType.recent));
+      }
       return Promise.resolve(children);
 		}
 	}
