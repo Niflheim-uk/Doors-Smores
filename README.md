@@ -10,30 +10,28 @@ The premise is simple.
 Requirement analysis software doesn't have to be that complicated... right?
 
 ## Current Features
-- Can create an empty document, or a Software Requirement Specification based on the IEEE template.
-- Can add headings, comments, functional requirements, image files, images created via Mermaid.
-- Can rearrange content within a document.
-- Can edit and delete existing content.
-- Can view HTML representation of the document (or portion of).
-- Can export HTML representation. 
-- Can create a Git repository within the project directory for use by Doors Smores.
-  - Will auto commit new content changes.
-  - Will auto commit node migration changes.
-- Can use existing Git repository found in a parent folder.
-  - Auto commit is limited to the scope of the Doors Smores project folder.
-- Node Id creation is machine dependant, allowing multiple users to share a repository without creating conflicting Ids.
+- Can create and edit documents.
+  - Text content is entered in Markdown
+  - Images can be added from source files
+  - Images can be added using Mermaid syntax
+- Can view the HTML representation of the document (or portion of).
+- Can export the HTML representation for printing. 
+- Can use Git to track changes to the Doors Smores project 
+  - Changes are auto-commented and committed.
+  - Node Id creation is machine dependant, allowing multiple users to share a repository without creating conflicting Ids.
+- Tracing between documents
 
 ## Planned Features
-- Tracing between documents
+- Document cover page
+- Document table of contents
 - Tracing reports
 - Options to include tracing information in primary documents
+- Risk management
 - Document level diff
 - Auto sync with remote repository
 - Header/footer templates
 - User document styles
 - Additional document templates
-- Additional content types
-- TreeView icons for easier recognition
 
 ## Other planned
 - A better ReadMe
