@@ -2,8 +2,12 @@
 
 All notable changes to the "doors-smores" extension will be documented in this file.
 
+## 0.2.1
+- Filtered the type of tracing allowed by document type
+- Filtered the availability of the trace command by node type
+- Added 2 of 3 tracing arrows
 
-## 0.2
+## 0.2.0
 
 - Fixed error if Update-TreeView command was triggered before TreeView was instantiated.
 - Added mini SRS template, for when you just want something simple.
