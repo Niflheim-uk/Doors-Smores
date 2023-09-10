@@ -40,7 +40,11 @@ export class DoorsSmores {
     DoorsSmores.app = this;
   	this.statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
     DoorsSmores.refreshViews();
-
+    vscode.workspace.onDidChangeConfiguration(event => {
+      if(event.affectsConfiguration("repository.remoteRepositoryPath")) {
+        DoorsSmores.updateRemoteRepository();
+      }
+    });
     const registrations = [
       vscode.commands.registerCommand('doors-smores.RefreshViews', DoorsSmores.refreshViews),
       vscode.commands.registerCommand('doors-smores.ExportTraceReport', DoorsSmores.exportTraceReport),
@@ -149,6 +153,13 @@ export class DoorsSmores {
   }
   public static openProjectPath(path:string) {
     DoorsSmores.app.activeProject = new SmoresProject(path);
+    const remoteRepositoryPath = DoorsSmores.app.activeProject.data.repoRemote;
+    const settings = vscode.workspace.getConfiguration('repository');
+    if(remoteRepositoryPath) {
+      settings.update("remoteRepositoryPath", remoteRepositoryPath, true);
+    } else {
+      settings.update("remoteRepositoryPath", "", true);
+    }
     vscode.commands.executeCommand('setContext', 'doors-smores.projectOpen', true);
     VersionController.initialise();
     DoorsSmores.updateRecentProjects();
@@ -280,7 +291,19 @@ export class DoorsSmores {
       }
     }
   }
-
+  private static updateRemoteRepository() {
+    const project = DoorsSmores.getActiveProject();
+    if(project) {
+      const settings = vscode.workspace.getConfiguration('repository');
+      const remoteRepositoryPath:string|undefined = settings.get("remoteRepositoryPath");
+      if(remoteRepositoryPath === undefined || remoteRepositoryPath === "") {
+        project.data.repoRemote = undefined;
+      } else {
+        project.data.repoRemote = remoteRepositoryPath;
+      }
+      project.write();
+    }
+  }
   private static matchProjectData(project1:ProjectInfo, project2:ProjectInfo):boolean {
     if(project1.name !== project2.name) {return false;}
     if(project1.path !== project2.path) {return false;}

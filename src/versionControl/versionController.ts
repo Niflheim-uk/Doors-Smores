@@ -1,4 +1,4 @@
-import { pathspec, SimpleGitOptions, simpleGit, TagResult, TaskOptions } from 'simple-git';
+import { pathspec, SimpleGitOptions, simpleGit, TagResult, TaskOptions, RemoteWithRefs } from 'simple-git';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { DoorsSmores } from '../doorsSmores';
@@ -31,6 +31,7 @@ export class VersionController {
   private static readonly firstTag:string = "start";
   private static readonly firstTagMessage:string = "DO NOT REMOVE: Used for diff";
   private static readonly syncPeriod:number = (1000 * 60 * 5);
+  private static readonly remoteName:string = "smores-remote";
   public static isOpen() {
     return VersionController.open;
   }
@@ -55,17 +56,50 @@ export class VersionController {
   }
   public static async syncWithRemote() {
     clearTimeout(VersionController.syncTimer);
-    const branchName = await simpleGit(VersionController.gitOptions).revparse(['--abbrev-ref', 'HEAD']);
-    const remotes = await simpleGit(VersionController.gitOptions).getRemotes(true);
-    if(remotes.length > 0) {
-      const remoteName = remotes[0].name;
-      await simpleGit(VersionController.gitOptions)
-      .pull(remoteName)
-      .raw('push', '--set-upstream', remoteName, branchName)
-      .pushTags(remoteName);
-
+    // If a remote path has been defined
+    if(VersionController.getRemotePath()) {
+      const branchName = await simpleGit(VersionController.gitOptions).revparse(['--abbrev-ref', 'HEAD']);
+      const remotes = await simpleGit(VersionController.gitOptions).getRemotes(true);
+      if(VersionController.confirmRemoteExists(remotes, VersionController.remoteName)) {
+        await simpleGit(VersionController.gitOptions)
+        .pull(VersionController.remoteName)
+        .raw('pull', '--tags')
+        .raw('push', '--set-upstream', VersionController.remoteName, branchName)
+        .pushTags(VersionController.remoteName);
+      }
     }
     VersionController.syncTimer = setTimeout(VersionController.syncWithRemote, VersionController.syncPeriod);
+  }
+  private static getRemotePath():string|undefined {
+    const projectNode = DoorsSmores.getActiveProject();
+    if(projectNode === undefined || projectNode.data.repoRemote === undefined) {
+      return;
+    } else {
+      return projectNode.data.repoRemote;
+    }
+  }
+  private static confirmRemoteExists(currentRemotes:RemoteWithRefs[], expectedRemote:string) {
+    for (let i = 0; i < currentRemotes.length; i++) {
+      if(currentRemotes[i].name === expectedRemote) {
+        return true;
+      }      
+    }
+    return false;
+  }
+  public static async updateRemote() {
+    const remotePath = VersionController.getRemotePath();
+    if(remotePath === undefined) {
+      return;
+    }
+    const remotes = await simpleGit(VersionController.gitOptions).getRemotes(true);
+    if(VersionController.confirmRemoteExists(remotes, VersionController.remoteName)) {
+      await simpleGit(VersionController.gitOptions)
+      .removeRemote(VersionController.remoteName)
+      .addRemote(VersionController.remoteName, remotePath);
+    } else {
+      await simpleGit(VersionController.gitOptions)
+      .addRemote(VersionController.remoteName, remotePath);
+    }
   }
 
   public static async commitChanges(msg:string) {

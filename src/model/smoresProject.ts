@@ -15,6 +15,7 @@ export interface ProjectDataModel {
   gitInUse: boolean;
   repoRoot?: string;
   repoPathspec?: string;
+  repoRemote?: string;
   maxContributors: number;
   knownContributors: string[];
   uniqueIds: number[];

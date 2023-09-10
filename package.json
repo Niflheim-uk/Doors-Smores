@@ -64,6 +64,11 @@
             "type": "boolean",
             "default": true,
             "description": "If set, the revision history will only show major revisions and minor revisions since last major.\nIf not set, major and minor releases are treated equally in the revision history."
+          },
+          "repository.remoteRepositoryPath": {
+            "type": "string",
+            "default": "",
+            "description": "This setting is used to set the remote repository path for the current project. As such, it is automatically updated when a project is opened."
           }
         }
       }
