@@ -4,6 +4,11 @@ import * as schema from '../model/schema';
 import * as vscode from 'vscode';
 import { existsSync } from "fs";
 
+type TableParts = {
+  row1:string;
+  divider:string;
+  row2:string;
+};
 export async function getMdForDocument(node:DocumentNode):Promise<string> {
   return await getMdForDocumentNode(node, 0);
 }
@@ -63,7 +68,8 @@ function getMdForRequirementCategory(node:DocumentNode):string {
   if(rationale) {
     rationale = rationale.replace("\n",'<br/>');
   }
-  return `| | |    \n|-|-|    \n|__Requirement ${node.data.id}__|${text}|    \n|__Translation rationale__|${rationale}|    \n\n`;
+  const parts = getTableParts(`Requirement ${node.data.id}`,text,"Translation rationale",`${rationale}`);
+  return `${parts.row1}    \n${parts.divider}    \n${parts.row2}    \n\n`;
 }
 function getMdForConstraintCategory(node:DocumentNode):string {
   const text = node.data.text.replace("\n",'<br/>');
@@ -71,7 +77,8 @@ function getMdForConstraintCategory(node:DocumentNode):string {
   if(rationale) {
     rationale = rationale.replace("\n",'<br/>');
   }
-  return `| | |    \n|-|-|    \n|__Constraint ${node.data.id}__|${text}|    \n|__Translation rationale__|${rationale}|    \n\n`;
+  const parts = getTableParts(`Constraint ${node.data.id}`,text,"Translation rationale",`${rationale}`);
+  return `${parts.row1}    \n${parts.divider}    \n${parts.row2}    \n\n`;
 }
 function getMdForTestCategory(node:DocumentNode):string {
   const text = node.data.text.replace(/\n/g,'<br/>');
@@ -79,7 +86,8 @@ function getMdForTestCategory(node:DocumentNode):string {
   if(results) {
     results = results.replace(/\n/g,'<br/>');
   }
-  return `| | |    \n|-|-|    \n|__Test case ${node.data.id}__|${text}|    \n|__Expected results__|${results}|    \n\n`;
+  const parts = getTableParts(`Test case ${node.data.id}`,text,"Expected results",`${results}`);
+  return `${parts.row1}    \n${parts.divider}    \n${parts.row2}    \n\n`;
 }
 function getMdForMermaidImageCategory(node:DocumentNode):string {
   return `Mermaid ${node.data.id}:    \n\`\`\`\n${node.data.text}\n\`\`\`\n\n`;
@@ -94,4 +102,48 @@ async function getMdForImageCategory(node:DocumentNode):Promise<string> {
   } else {
     return `Image ${node.data.id}:    \n\`\`\`\nFile: ${node.data.text} (Not found)\n\`\`\`\n\n`;
   }
+}
+
+function getPadding(fullWidth:number, consumedWidth:number):string {
+  let padding = "";
+  for(let i=0; i<(fullWidth - consumedWidth); i++) {
+    padding = padding.concat(' ');
+  }
+  return padding;
+}
+function getDivider(col1Width:number, col2Width:number):string {
+  let divider = "|";
+  for(let i=0; i<col1Width; i++) {
+    divider = divider.concat("-");
+  }  
+  divider = divider.concat("|");
+  for(let i=0; i<col2Width; i++) {
+    divider = divider.concat("-");
+  }  
+  divider = divider.concat("|");
+  return divider;
+}
+function getTableParts(cell11:string,cell12:string,cell21:string,cell22:string):TableParts {
+  const cell11Width = cell11.length + 2 /*spaces*/ + 2 /*italics*/;
+  const cell12Width = cell12.length + 2 /*spaces*/;
+  const cell21Width = cell21.length + 2 /*spaces*/ + 2 /*italics*/ + 4 /*bold*/;
+  const cell22Width = cell22.length + 2 /*spaces*/ + 4 /*bold*/;
+  let col1Width = cell11Width;
+  if(col1Width < cell21Width) {
+    col1Width = cell21Width;
+  }
+  let col2Width = cell12Width;
+  if(col2Width < cell22Width) {
+    col2Width = cell22Width;
+  }
+  const c11 = ` _${cell11}_ ${getPadding(col1Width, cell11Width)}`;
+  const c12 = ` ${cell12} ${getPadding(col2Width, cell12Width)}`;
+  const c21 = ` ___${cell21}___ ${getPadding(col1Width, cell21Width)}`;
+  const c22 = ` __${cell22}__ ${getPadding(col2Width, cell22Width)}`;
+  const tableParts:TableParts = {
+    row1:`|${c11}|${c12}|`,
+    divider:getDivider(col1Width, col2Width),
+    row2:`|${c21}|${c22}|`
+  };
+  return tableParts;
 }
