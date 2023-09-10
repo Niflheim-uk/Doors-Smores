@@ -1,4 +1,4 @@
-import { DocumentNode } from "../../model/documentNode";
+import { DocumentNode } from "../model/documentNode";
 import { Converter } from "showdown";
 
 var _headerDepth:number = -1;

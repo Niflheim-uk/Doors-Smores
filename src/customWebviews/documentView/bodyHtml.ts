@@ -1,5 +1,5 @@
 import { DocumentNode } from '../../model/documentNode';
-import * as heading from './headingInnerHtml';
+import * as heading from '../headingInnerHtml';
 import * as schema from '../../model/schema';
 import { getEditHtmlForNodeType } from './textEditor';
 import * as markdown from '../markdownConversion';

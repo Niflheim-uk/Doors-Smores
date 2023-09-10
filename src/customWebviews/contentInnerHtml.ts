@@ -97,7 +97,7 @@ function getExpectedResultsRow(node:DocumentNode) {
   }
   return getTableRow("Expected<br/>Results", expectedResultsHtml);
 }
-function getTableRow(c1:string, c2:string) {
+export function getTableRow(c1:string, c2:string) {
   return `<tr><td class="tableSmall">${c1}</td><td>${c2}</td></tr>`;
 }
 
