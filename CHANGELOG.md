@@ -2,6 +2,19 @@
 
 All notable changes to the "doors-smores" extension will be documented in this file.
 
+### 0.5 patches (0.6 Coming Soon)
+- Releasing documents
+  - Documents may be issued as major or minor releases, with a summary of changes. 
+  - Revision numbers auto increment accordingly.
+  - A diff is provided of changes since the last issue to assist in generating the summary.
+  - A revision history page is included in exported documents.
+  - Document releases are tagged in the Git repository, or archived within the data directory if no repository is in use.
+- Switched to using wkhtmltopdf for final stage of document exports. This allows:
+  - Insertion of a cover page.
+  - Insertion of a history page, based on the known revision history.
+  - Auto-generation of a Table of Contents page.
+  - Insertion of header/footer html. NB: Groundwork for user-defined header/footers is in place.
+
 ## 0.5
 - Converted multi-line fields to use external files instead of JSON to allow easier diff/merge between versions.
 - When changes are made, all documents are auto-exported in Markdown format into the data directory prior to the commit to version control. This allows document level changes to be compared between revisions.

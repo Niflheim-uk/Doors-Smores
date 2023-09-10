@@ -42,16 +42,22 @@ Requirement analysis software doesn't have to be that complicated... right?
   - Trace report generation
   - Trace information may be included in primary documents
   - Missing traces may be highlighted within primary documents to aid review
+- Releasing documents
+  - Documents may be issued as major or minor releases, with a summary of changes. 
+  - Revision numbers auto increment accordingly.
+  - A diff is provided of changes since the last issue to assist in generating the summary.
+  - A revision history page is included in exported documents.
+  - Document releases are tagged in the Git repository, or archived within the data directory if no repository is in use.
 
 # Planned release schedule
 
 ### 0.6 
 ![y](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/complete_icon.png?raw=true) Document cover page \
 ![y](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/complete_icon.png?raw=true) Document table of contents \
-![n](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/incomplete_icon.png?raw=true) Revision history \
+![y](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/complete_icon.png?raw=true) Revision history \
 ![n](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/incomplete_icon.png?raw=true) All templates fleshed out \
 ![n](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/incomplete_icon.png?raw=true) Auto sync with remote repository to keep a team in sync \
-![n](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/incomplete_icon.png?raw=true) Release tagging \
+![y](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/complete_icon.png?raw=true) Release tagging \
 ![y](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/complete_icon.png?raw=true) Automatic document revision numbering
 
 ### 0.7
