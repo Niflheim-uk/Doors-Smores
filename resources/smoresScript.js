@@ -43,7 +43,7 @@ const arrowGap = 10;
 const arrowMargin = 50;
 function addUpstreamArrow() {
   const gridDiv = document.getElementsByClassName('tracingGrid')[0];
-  if(gridDiv) {
+  if(gridDiv && gridDiv.children[1].children[0]) {
     const upstreamRect = gridDiv.children[1].children[0].getBoundingClientRect();
     const targetRect = gridDiv.children[2].children[0].getBoundingClientRect();
     const divLeft = targetRect.right - arrowMargin;
@@ -56,7 +56,7 @@ function addUpstreamArrow() {
 }
 function addDownstreamArrow() {
   const gridDiv = document.getElementsByClassName('tracingGrid')[0];
-  if(gridDiv) {
+  if(gridDiv && gridDiv.children[5].children[0]) {
     const targetRect = gridDiv.children[2].children[0].getBoundingClientRect();
     const downstreamRect = gridDiv.children[5].children[0].getBoundingClientRect();
     const divLeft = targetRect.right - arrowMargin;

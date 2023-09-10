@@ -188,10 +188,10 @@ export class TraceView {
     return html;
   }
   private getTestTracingGrid(node:SmoresNode):string {
-    let html = "<div class='tracingGrid'>";
+    let html = "<div class='tracingGrid'><div></div><div></div>";
     html = html.concat('<div>', getTraceTargetHtml(node),'</div>');
     html = html.concat('<div>', getUpstreamTestTraceHtml(node),'</div>');
-    html = html.concat('</div>');
+    html = html.concat('<div></div><div></div></div>');
     return html;
   }
 }
