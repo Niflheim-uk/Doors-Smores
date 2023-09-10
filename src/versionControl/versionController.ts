@@ -31,7 +31,7 @@ export class VersionController {
   };
   private static readonly firstTag:string = "start";
   private static readonly firstTagMessage:string = "DO NOT REMOVE: Used for diff";
-  private static readonly syncPeriod:number = (1000 * 3 * 5);
+  private static readonly syncPeriod:number = (1000 * 60 * 5);
   private static readonly remoteName:string = "smores-remote";
   public static isOpen() {
     return VersionController.open;
@@ -65,7 +65,7 @@ export class VersionController {
       if(VersionController.confirmRemoteExists(remotes, VersionController.remoteName)) {
         StatusBar.updateRemoteUse(true);
         await simpleGit(VersionController.gitOptions)
-        .pull(VersionController.remoteName).then(async (result:PullResult)=>{
+        .pull(VersionController.remoteName, branchName).then(async (result:PullResult)=>{
           console.log(result);
           if(result.summary.changes || result.summary.deletions || result.summary.deletions) {
             DoorsSmores.refreshViews();
