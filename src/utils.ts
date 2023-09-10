@@ -27,7 +27,24 @@ export function insertHtmlClass(html:string, className:string) {
     if(Array.isArray(match2)) {
       html = `${match2[1]} class="${className}"${match2[2]}`;
     } else {
-      console.log('failed to match html');
+      html = `<span class=${className}>${html}</span>`;
+    }
+  }
+  return html;
+}
+export function setWebviewSection(html:string, sectionId:string):string {
+  html = html.replace("\n",'');
+  const pattern1 = `(.*)data-vscode-context='{"webviewSection": "[^"]+"(.*)`;
+  const pattern2 = `(<[^ >])(.*)`;
+  const match1 = html.match(pattern1);
+  if(Array.isArray(match1)) {
+    html = `${match1[1]}data-vscode-context='{"webviewSection": "${sectionId}"${match1[2]}`;
+  } else {
+    const match2 = html.match(pattern2);
+    if(Array.isArray(match2)) {
+      html = `${match2[1]} data-vscode-context='{"webviewSection": "${sectionId}"} ${match2[2]}`;
+    } else {
+      console.log(`Failed insert webviewSection. No match found: ${html}`);
     }
   }
   return html;

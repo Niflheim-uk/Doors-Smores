@@ -2,31 +2,47 @@ import * as vscode from 'vscode';
 import {NodeDataModel} from '../model/smoresDataSchema';
 import { Converter } from 'showdown';
 import { SmoresNode } from '../model/smoresNode';
-import { insertHtmlClass } from '../utils';
+import { insertHtmlClass, setWebviewSection} from '../utils';
 
-var _imagesUri:vscode.Uri;
-export function setImagesUri(imagesUri:vscode.Uri) {
-  _imagesUri = imagesUri;
+function getTableTextHtml(mdText:string):string {
+  const classMap = {
+    p: 'tableText',
+    ul: 'tableText',
+    ol: 'tableText',
+    span: 'tableText'
+  };
+  const tableTextInserter = Object.keys(classMap)
+    .map(key => ({
+      type: 'output',
+      regex: new RegExp(`<${key}(.*)>`, 'g'),
+      //@ts-ignore
+      replace: `<${key} class="${classMap[key]}" $1>`
+    }));
+
+  mdText=`<span>${mdText}</span>`;
+  const converter = new Converter({
+    extensions: [...tableTextInserter]
+  });
+  return converter.makeHtml(mdText);
 }
+
 export function getInnerHtmlForRequirement(node:SmoresNode) {
   const data:NodeDataModel = node.data;
-  const converter = new Converter();
-  let requirementHtml = converter.makeHtml(data.text);
-  requirementHtml = insertHtmlClass(requirementHtml, "tableText");
-  let translationRationaleHtml = "-";
+  const requirementHtml = getTableTextHtml(data.text);
+  let tr = "-";
   if(data.requirementData) {
-    translationRationaleHtml = converter.makeHtml(data.requirementData.translationRationale);
+    tr = data.requirementData.translationRationale;
   }
-  translationRationaleHtml = insertHtmlClass(translationRationaleHtml, "tableText");
+  const translationRationaleHtml = getTableTextHtml(tr);
   return `
   <table class="requirements">
     <tbody>
       <tr>
-        <td class="tableSmall tableText">Id: ${node.data.id}</td>
+        <td class="tableSmall">Id: ${node.data.id}</td>
         <td>${requirementHtml}</td>
       </tr>
       <tr>
-        <td class="tableSmall tableText">Translation<br/>Rationale</td>
+        <td class="tableSmall">Translation<br/>Rationale</td>
         <td>${translationRationaleHtml}</td>
       </tr>
     </tbody>

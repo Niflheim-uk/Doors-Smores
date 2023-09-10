@@ -6,4 +6,8 @@
   --tooltip-background:var(--vscode-editor-selectionBackground);
   --pageBreak-foreground:var(--vscode-editorWarning-foreground);
   --pageBreak-background:var(--vscode-editor-background);
+  --helpButton-foreground:var(--vscode-symbolIcon-classForeground);
+  --helpButton-background:var(--vscode-editor-selectionBackground);
+  --helpText-foreground:var(--vscode-editor-foreground);
+  --helpText-background:var(--vscode-editor-selectionBackground);
 }

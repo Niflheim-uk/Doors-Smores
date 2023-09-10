@@ -3,7 +3,7 @@
   position: relative;
   outline: 0;
   border: 0;
-  text-align: center;
+  text-align: left;
   height: 1.5em;
   opacity: .5;
 }
@@ -12,13 +12,14 @@
   position: absolute;
   left: 0;
   top: 50%;
-  width: 100%;
+  width: 16cm;
   height: 1px;
   background:var(--pageBreak-foreground);
 }
 .hr-text::after {
   content: attr(data-content);
   position: relative;
+  left:7cm;
   display: inline-block;
   color:var(--pageBreak-foreground);
   background: var(--pageBreak-background);

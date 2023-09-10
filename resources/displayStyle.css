@@ -1,5 +1,6 @@
 /* Heading number scheme */
 body {
+  width:21cm;
   counter-reset: heading1;
   color: var(--webview-foreground);
   background: var(--webview-background)
@@ -43,15 +44,24 @@ div.section {
 /* Fonts */
 
 /* Normal */
-body, p, h1, h2, h3, h4, code, table, td, th{
+body /*, p, h1, h2, h3, h4, code, table, td, th*/{
   font-family: Arial;
   font-size: 10pt;
   position: relative;
+}
+body {
+  margin-top:  4cm;
+  margin-left: 2.5cm;
+  margin-right:2.5cm;
+  margin-bottom: 2.5cm;
+  padding: 0;
+}
+p, h1, h2, h3, h4, code, table, td, th{
   margin: 0;
   padding: 0;
   margin-bottom: 12pt;
 }
-.indented {
+  .indented {
   margin-left: 1.5cm;
 }
 h1 {
@@ -79,14 +89,18 @@ code {
 
 /* Table formatting */
 table {
+  position:relative;
   border-collapse: collapse;
   table-layout: fixed;
-  width: 100%;
+  left: 0cm;
+  width: 14.5cm; /* 21 - (2.5 left, 2.5 right, 1.5 indent) */
 }
 table, td, th {
   border: 1px solid;
   padding-left: 0.2cm;
   padding-right: 0.2cm;
+  margin-top: 3pt;
+  margin-bottom: 3pt;
 }
 
 table.heading, td.heading {
@@ -101,7 +115,7 @@ table.requirements {
   margin-left: 1.5cm;
 }
 table.requirements tr>td:first-child {
-  width: 20%;
+  width: 1.5cm;
 }
 .noCellWall {
   border: none;

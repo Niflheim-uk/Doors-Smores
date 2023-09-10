@@ -90,8 +90,7 @@ export class NodeViewer {
     switch (message.command) {
       case 'submit':
         if(this._nodeToEdit) {
-          this._nodeToEdit.data.text = message.newValue;
-          this._nodeToEdit.write();
+          this._nodeToEdit.setNewData(message.submitData);
           this._nodeToEdit = undefined;
           vscode.commands.executeCommand('doors-smores.Update-TreeView');
         }

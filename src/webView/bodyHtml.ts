@@ -1,10 +1,10 @@
-import * as vscode from 'vscode';
 import { SmoresNode } from '../model/smoresNode';
 import { getInnerHtmlForImage } from './imageInnerHtml';
 import { getInnerHtmlForRequirement } from './requirementInnerHtml';
 import { getHeadingHtml } from './headingInnerHtml';
-import { getMarkdownParagraphs, insertHtmlClass } from '../utils';
-import {Converter} from "showdown";
+import { getMarkdownParagraphs, insertHtmlClass, setWebviewSection } from '../utils';
+import { getEditHtmlForNodeType } from './textEditor';
+import { Converter } from "showdown";
 
 
 function getViewDivHtml(node:SmoresNode, innerHtml:string) {
@@ -16,39 +16,12 @@ function getViewDivHtml(node:SmoresNode, innerHtml:string) {
     </div>`;
   return outerHtml;
 }
-function getEditDivHtml(nodeId:number, content:string, helpText:string) {
-  const outerHtml = `<div class="editContainer">
-    <textarea id='textarea-${nodeId}' class="editBox"
-      data-vscode-context='{"webviewSection": "textarea-${nodeId}", 
-    "preventDefaultContextMenuItems": false}'>${content}</textarea>
-    <div class="editHelp">${helpText}</div>
-  </div>
-  <button class="editOk" onclick="onSubmit('textarea-${nodeId}')">Submit</button>
-  <button class="editCancel" onclick="onCancel()">Cancel</button>`;
-  return outerHtml;
-}
 
 function getHtmlForNodeType(node:SmoresNode, editNode?:SmoresNode):string {
   if(node.data.id === editNode?.data.id) {
     return getEditHtmlForNodeType(node);
   } else {
     return getViewHtmlForNodeType(node);
-  }
-}
-function getEditHtmlForNodeType(node:SmoresNode):string {
-  let helpText:string = "some helpful instructions";
-  switch(node.data.category) {
-    case "document":
-    case "heading":
-    case "image":
-      return "<H1>ERROR - Inconceivable!</H1>";
-      break;
-    case "functionalRequirement":
-      return getEditDivHtml(node.data.id, node.data.text, helpText);
-    case "comment":
-      return getEditDivHtml(node.data.id, node.data.text, helpText);
-    default:
-      return "<H1>ERROR - Unknown Category</H1>";
   }
 }
 function getViewHtmlForNodeType(node:SmoresNode):string {
@@ -74,6 +47,7 @@ function getViewHtmlForNodeType(node:SmoresNode):string {
       const comment = getMarkdownParagraphs(node.data.text);
       innerHtml =  converter.makeHtml(comment);
       innerHtml = insertHtmlClass(innerHtml, "indented");
+      innerHtml = setWebviewSection(innerHtml, `text-${node.data.id}`);
       return getViewDivHtml(node, innerHtml);
     case "image":
       innerHtml = getInnerHtmlForImage(node);
