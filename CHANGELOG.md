@@ -2,6 +2,10 @@
 
 All notable changes to the "doors-smores" extension will be documented in this file.
 
+## 0.2.3
+- Bug fixes for tracing 'Empty' documents
+- Icon changes
+
 ## 0.2.2
 - 3 of 3 tracing lines/arrows
 
