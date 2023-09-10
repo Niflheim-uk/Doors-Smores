@@ -104,6 +104,7 @@ export class DocumentView {
       documentNode = documentNode.getParent();
     }
     var filePath:string;
+    var content:string;
     const defaultFilename = `${documentNode!.data.text}.html`;
     const projectRoot = DoorsSmores.getProjectDirectory();
     if(userAction) {
@@ -112,13 +113,14 @@ export class DocumentView {
         return;
       }
       filePath = path.join(projectRoot, filename);
-    } else {
+      const panel = DocumentView.createPanel('smoresNodeView', 'Exporting');
+      content = DocumentView.getPageHtml(panel.webview, documentNode!, true);
+      vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+      } else {
       filePath = path.join(projectRoot, defaultFilename);
+      content = DocumentView.getMdDocument(documentNode!);
     }
-    const panel = DocumentView.createPanel('smoresNodeView', 'Exporting');
-    const html = DocumentView.getPageHtml(panel.webview, documentNode!, true);
-    vscode.commands.executeCommand('workbench.action.closeActiveEditor');
-    fs.writeFileSync(filePath,html);
+    fs.writeFileSync(filePath, content);
   }
   private static createPanel(viewId:string, title:string) {
     const projUri = vscode.Uri.file(DoorsSmores.getProjectDirectory());    
@@ -234,4 +236,25 @@ export class DocumentView {
       <body data-vscode-context='{"preventDefaultContextMenuItems": true}'>${bodyHtml}${mermaidBlock}${scriptBlock}</body>    
     </html>`;  
   }
+  public static getMdDocument(node:DocumentNode):string {
+    let mdString = "";
+    mdString = mdString.concat(this.getMdForDocumentNode(node));
+    if(node.data.children.length > 0) {
+      for(let i=0; i<node.data.children.length; i++) {
+        const child = DocumentNode.createFromId(node.data.children[i]);
+        if(child) {
+          mdString = mdString.concat(DocumentView.getMdDocument(child));
+        }
+      }
+    }
+    return mdString;
+  }
+  public static getMdForDocumentNode(node:DocumentNode):string{
+    let mdString = "";
+    if(schema.isFuncReqCategory(node.data.category)) {
+
+    }
+    return mdString;
+  }
+
 }
