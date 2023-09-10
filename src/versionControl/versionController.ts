@@ -1,4 +1,4 @@
-import { pathspec, SimpleGitOptions, simpleGit } from 'simple-git';
+import { pathspec, SimpleGitOptions, simpleGit, TagResult } from 'simple-git';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { DoorsSmores } from '../doorsSmores';
@@ -120,20 +120,28 @@ export class VersionController {
   public static async getUserName() {
     return simpleGit(_gitOptions).raw('config', 'user.name').catch(err=>{return "Unknown";});
   }
-  public static getLastTag(document:SmoresDocument, traceReport:boolean) {
+  public static async getLastTag(document:SmoresDocument, traceReport:boolean) {
     const lastRev = document.getLatestRevision(traceReport);
     var tr = "";
     if(traceReport) {
       tr="TR_";
     }
-    return `${tr}${document.data.id}_${document.data.text}_revision_${lastRev.getIssueString()}`;
+    const tag = `${tr}${document.data.id}_${document.data.text}_revision_${lastRev.getIssueString()}`;
+    if(_open) {
+      const tags:TagResult = await simpleGit(_gitOptions).tags();
+      const index = tags.all.findIndex((t)=>{t===tag;});
+      if(index === -1) {
+        return "start";
+      }
+    }
+    return tag;
   }
   public static getLastTagDetail(document:SmoresDocument, traceReport:boolean) {
     const lastRev = document.getLatestRevision(traceReport);
     return lastRev.detail;
   }
   public static async issueDocument(document:SmoresDocument, traceReport:boolean) {
-    const issueTag = VersionController.getLastTag(document, traceReport);
+    const issueTag = await VersionController.getLastTag(document, traceReport);
     if(!_open) {
       await document.completeDuplication(issueTag);
     } else {
@@ -142,7 +150,7 @@ export class VersionController {
     }
   }
   public static async getDiffRecords(document:SmoresDocument, traceReport:boolean) {
-    const tag = VersionController.getLastTag(document, traceReport);
+    const tag = await VersionController.getLastTag(document, traceReport);
     const [numstat, summary] = await VersionController.getIssueChanges(tag);
     var records:DiffRecord[] = [];
     if(Array.isArray(numstat) && Array.isArray(summary)) {
@@ -301,7 +309,8 @@ function startRepoUse():void {
     _gitOptions.baseDir = gitRoot;
     _pathSpec = path.relative(gitRoot, projDir);
     simpleGit(_gitOptions).add(`${_pathSpec}/*`)
-    .commit('Initial commit of Doors Smores project').then(()=>{
+    .commit('Initial commit of Doors Smores project')
+    .addAnnotatedTag("start","DO NOT REMOVE: Used for diff").then(()=>{
       _open = true;
       console.log("Started using existing repo");
       updateProjectNodeWithGitUse();
