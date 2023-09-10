@@ -5,6 +5,8 @@ import { DocumentNode, DocumentNodeData } from "./documentNode";
 import { documentCategory } from "./schema";
 import { VersionController } from "../versionControl/versionController";
 import { join } from "path";
+import { getMdForDocument } from "../customWebviews/markdownExport";
+import { writeFileSync } from "fs";
 
 export interface ProjectDataModel {
   idBase: number;
@@ -29,8 +31,7 @@ export class SmoresProject extends SmoresFile {
     if(this.data.documentIds && this.data.documentIds.length > 0) {
       const documentIds = this.data.documentIds;
       for (let index = 0; index < documentIds.length; index++) {
-        const filepath = DoorsSmores.getNodeFilepath(documentIds[index]);
-        const document:DocumentNode = new DocumentNode(filepath);
+        const document:DocumentNode = DocumentNode.createFromId(documentIds[index]);
         documents.push(document);
       }
     }
@@ -49,8 +50,7 @@ export class SmoresProject extends SmoresFile {
   }
   newDocument(documentName:string, documentType:string) {
     const documentId = this.getUniqueId();
-    const filepath = DoorsSmores.getNodeFilepath(documentId);
-    const newDocument:DocumentNode = new DocumentNode(filepath);
+    const newDocument:DocumentNode = DocumentNode.createFromId(documentId);
     const newDocumentData:DocumentNodeData = {
       id:documentId,
       category:documentCategory,
@@ -70,8 +70,7 @@ export class SmoresProject extends SmoresFile {
   deleteDocument(documentId:number) {
     let change = false;
     if(SmoresFile.exists(documentId)) {
-      const filepath = DoorsSmores.getNodeFilepath(documentId);
-      const document:DocumentNode = new DocumentNode(filepath);
+      const document:DocumentNode = DocumentNode.createFromId(documentId);
       document.delete();
       change = true;
     }
@@ -85,8 +84,21 @@ export class SmoresProject extends SmoresFile {
       VersionController.commitChanges(`Document ${documentId} and child nodes deleted`);
     }
   }
-
-
+  exportAll() {
+    if(this.data.documentIds && this.data.documentIds.length > 0) {
+      const documentIds = this.data.documentIds;
+      for(let i=0; i<documentIds.length; i++) {
+        const document:DocumentNode = DocumentNode.createFromId(documentIds[i]);
+        this.exportDocument(document);
+      }
+    }
+  }
+  private async exportDocument(document:DocumentNode) {
+    const defaultFilename = `${document.data.text}.Md`;
+    const filePath = join(this.getDirPath(), defaultFilename);
+    const content = await getMdForDocument(document!);
+    writeFileSync(filePath, content);
+  }
   private async createDataDir() {
     const dataPath = join(this.getDirPath(), SmoresFile.dataSubDirName);
     const dataUri = vscode.Uri.file(dataPath);

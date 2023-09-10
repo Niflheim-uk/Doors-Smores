@@ -95,7 +95,7 @@ export class DocumentView {
       }
     }
   }
-  public static async exportDocument(node:DocumentNode|undefined, userAction:boolean=true) {
+  public static async exportDocument(node:DocumentNode|undefined) {
     if(node=== undefined) {
       return;
     }
@@ -107,19 +107,14 @@ export class DocumentView {
     var content:string;
     const defaultFilename = `${documentNode!.data.text}.html`;
     const projectRoot = DoorsSmores.getProjectDirectory();
-    if(userAction) {
-      const filename = await vscode.window.showInputBox({value:defaultFilename});
-      if(filename === undefined) {
-        return;
-      }
-      filePath = path.join(projectRoot, filename);
-      const panel = DocumentView.createPanel('smoresNodeView', 'Exporting');
-      content = DocumentView.getPageHtml(panel.webview, documentNode!, true);
-      vscode.commands.executeCommand('workbench.action.closeActiveEditor');
-      } else {
-      filePath = path.join(projectRoot, defaultFilename);
-      content = DocumentView.getMdDocument(documentNode!);
+    const filename = await vscode.window.showInputBox({value:defaultFilename});
+    if(filename === undefined) {
+      return;
     }
+    filePath = path.join(projectRoot, filename);
+    const panel = DocumentView.createPanel('smoresNodeView', 'Exporting');
+    content = DocumentView.getPageHtml(panel.webview, documentNode!, true);
+    vscode.commands.executeCommand('workbench.action.closeActiveEditor');
     fs.writeFileSync(filePath, content);
   }
   private static createPanel(viewId:string, title:string) {
@@ -235,26 +230,6 @@ export class DocumentView {
       </head>
       <body data-vscode-context='{"preventDefaultContextMenuItems": true}'>${bodyHtml}${mermaidBlock}${scriptBlock}</body>    
     </html>`;  
-  }
-  public static getMdDocument(node:DocumentNode):string {
-    let mdString = "";
-    mdString = mdString.concat(this.getMdForDocumentNode(node));
-    if(node.data.children.length > 0) {
-      for(let i=0; i<node.data.children.length; i++) {
-        const child = DocumentNode.createFromId(node.data.children[i]);
-        if(child) {
-          mdString = mdString.concat(DocumentView.getMdDocument(child));
-        }
-      }
-    }
-    return mdString;
-  }
-  public static getMdForDocumentNode(node:DocumentNode):string{
-    let mdString = "";
-    if(schema.isFuncReqCategory(node.data.category)) {
-
-    }
-    return mdString;
   }
 
 }

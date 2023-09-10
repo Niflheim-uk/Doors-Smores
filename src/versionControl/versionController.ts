@@ -36,8 +36,10 @@ export class VersionController {
   }
 
   public static async commitChanges(msg:string) {
-    const FixMe = '';
-//    DoorsSmores.exportAll();
+    const project = DoorsSmores.getActiveProject();
+    if(project) {
+      project.exportAll();
+    }
     console.log(msg);
     if(!_open) {
       return; 

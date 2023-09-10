@@ -44,7 +44,7 @@ function getViewHtmlForNodeType(node:DocumentNode, exporting:boolean):string {
   let insertPageBreak = false;
   switch(node.data.category) {
   case schema.documentCategory:
-    return innerHtml;
+    return `<h1>WIP:Front Page</h1>${pageBreak}<h1>WIP:TOC</h1>${pageBreak}`;
   case schema.headingCategory:
     [innerHtml, insertPageBreak] = heading.getHeadingHtml(node);
     if(insertPageBreak) {

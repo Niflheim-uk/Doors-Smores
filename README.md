@@ -23,21 +23,21 @@ Requirement analysis software doesn't have to be that complicated... right?
 
 # Planned release schedule
 ### 0.5
-- [ ] Markdown export on export all
-- [ ] Auto export all on change to support document level diff
-- [ ] Tracing reports
-- [x] Options to include tracing information in primary documents
-- [ ] Some instructions
-- [x] Convert multi-line fields to external file references (easier for diff/merge)
+![y](https://www.iconfinder.com/icons/1930264/download/png/16) Markdown export on export all \
+![y](https://www.iconfinder.com/icons/1930264/download/png/16) Auto export all on change to support document level diff \
+![n](https://www.iconfinder.com/icons/1891023/download/png/16) Tracing reports \
+![y](https://www.iconfinder.com/icons/1930264/download/png/16) Options to include tracing information in primary documents \
+![n](https://www.iconfinder.com/icons/1891023/download/png/16) Some instructions \
+![y](https://www.iconfinder.com/icons/1930264/download/png/16) Convert multi-line fields to external file references (easier for diff/merge)
 
 ### 0.6 
-- [ ] Document cover page
-- [ ] Document table of contents
-- [ ] All templates
+![n](https://www.iconfinder.com/icons/1891023/download/png/16) Document cover page \
+![n](https://www.iconfinder.com/icons/1891023/download/png/16) Document table of contents \
+![n](https://www.iconfinder.com/icons/1891023/download/png/16) All templates
 
 ### Future
 - Risk management
-- Document level diff ()
+- Document level diff
 - Auto sync with remote repository
 - Header/footer templates
 - User document styles
