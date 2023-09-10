@@ -72,7 +72,7 @@ function addTestArrow() {
     const divLeft = targetRect.right + arrowGap;
     const divTop = targetRect.top + arrowMargin;
     const width = (testRect.left - divLeft) - (2 * arrowGap);
-    const height = 1;
+    const height = 0;
     const arrow = getArrowSVG(0, 0,  width, height,'#55ba7f');
     addArrow(arrow, divLeft, divTop);
   }
@@ -90,23 +90,25 @@ function addArrow(arrow, divLeft, divTop) {
 }
 function getArrowSVG(x1, y1, x2, y2, color) {
   const width = Math.abs(x2 - x1);
-  const height = Math.abs(y2 - y1);
+  var height = Math.abs(y2 - y1);
+  if(height === 0) {
+    height = 1;
+  }
   const arrowLength = 15;
-  let x3 = x2 - arrowLength;
-  if(x2 < x1) {
-    x3 = x2 + arrowLength;
-  }
-  let y3 = y2 - arrowLength;
-  if(y2 < y1) {
-    y3 = y2 + arrowLength;
-  }
+
+  const angle = Math.atan2(y2-y1,x2-x1);
+  const deg45 = Math.PI / 4;
+  const arrowx1 = x2 - (Math.cos(angle + deg45) * arrowLength);
+  const arrowy1 = y2 - (Math.sin(angle + deg45) * arrowLength);
+  const arrowx2 = x2 - (Math.cos(angle - deg45) * arrowLength);
+  const arrowy2 = y2 - (Math.sin(angle - deg45) * arrowLength);
 
 //  <div style='width: ${width}px; height: ${height}px; border: none;'>
   return `
-  <svg style='width: ${width}px; height: ${height}px;'>
+  <svg style='width: ${width}px; height: ${height}px; overflow:visible'>
     <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" style="stroke:${color};stroke-width:2"/>
-    <line x1="${x2}" y1="${y2}" x2="${x3}" y2="${y2}" style="stroke:${color};stroke-width:2"/>
-    <line x1="${x2}" y1="${y2}" x2="${x2}" y2="${y3}" style="stroke:${color};stroke-width:2"/>
+    <line x1="${x2}" y1="${y2}" x2="${arrowx1}" y2="${arrowy1}" style="stroke:${color};stroke-width:2"/>
+    <line x1="${x2}" y1="${y2}" x2="${arrowx2}" y2="${arrowy2}" style="stroke:${color};stroke-width:2"/>
   </svg>`;
 }
 function traceViewOnClick(event) {

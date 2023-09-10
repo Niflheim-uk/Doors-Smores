@@ -36,6 +36,7 @@ div.tracingOuter {
 }
 div.tracingArrow {
   position: absolute;
+  overflow: visible;
 }
 div.tracingGrid {
   display: grid;

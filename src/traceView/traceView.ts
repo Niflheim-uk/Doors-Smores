@@ -138,7 +138,6 @@ export class TraceView {
       webview.asWebviewUri(vscode.Uri.file(scriptPath)).toString()
     ];
     const bodyHtml = this.getBodyHtml(node);
-    console.log(bodyHtml);
     utils.clearNonce();
     return `
     <!DOCTYPE html>
