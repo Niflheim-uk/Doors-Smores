@@ -1,8 +1,8 @@
 import * as vscode from "vscode";
-import { DocumentNode } from "../model/documentNode";
-import * as schema from '../model/schema';
-import { getNodeIcon } from "../utils/gui";
-import { VersionController } from "../versionControl/versionController";
+import { DocumentNode } from "../../model/documentNode";
+import * as schema from '../../model/schema';
+import { getNodeIcon } from "../treeIcons";
+import { VersionController } from "../../versionControl/versionController";
 
 export class DocumentTreeItem extends vscode.TreeItem {
   // - category

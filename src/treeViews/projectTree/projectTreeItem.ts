@@ -1,8 +1,8 @@
 import * as vscode from "vscode";
-import { DoorsSmores, ProjectInfo } from "../doorsSmores";
-import { DocumentNode } from "../model/documentNode";
-import { SmoresProject } from "../model/smoresProject";
-import { getNodeIcon } from "../utils/gui";
+import { DoorsSmores, ProjectInfo } from "../../doorsSmores";
+import { DocumentNode } from "../../model/documentNode";
+import { SmoresProject } from "../../model/smoresProject";
+import { getNodeIcon } from "../treeIcons";
 
 export class ProjectTreeItem extends vscode.TreeItem {
   private isActive:boolean;

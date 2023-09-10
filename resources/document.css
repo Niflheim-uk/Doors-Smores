@@ -11,8 +11,10 @@
 /* Tooltip text */
 .tooltip .toolTipText {
   visibility: hidden;
-  color: var(--tooltip-foreground);
-  background-color: var(--tooltip-background);
+  color: var(--vscode-input-foreground);
+  background-color: var(--vscode-input-background);
+  border: solid;
+  border-color: var(--vscode-input-border);
   text-align: center;
   padding: 5px 5px;
   border-radius: 6px;
@@ -27,18 +29,24 @@
 .helpText {
   position: absolute;
   visibility: hidden;
-  color: var(--helpText-foreground);
-  background-color: var(--helpText-background);
+  color: var(--foreground);
+  background-color: var(--vscode-editor-hoverHighlightBackground);
   text-align: center;
   padding: 5px 5px;
   border-radius: 6px;
   bottom: 110%; 
   width:16cm;
 }
-/* Show the tooltip text when you mouse over the tooltip container */
-.tooltip:hover .toolTipText {
-  visibility: visible;
-  transition-delay:2s;
+@media screen {
+  /* Show the tooltip text when you mouse over the tooltip container */
+  .tooltip:hover .toolTipText {
+    visibility: visible;
+    transition-delay:2s;
+  }
+  .tooltip:hover .viewDiv {
+    background-color: var(--vscode-editor-hoverHighlightBackground);
+    transition-delay:2s;
+  }
 }
 .editDiv {
   position:relative;

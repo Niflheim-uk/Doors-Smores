@@ -1,8 +1,8 @@
 import * as vscode from "vscode";
 import { DocumentTreeItem } from "./documentTreeItem";
-import { DoorsSmores } from "../doorsSmores";
-import { DocumentView } from "../customWebviews/documentView/documentView";
-import { TraceView } from "../customWebviews/traceView/traceView";
+import { DoorsSmores } from "../../doorsSmores";
+import { DocumentView } from "../../customWebviews/documentView/documentView";
+import { TraceView } from "../../customWebviews/traceView/traceView";
 
 export class DocumentTreeProvider implements vscode.TreeDataProvider<DocumentTreeItem> {
   private _onDidChangeTreeData: vscode.EventEmitter<DocumentTreeItem | undefined> =

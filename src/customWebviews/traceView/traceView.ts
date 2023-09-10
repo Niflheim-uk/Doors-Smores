@@ -8,11 +8,11 @@ import {
   getTraceTargetHtml
  } from "./traceHtml";
 import { clearNonce, getNonce } from "../getNonce";
-import { getScriptPath, getTracingStylePaths } from "../../utils/gui";
+import { getScriptPath, getTracingStylePaths } from "../resources";
 import { getTraceSelection } from "./traceSelection";
 import { DocumentNode } from "../../model/documentNode";
 import { DoorsSmores } from "../../doorsSmores";
-import { DocumentTreeItem } from "../../documentTree/documentTreeItem";
+import { DocumentTreeItem } from "../../treeViews/documentTree/documentTreeItem";
 
 export class TraceView {
   public static currentPanel: TraceView | undefined;
@@ -135,7 +135,6 @@ export class TraceView {
       this._panel.webview.asWebviewUri(vscode.Uri.file(stylePaths[1])).toString(),
       this._panel.webview.asWebviewUri(vscode.Uri.file(stylePaths[2])).toString(),
       this._panel.webview.asWebviewUri(vscode.Uri.file(stylePaths[3])).toString(),
-      this._panel.webview.asWebviewUri(vscode.Uri.file(stylePaths[4])).toString(),
       this._panel.webview.asWebviewUri(vscode.Uri.file(scriptPath)).toString()
     ];
     const bodyHtml = this.getBodyHtml(this._viewNode);
@@ -150,11 +149,10 @@ export class TraceView {
         <link nonce="${nonce}" href="${webUri[1]}" rel="stylesheet"/>
         <link nonce="${nonce}" href="${webUri[2]}" rel="stylesheet"/>
         <link nonce="${nonce}" href="${webUri[3]}" rel="stylesheet"/>
-        <link nonce="${nonce}" href="${webUri[4]}" rel="stylesheet"/>
         <title>Tracing Id: ${this._viewNode.data.id}</title>
       </head>
       <body class='tracing'><div class='tracingOuter'>${bodyHtml}</div>
-        <script nonce="${nonce}" src="${webUri[5]}"></script>
+        <script nonce="${nonce}" src="${webUri[4]}"></script>
       </body>    
     </html>`;  
   }

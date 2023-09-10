@@ -21,7 +21,7 @@ function getButtons(nodeId:number) {
   const dataAttribute = `data-node-id='${nodeId}'`;
   return `
   <button class="editSubmit" ${dataAttribute}>Submit</button>
-  <button class="helpButton" ${dataAttribute}>(?)</button>
+  <button class="helpButton" ${dataAttribute}>Help</button>
   <button class="editCancel">Cancel</button>
   `;
 }

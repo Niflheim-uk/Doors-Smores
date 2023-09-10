@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as schema from '../model/schema';
-import { DocumentTreeItem } from "../documentTree/documentTreeItem";
+import { DocumentTreeItem } from "../treeViews/documentTree/documentTreeItem";
 import { DocumentNode } from './documentNode';
 
 function getNodeFromContext(context:any):DocumentNode|undefined {

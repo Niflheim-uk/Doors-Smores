@@ -1,7 +1,7 @@
 
 import * as vscode from 'vscode';
 import { ProjectTreeItem } from './projectTreeItem';
-import { DoorsSmores } from '../doorsSmores';
+import { DoorsSmores } from '../../doorsSmores';
 
 
 export class ProjectTreeProvider implements vscode.TreeDataProvider<ProjectTreeItem> {

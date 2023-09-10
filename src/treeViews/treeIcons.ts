@@ -1,8 +1,6 @@
 import * as vscode from 'vscode';
 import * as schema from "../model/schema";
 import { DocumentNode } from '../model/documentNode';
-import { DoorsSmores } from '../doorsSmores';
-import { join } from 'path';
 
 const ursLevelColour = 'terminal.ansiGreen';
 const srsLevelColour = 'debugConsole.errorForeground';
@@ -100,39 +98,4 @@ export function getNodeIcon(node:DocumentNode):vscode.ThemeIcon {
     iconColour = new vscode.ThemeColor('errorForeground');
     return new vscode.ThemeIcon('question', iconColour);
   }
-}
-export function getDocumentStylePaths():string[] {
-  const extensionPath = DoorsSmores.getExtensionPath();
-  // Local path to css styles
-  const stylesPaths:string[] = [
-    join(extensionPath, 'resources', 'theme.css'),
-    join(extensionPath, 'resources', 'document.css'),
-    join(extensionPath, 'resources', 'displayStyle.css'),
-    join(extensionPath, 'resources', 'pagination.css'),
-  ];
-  return stylesPaths;
-}
-export function getTracingStylePaths():string[] {
-  const extensionPath = DoorsSmores.getExtensionPath();
-  const stylesPaths:string[] = [
-    join(extensionPath, 'resources', 'theme.css'),
-    join(extensionPath, 'resources', 'tracing.css'),
-    join(extensionPath, 'resources', 'displayStyle.css'),
-    join(extensionPath, 'resources', 'pagination.css'),
-    join(extensionPath, 'resources', 'vendor', 'vscode', 'codicon.css')
-  ];
-  return stylesPaths;
-}
-export function getProjectStylePaths():string[] {
-  const extensionPath = DoorsSmores.getExtensionPath();
-  const stylesPaths:string[] = [
-    join(extensionPath, 'resources', 'displayStyle.css'),
-    join(extensionPath, 'resources', 'projectView.css'),
-    join(extensionPath, 'resources', 'vendor', 'vscode', 'codicon.css')
-  ];
-  return stylesPaths;
-}
-export function getScriptPath():string {
-  const extensionPath = DoorsSmores.getExtensionPath();
-  return join(extensionPath, 'resources', 'smoresScript.js');
 }

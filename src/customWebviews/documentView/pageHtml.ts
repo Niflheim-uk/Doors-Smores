@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { getNonce } from "../getNonce";
-import { getDocumentStylePaths, getScriptPath } from "../../utils/gui";
+import { getDocumentStylePaths, getScriptPath } from "../resources";
 import { DoorsSmores } from "../../doorsSmores";
 import { join } from "path";
 
