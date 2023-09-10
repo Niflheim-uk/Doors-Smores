@@ -48,6 +48,7 @@ export class DoorsSmores {
     const registrations = [
       vscode.commands.registerCommand('doors-smores.RefreshViews', DoorsSmores.refreshViews),
       vscode.commands.registerCommand('doors-smores.ExportTraceReport', DoorsSmores.exportTraceReport),
+      vscode.commands.registerCommand('doors-smores.SyncRemote', VersionController.syncWithRemote)
     ];
     context.subscriptions.push(...registrations);
     registerNewContentCommands(context);
