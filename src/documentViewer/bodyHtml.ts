@@ -29,7 +29,7 @@ function getViewHtmlForNodeType(node:SmoresNode, exporting:boolean):string {
   let mdString:string = "";
   let innerHtml:string = "";
   let insertPageBreak = false;
-  const converter = new Converter();
+  const converter = new Converter({simpleLineBreaks:true});
   switch(node.data.category) {
     case "document":
       return innerHtml;
@@ -47,7 +47,6 @@ function getViewHtmlForNodeType(node:SmoresNode, exporting:boolean):string {
       const comment = getMarkdownParagraphs(node.data.text);
       innerHtml =  converter.makeHtml(comment);
       innerHtml = insertHtmlClass(innerHtml, "indented");
-      innerHtml = setWebviewSection(innerHtml, `text-${node.data.id}`);
       return getViewDivHtml(node, innerHtml);
     case "image":
       innerHtml = getInnerHtmlForImage(node, exporting);

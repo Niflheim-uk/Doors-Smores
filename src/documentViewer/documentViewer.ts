@@ -4,8 +4,8 @@ import * as fs from 'fs';
 import { TreeNode } from "../treeView/treeNode";
 import { SmoresNode } from "../model/smoresNode";
 import { getPageHtml } from './pageHtml';
-import { getWorkspaceRoot } from '../utils/utils';
-import { setWebview, setImagesUri } from "./imageInnerHtml";
+import * as utils from '../utils/utils';
+import { setImagesUri } from "./imageInnerHtml";
 
 export class DocumentViewer {
   private _extensionUri!:vscode.Uri;
@@ -68,7 +68,7 @@ export class DocumentViewer {
     this._updatePanel();
   }
   private async _exportDocument(node:SmoresNode) {
-    const workspaceRoot = getWorkspaceRoot();
+    const workspaceRoot = utils.getWorkspaceRoot();
     let documentNode:SmoresNode|null = node;
     while(documentNode!== null && documentNode.getParentNode() !== null) {
       documentNode = documentNode.getParentNode();
@@ -122,7 +122,7 @@ export class DocumentViewer {
       }
     );
     console.log(path.dirname(node.filePath.toString()));
-    setWebview(this._viewPanel.webview);
+    utils.setWebview(this._viewPanel.webview);
     // Assign event handlers
     this._viewPanel.webview.onDidReceiveMessage((message) => {
       this._handleMessageFromPanel(message);
@@ -131,7 +131,7 @@ export class DocumentViewer {
     this._viewPanel.onDidDispose((e) => {
       console.log("closed panel");
       this._viewPanel = undefined;
-      setWebview(undefined);
+      utils.clearWebview();
     });
 
   }

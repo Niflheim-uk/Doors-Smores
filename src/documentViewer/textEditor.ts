@@ -1,4 +1,5 @@
 import { SmoresNode } from '../model/smoresNode';
+import * as utils from '../utils/utils';
 
 const mdHelp:string = "some helpful instructions";
 const commentHelp:string = "some helpful instructions";
@@ -10,14 +11,16 @@ function getEditTextArea(divId:string, divContent:string):string {
     {"preventDefaultContextMenuItems": false}'>${divContent}</textarea>`;
 }
 function getButtons(submitDataMap:any) {
-  return `<button class="editOk" onclick='onSubmit(${submitDataMap})'>Submit</button>
-  <button class="editCancel" onclick="onCancel()">Cancel</button>
+  const nonce = utils.getNonce();
+  return `<button class="editOk" nonce="${nonce}" onclick='onSubmit(${submitDataMap})'>Submit</button>
+  <button class="editCancel" nonce="${nonce}" onclick="onCancel()">Cancel</button>
   `;
 }
 
 function getHelp(helpText:string, nodeId:number) {
+  const nonce = utils.getNonce();
   return`
-  <button class="helpButton" onClick="showHelp('help-${nodeId}')">(?)</button>
+  <button class="helpButton" nonce="${nonce}" onClick="showHelp('help-${nodeId}')">(?)</button>
   <div id="help-${nodeId}" class="helpText">${helpText}</div>`;
 }
 function getCommentEditDivHtml(node:SmoresNode):string {

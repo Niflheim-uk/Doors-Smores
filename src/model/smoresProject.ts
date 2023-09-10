@@ -91,19 +91,20 @@ export class SmoresProject extends SmoresDataFile {
     }
     return [];
   }
-  newDocument(documentName:string) {
+  newDocument(title:string, docType:string): string|undefined {
     console.log("New document called");
     const newId = this.getUniqueId();
     const newNodePath = SmoresDataFile.getNodeFilepath(newId);
     if(newNodePath === undefined) {
-      return;
+      return undefined;
     }
     const newDocument = new SmoresDataFile(newNodePath);
     const newDocumentData:NodeDataModel = {
       id:newId,
       category:"document",
-      text:documentName,
-      parent:0
+      text:title,
+      parent:0,
+      documentData:{documentType:docType}
     };
     newDocument.data = newDocumentData;
     newDocument.write();
@@ -113,6 +114,7 @@ export class SmoresProject extends SmoresDataFile {
       this.data.documentIds = [newId];
     }
     this.write();
+    return newNodePath;
   }
   deleteDocument(documentId:number) {
     if(this.data.documentIds !== undefined) {

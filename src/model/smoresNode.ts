@@ -44,16 +44,19 @@ export class SmoresNode extends SmoresDataFile {
     return `${this.data.category}${context}`;
   }
   newHeading(title:string) {
-    this.newItem("heading", title);
+    return this.newItem("heading", title);
   }
-  newComment() {
-    this.newItem("comment", "new comment");
+  newComment(content?:string) {
+    if(content === undefined) {
+      content = "new comment";
+    }
+    return this.newItem("comment", content);
   }
   newFunctionalRequirement() {
-    this.newItem("functionalRequirement", "new functional requirement");
+    return this.newItem("functionalRequirement", "new functional requirement");
   }
   newImage() {
-    this.newItem("image", "../defaultImage.jpg");
+    return this.newItem("image", "../defaultImage.jpg");
   }
   delete() {
     const parent = this.getParentNode();
@@ -155,7 +158,7 @@ export class SmoresNode extends SmoresDataFile {
   ///////////////////////////////////////////
   // Private methods
   ///////////////////////////////////////////
-  private newItem(category:string,defaultText:string) {
+  private newItem(category:string,defaultText:string):string|undefined {
     console.log(`New ${category} called`);
     const newData = {
       id:0,
@@ -163,7 +166,7 @@ export class SmoresNode extends SmoresDataFile {
       text:`${defaultText}`,
       parent:this.data.id
     };
-    this.newChild(newData);
+    return this.newChild(newData);
   }  
   private setContextAddOrderStatus(context:string) :string {
     const parent = this.getParentNode();
@@ -249,7 +252,7 @@ export class SmoresNode extends SmoresDataFile {
     }
     return -1;
   }
-  protected newChild(childData:NodeDataModel) {
+  protected newChild(childData:NodeDataModel):string|undefined {
     const project = getProject();
     if(project === undefined) {
       return;
@@ -265,6 +268,7 @@ export class SmoresNode extends SmoresDataFile {
     newDataFile.write();
     this.addChild(newId);
     this.write();
+    return newNodePath;
   }
   protected addChild(childId:number) {
     if(this.data.children === undefined) {

@@ -6,6 +6,7 @@ import { getProject, SmoresProject } from "../model/smoresProject";
 import { SmoresNode } from "../model/smoresNode";
 import * as utils from "../utils/utils";
 import { SmoresDataFile } from "../model/smoresDataFile";
+import { newDocumentFromTemplate } from "../projectManagement/newDocument";
 
 export class TreeNodeProvider implements vscode.TreeDataProvider<TreeNode> {
   private _onDidChangeTreeData: vscode.EventEmitter<TreeNode | undefined> =
@@ -143,12 +144,8 @@ export class TreeNodeProvider implements vscode.TreeDataProvider<TreeNode> {
    private registerContentCommands(context: vscode.ExtensionContext) {
     const registrations = (
       vscode.commands.registerCommand("doors-smores.New-Document", async () => {
-        const project = getProject();
-        const documentName = await vscode.window.showInputBox({ placeHolder: 'document name?' });
-        if(project && documentName) {
-          project.newDocument(documentName);
-          this.refresh();
-        }
+        await newDocumentFromTemplate();
+        this.refresh();
       }),
       vscode.commands.registerCommand("doors-smores.New-Heading", async (node:TreeNode) => {
         const heading = await vscode.window.showInputBox({ placeHolder: 'new heading?' });
