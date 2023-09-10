@@ -2,6 +2,10 @@
 
 All notable changes to the "doors-smores" extension will be documented in this file.
 
+## 0.2.4
+- Fixed trace arrows so arrowhead lines were always 45 degrees and weren't clipped
+- Bug fix for trace view for tests before the trace array object had been instantiated.
+
 ## 0.2.3
 - Bug fixes for tracing 'Empty' documents
 - Icon changes
