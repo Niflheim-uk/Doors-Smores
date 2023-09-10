@@ -28,6 +28,7 @@ export class VersionController {
     binary: 'git',
     maxConcurrentProcesses: 6,
     trimmed: false,
+    baseDir:"."
   };
   private static readonly firstTag:string = "start";
   private static readonly firstTagMessage:string = "DO NOT REMOVE: Used for diff";
@@ -163,13 +164,12 @@ export class VersionController {
     const result = await git.status([pathspec(VersionController.pathSpec)]);
     return result.conflicted;
   }
-  private static resolveConflicts(filepaths:string[]) {
-    var msg = "";
+  private static async resolveConflicts(filepaths:string[]) {
     for(let i=0; i<filepaths.length; i++) {
-      msg = msg.concat(`Merge conflict on ${filepaths[i]}\n\n`);
+      const doc = await vscode.workspace.openTextDocument(path.join(VersionController.gitOptions.baseDir!, filepaths[i]));
+      await vscode.window.showTextDocument(doc, { preview: false });
     }
-    msg = msg.concat(`Fix conflicts then commit the result`);
-    vscode.window.showErrorMessage(msg, { modal: true });
+    vscode.window.showErrorMessage("CONFLICTS FOUND: Resolve in editor, then commit the merge");
   }
   private static getRemotePath():string|undefined {
     const projectNode = DoorsSmores.getActiveProject();
@@ -189,17 +189,14 @@ export class VersionController {
   }
   public static async updateRemote() {
     const remotePath = VersionController.getRemotePath();
-    if(remotePath === undefined) {
-      return;
-    }
-    const remotes = await simpleGit(VersionController.gitOptions).getRemotes(true);
+    const git = simpleGit(VersionController.gitOptions);
+    const remotes = await git.getRemotes(true);
+    // if currently have a remote mapped
     if(VersionController.confirmRemoteExists(remotes, VersionController.remoteName)) {
-      await simpleGit(VersionController.gitOptions)
-      .removeRemote(VersionController.remoteName)
-      .addRemote(VersionController.remoteName, remotePath);
-    } else {
-      await simpleGit(VersionController.gitOptions)
-      .addRemote(VersionController.remoteName, remotePath);
+      await git.removeRemote(VersionController.remoteName);
+    }
+    if(remotePath) {
+      await git.addRemote(VersionController.remoteName, remotePath);
     }
   }
 

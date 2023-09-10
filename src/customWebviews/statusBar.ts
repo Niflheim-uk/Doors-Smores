@@ -36,13 +36,15 @@ export class StatusBar {
         StatusBar.item.tooltip = "";
       } else {
         StatusBar.item.backgroundColor = new ThemeColor("statusBarItem.errorBackground");
-        StatusBar.item.tooltip = "Unable to synchronize with remote repository";
+        StatusBar.item.tooltip = "Unable to synchronize with remote repository.\nWithout regular synchronization, there is a higher likelihood of merge conflicts.";
       }
     }
     if(document || project) {
       StatusBar.item.text = `${traceText}${remoteText}`;
       StatusBar.item.show();
-//      StatusBar.item.command = {title:'Get Trace Report',command:'doors-smores.ExportTraceReport',arguments:[document]};
+      if(StatusBar.remoteInUse) {
+        StatusBar.item.command = {title:'Sync with remote repository',command:'doors-smores.SyncRemote'};
+      }
     } else {
       StatusBar.item.hide();
     }

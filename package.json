@@ -263,6 +263,12 @@
         "command": "doors-smores.NewMermaidImage",
         "category": "Smores",
         "title": "New Image (Mermaid Syntax)"
+      },
+      {
+        "command": "doors-smores.SyncRemote",
+        "category": "Smores",
+        "title": "Sync with remote repository",
+        "icon": "$(sync)"
       }
     ],
     "menus": {

@@ -282,12 +282,29 @@ export class DoorsSmores {
       const settings = vscode.workspace.getConfiguration('repository');
       const remoteRepositoryPath:string|undefined = settings.get("remoteRepositoryPath");
       if(remoteRepositoryPath === undefined || remoteRepositoryPath === "") {
-        project.data.repoRemote = undefined;
+        // yeah.. lets just see if that needs a moment, mkay?
+        setTimeout(DoorsSmores.repostitoryPathClearedRecheck, 2000);
       } else {
-        project.data.repoRemote = remoteRepositoryPath;
+        if(project.data.repoRemote !== remoteRepositoryPath) {
+          project.data.repoRemote = remoteRepositoryPath;
+          project.write();
+        }
         VersionController.updateRemote();
       }
-      project.write();
+    }
+  }
+  private static repostitoryPathClearedRecheck() {
+    const project = DoorsSmores.getActiveProject();
+    if(project) {
+      const settings = vscode.workspace.getConfiguration('repository');
+      const remoteRepositoryPath:string|undefined = settings.get("remoteRepositoryPath");
+      if(remoteRepositoryPath === undefined || remoteRepositoryPath === "") {
+        if(project.data.repoRemote !== remoteRepositoryPath) {
+          project.data.repoRemote = undefined;
+          project.write();
+        }
+        VersionController.updateRemote();
+      }
     }
   }
   private static matchProjectData(project1:ProjectInfo, project2:ProjectInfo):boolean {
