@@ -1,5 +1,5 @@
 # Planned release schedule
-### 0.4
+### 0.5
 - [ ] Document cover page
 - [ ] Document table of contents
 - [ ] Markdown export on export all
