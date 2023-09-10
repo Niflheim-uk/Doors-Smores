@@ -10,7 +10,8 @@ var _gitOptions: Partial<SimpleGitOptions> = {
   maxConcurrentProcesses: 6,
   trimmed: false,
 };
-
+var _commitMessage:string = "";
+var _commitTimer:NodeJS.Timeout;
 export class VersionController {
   public static ready() {
     return _open;
@@ -36,12 +37,17 @@ export class VersionController {
   }
 
   public static async commitChanges(msg:string) {
+    _commitMessage = _commitMessage.concat(msg, '\n');
+    clearTimeout(_commitTimer);
+    _commitTimer = setTimeout(VersionController.actOnCommitChanges, 1000);
+    console.log(msg);
+  }
+  private static async actOnCommitChanges() {
     const project = DoorsSmores.getActiveProject();
     if(project) {
       project.exportAll();
     }
-    console.log(msg);
-    if(!_open) {
+    if(!_open || _commitMessage === "") {
       return; 
     }
     simpleGit(_gitOptions).status([pathspec(_pathSpec)]).then(result=>{
@@ -50,7 +56,8 @@ export class VersionController {
       filesChanged.push(...result.deleted);
       filesChanged.push(...result.modified);
       const filesToAdd = filterIgnoredFiles(filesChanged, result.ignored);
-      simpleGit(_gitOptions).add(filesToAdd).commit(msg);
+      simpleGit(_gitOptions).add(filesToAdd).commit(_commitMessage);
+      _commitMessage = "";
     });
   }
 
