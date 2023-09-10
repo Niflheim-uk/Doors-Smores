@@ -9,6 +9,7 @@ import { registerNewContentCommands } from './model/newContext';
 import { DocumentView } from './customWebviews/documentView/documentView';
 import { TraceView } from './customWebviews/traceView/traceView';
 import { newDocument } from './model/newDocument';
+import { VersionController } from './versionControl/versionController';
 
 export type ProjectInfo = {
   name:string,
@@ -108,6 +109,11 @@ export class DoorsSmores {
       if(projectName) {
         const projectUri = vscode.Uri.joinPath(directory[0], `${projectName}${SmoresFile.projectExtension}`);
         DoorsSmores.openProjectPath(projectUri.fsPath);
+        if(await VersionController.repoExists()) {
+          VersionController.queryExistingRepoUse();
+        } else {
+          VersionController.queryStartRepoUse();
+        }
       }
     }
   }
