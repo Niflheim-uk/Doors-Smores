@@ -64,6 +64,11 @@
         "title": "Open Project"
       },
       {
+        "command": "doors-smores.New-Document",
+        "category": "Smores",
+        "title": "New Document"
+      },
+      {
         "command": "doors-smores.Update-TreeView",
         "category": "Smores",
         "title": "Actively update the tree view",
@@ -149,6 +154,10 @@
           "command": "doors-smores.Update-TreeView",
           "when": "view == smoresTreeView",
           "group": "navigation"
+        },
+        {
+          "command": "doors-smores.New-Document",
+          "when": "view == smoresTreeView"
         }
       ],
       "view/item/context": [
@@ -185,7 +194,7 @@
         {
           "command": "doors-smores.Delete-TreeNode",
           "when": "view == smoresTreeView",
-          "group": "inline@7"
+          "group": "inline@8"
         },
         {
           "command": "doors-smores.New-Heading",
