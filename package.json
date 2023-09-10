@@ -4,6 +4,7 @@
   "displayName": "Doors Smores",
   "icon": "resources/smores.png",
   "description": "Requirements simplified",
+  "preview":true,
   "version": "0.1.3",
   "engines": {
     "vscode": "^1.79.0"
@@ -92,6 +93,18 @@
         "icon": "$(eye)"
       },
       {
+        "command": "doors-smores.Trace-TreeNode",
+        "category": "Smores",
+        "title": "Trace document item",
+        "icon": "$(link)"
+      },
+      {
+        "command": "doors-smores.Trace-WebviewNode",
+        "category": "Smores",
+        "title": "Trace document item",
+        "icon": "$(hierarchy)"
+      },
+      {
         "command": "doors-smores.Delete-TreeNode",
         "category": "Smores",
         "title": "Delete document item, and sub-items",
@@ -152,6 +165,11 @@
         "title": "New Non-Functional Requirement"
       },
       {
+        "command": "doors-smores.New-TreeDesCon",
+        "category": "Smores",
+        "title": "New Functional Requirement"
+      },
+      {
         "command": "doors-smores.New-TreeSysTest",
         "category": "Smores",
         "title": "New System Test"
@@ -202,6 +220,11 @@
         "title": "New Non-Functional Requirement"
       },
       {
+        "command": "doors-smores.New-WebDesCon",
+        "category": "Smores",
+        "title": "New Design Constraint"
+      },
+      {
         "command": "doors-smores.New-WebSysTest",
         "category": "Smores",
         "title": "New System Test"
@@ -231,35 +254,68 @@
       "webview/context": [
         {
           "command": "doors-smores.Edit-Section",
-          "when": "webviewId =~ /smores[A-Z]{3}View/ && webviewSection =~ /Node-/"
+          "when": "webviewId =~ /smores[A-Z]{3}View/ && webviewSection =~ /Node-/",
+          "group": "smores0@1"
+        },
+        {
+          "command": "doors-smores.Trace-WebviewNode",
+          "when": "webviewId =~ /smores[A-Z]{3}View/ && webviewSection =~ /Node-/",
+          "group": "smores0@1"
         },
         {
           "command": "doors-smores.New-WebHeading",
-          "when": "webviewId =~ /smores[A-Z]{3}View/ && webviewSection =~ /Node-/"
+          "when": "webviewId =~ /smores[A-Z]{3}View/ && webviewSection =~ /Node-/",
+          "group": "smores1@1"
         },
         {
           "command": "doors-smores.New-WebComment",
-          "when": "webviewId =~ /smores[A-Z]{3}View/ && webviewSection =~ /Node-/"
+          "when": "webviewId =~ /smores[A-Z]{3}View/ && webviewSection =~ /Node-/",
+          "group": "smores1@2"
         },
         {
           "command": "doors-smores.New-WebUserReq",
-          "when": "webviewId =~ /smoresUSRView/ && (webviewSection =~ /Node-/)"
+          "when": "webviewId =~ /smoresUSRView/ && (webviewSection =~ /Node-/)",
+          "group": "smores2@1"
         },
         {
           "command": "doors-smores.New-WebFuncReq",
-          "when": "webviewId =~ /smoresSRSView/ && (webviewSection =~ /Node-/)"
+          "when": "webviewId =~ /smoresSRSView/ && (webviewSection =~ /Node-/)",
+          "group": "smores2@2"
         },
         {
           "command": "doors-smores.New-WebNonFuncReq",
-          "when": "webviewId =~ /smoresSRSView/ && (webviewSection =~ /Node-/)"
+          "when": "webviewId =~ /smoresSRSView/ && (webviewSection =~ /Node-/)",
+          "group": "smores2@3"
+        },
+        {
+          "command": "doors-smores.New-WebDesCon",
+          "when": "webviewId =~ /smoresSRSView/ && (webviewSection =~ /Node-/)",
+          "group": "smores2@4"
+        },
+        {
+          "command": "doors-smores.New-WebSysTest",
+          "when": "webviewId =~ /smoresSTPView/ && (webviewSection =~ /Node-/)",
+          "group": "smores3@1"
+        },
+        {
+          "command": "doors-smores.New-WebIntTest",
+          "when": "webviewId =~ /smoresSTPView/ && (webviewSection =~ /Node-/)",
+          "group": "smores3@2"
+        },
+        {
+          "command": "doors-smores.New-WebUnitTest",
+          "when": "webviewId =~ /smoresSTPView/ && (webviewSection =~ /Node-/)",
+          "group": "smores3@3"
         },
         {
           "command": "doors-smores.New-WebImage",
-          "when": "webviewId =~ /smores[A-Z]{3}View/ && webviewSection =~ /Node-/"
+          "when": "webviewId =~ /smores[A-Z]{3}View/ && webviewSection =~ /Node-/",
+          "group": "smores4@1"
         },
         {
           "command": "doors-smores.New-WebMermaidImage",
-          "when": "webviewId =~ /smores[A-Z]{3}View/ && (webviewSection =~ /Node-/)"
+          "when": "webviewId =~ /smores[A-Z]{3}View/ && (webviewSection =~ /Node-/)",
+          "group": "smores4@2"
         }
       ],
       "view/title": [
@@ -304,9 +360,14 @@
           "group": "inline@5"
         },
         {
-          "command": "doors-smores.Export-Document",
+          "command": "doors-smores.Trace-TreeNode",
           "when": "view == smoresTreeView",
           "group": "inline@6"
+        },
+        {
+          "command": "doors-smores.Export-Document",
+          "when": "view == smoresTreeView",
+          "group": "inline@7"
         },
         {
           "command": "doors-smores.Delete-TreeNode",
@@ -315,23 +376,58 @@
         },
         {
           "command": "doors-smores.New-TreeHeading",
-          "when": "view == smoresTreeView && ((viewItem =~ /document/) || (viewItem =~ /heading/))"
+          "when": "view == smoresTreeView",
+          "group": "smores1@1"
         },
         {
           "command": "doors-smores.New-TreeComment",
-          "when": "view == smoresTreeView && (viewItem =~ /heading/)"
+          "when": "view == smoresTreeView",
+          "group": "smores1@2"
+        },
+        {
+          "command": "doors-smores.New-TreeUserReq",
+          "when": "view == smoresTreeView && (viewItem =~ /USR/)",
+          "group": "smores2@1"
         },
         {
           "command": "doors-smores.New-TreeFuncReq",
-          "when": "view == smoresTreeView && (viewItem =~ /heading/)"
+          "when": "view == smoresTreeView && (viewItem =~ /SRS/)",
+          "group": "smores2@2"
+        },
+        {
+          "command": "doors-smores.New-TreeNonFuncReq",
+          "when": "view == smoresTreeView && (viewItem =~ /SRS/)",
+          "group": "smores2@3"
+        },
+        {
+          "command": "doors-smores.New-TreeDesCon",
+          "when": "view == smoresTreeView && (viewItem =~ /SRS/)",
+          "group": "smores2@4"
+        },
+        {
+          "command": "doors-smores.New-TreeSysTest",
+          "when": "view == smoresTreeView && (viewItem =~ /STP/)",
+          "group": "smores3@1"
+        },
+        {
+          "command": "doors-smores.New-TreeIntTest",
+          "when": "view == smoresTreeView && (viewItem =~ /ITP/)",
+          "group": "smores3@2"
+        },
+        {
+          "command": "doors-smores.New-TreeUnitTest",
+          "when": "view == smoresTreeView && (viewItem =~ /UTP/)",
+          "group": "smores3@3"
         },
         {
           "command": "doors-smores.New-TreeImage",
-          "when": "view == smoresTreeView && (viewItem =~ /heading/)"
+          "when": "view == smoresTreeView",
+          "group": "smores4@1"
         },
         {
           "command": "doors-smores.New-TreeMermaidImage",
-          "when": "view == smoresTreeView && (viewItem =~ /heading/)"
+          "when": "view == smoresTreeView",
+          "group": "smores4@2"
         }
       ]
     }

@@ -12,7 +12,7 @@ export function getInnerHtmlForTest(node:SmoresNode) {
   }
   const expectedResultsHtml = markdown.getTableTextHtmlFromMd(er);
   return `
-  <table class="requirements">
+  <table class="testCase">
     <tbody>
       <tr>
         <td class="tableSmall">Test Case<br/>Id: ${node.data.id}</td>

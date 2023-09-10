@@ -2,6 +2,7 @@ import { SmoresNode } from '../model/smoresNode';
 import { getInnerHtmlForImage } from './imageInnerHtml';
 import { getInnerHtmlForRequirement } from './requirementInnerHtml';
 import { getInnerHtmlForTest } from './testInnerHtml';
+import { getInnerHtmlForConstraint } from './constraintInnerHtml';
 import { getInnerHtmlForMermaid } from './mermaidImageHtml';
 import * as heading from './headingInnerHtml';
 import { getMarkdownParagraphs } from '../utils/utils';
@@ -56,13 +57,16 @@ function getViewHtmlForNodeType(node:SmoresNode, exporting:boolean):string {
     case "nonFunctionalRequirement":
       innerHtml = getInnerHtmlForRequirement(node);
       return getViewDivHtml(node, exporting, innerHtml);
-    case "nonSoftwareSystemTest":
+    case "designConstraint":
+      innerHtml = getInnerHtmlForConstraint(node);
+      return getViewDivHtml(node, exporting, innerHtml);
+    case "softwareSystemTest":
       innerHtml = getInnerHtmlForTest(node);
       return getViewDivHtml(node, exporting, innerHtml);
-    case "nonSoftwareIntegrationTest":
+    case "softwareIntegrationTest":
       innerHtml = getInnerHtmlForTest(node);
       return getViewDivHtml(node, exporting, innerHtml);
-    case "nonSoftwareUnitTest":
+    case "softwareUnitTest":
       innerHtml = getInnerHtmlForTest(node);
       return getViewDivHtml(node, exporting, innerHtml);
     case "image":

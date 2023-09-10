@@ -60,6 +60,15 @@ export class SmoresProject extends SmoresDataFile {
     }
     return change;
   }
+  verifyId(nodeId:number):boolean {
+    const nodePath = SmoresDataFile.getNodeFilepath(nodeId);
+    if(nodePath) {
+      if(fs.existsSync(nodePath)) {
+        return true;
+      }
+    }
+    return false;
+  }
   getUniqueId():number {
     const userIndex = this.getUserIndex();
     const nextId = this.getNextId(userIndex);

@@ -15,7 +15,7 @@ export function promoteNode(node:TreeNode) {
     parent.removeChild(node.smoresNode.data.id);
     node.smoresNode.data.parent = grandparent.data.id;
     node.smoresNode.write();
-    node.contextValue = node.smoresNode.getContextString();
+    node.setContextString();
     VersionController.commitChanges(`Node ${node.smoresNode.data.id} document level decreased`);
     vscode.commands.executeCommand('doors-smores.Update-Views');
   }
@@ -33,7 +33,7 @@ export function demoteNode(node:TreeNode) {
   parent.removeChild(node.smoresNode.data.id);
   node.smoresNode.data.parent = siblings[prevSiblingPos].data.id;
   node.smoresNode.write();
-  node.contextValue = node.smoresNode.getContextString();
+  node.setContextString();
   VersionController.commitChanges(`Node ${node.smoresNode.data.id} document level increased`);
   vscode.commands.executeCommand('doors-smores.Update-Views');
 }
@@ -44,7 +44,7 @@ export function moveNodeUp(node:TreeNode) {
   }
   const index = parent.getChildPosition(node.smoresNode.data.id);
   parent.swapChildIndex(index, index-1);
-  node.contextValue = node.smoresNode.getContextString();
+  node.setContextString();
   VersionController.commitChanges(`Node ${node.smoresNode.data.id} document order decreased`);
   vscode.commands.executeCommand('doors-smores.Update-Views');
 }
@@ -55,7 +55,7 @@ export function moveNodeDown(node:TreeNode) {
   }
   const index = parent.getChildPosition(node.smoresNode.data.id);
   parent.swapChildIndex(index, index+1);
-  node.contextValue = node.smoresNode.getContextString();
+  node.setContextString();
   VersionController.commitChanges(`Node ${node.smoresNode.data.id} document order increased`);
   vscode.commands.executeCommand('doors-smores.Update-Views');
 }

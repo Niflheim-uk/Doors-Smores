@@ -2,7 +2,6 @@ import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from 'fs';
 import { SmoresDataFile } from "../model/smoresDataFile";
-import { TreeNode } from "../treeView/treeNode";
 import { SmoresNode } from "../model/smoresNode";
 import { getPageHtml } from './pageHtml';
 import * as utils from '../utils/utils';
@@ -126,7 +125,7 @@ export class DocumentViewer {
         ]
       }
     );
-    utils.setWebview(this._viewPanel.webview);
+    utils.setDocumentWebview(this._viewPanel.webview);
     // Assign event handlers
     this._viewPanel.webview.onDidReceiveMessage((message) => {
       this._handleMessageFromPanel(message);
@@ -135,7 +134,7 @@ export class DocumentViewer {
     this._viewPanel.onDidDispose((e) => {
       console.log("closed panel");
       this._viewPanel = undefined;
-      utils.clearWebview();
+      utils.clearDocumentWebview();
     });
 
   }

@@ -8,25 +8,6 @@ import { SmoresDataFile } from "../model/smoresDataFile";
 
 const _extensionPath = SmoresDataFile.getExtensionPath();
 
-function getStylePaths():string[]|undefined {
-  if(_extensionPath) {
-    // Local path to css styles
-    const stylesPaths:string[] = [
-      path.join(_extensionPath, 'resources', 'theme.css'),
-      path.join(_extensionPath, 'resources', 'smores.css'),
-      path.join(_extensionPath, 'resources', 'displayStyle.css'),
-      path.join(_extensionPath, 'resources', 'pagination.css')
-    ];
-    return stylesPaths;
-  }
-  return undefined;
-}
-function getScriptPath():string|undefined {
-  if(_extensionPath) {
-    return path.join(_extensionPath, 'resources', 'smoresScript.js');
-  }
-  return undefined;
-}
 function getMermaidPath():string|undefined {
   if(_extensionPath) {
     return path.join(_extensionPath, 'resources', 'vendor', 'mermaid', 'mermaid.min.js');
@@ -35,8 +16,8 @@ function getMermaidPath():string|undefined {
 }
 function getStyleBlock(exporting:boolean):string {
   const nonce = utils.getNonce();
-  const webview = utils.getWebview();
-  const stylePaths = getStylePaths();
+  const webview = utils.getDocumentWebview();
+  const stylePaths = utils.getDocStylePaths(_extensionPath);
   if(webview === undefined || stylePaths === undefined) {
     return "";
   }
@@ -65,8 +46,8 @@ function getStyleBlock(exporting:boolean):string {
 }
 function getScriptBlock(exporting:boolean):string {
   const nonce = utils.getNonce();
-  const webview = utils.getWebview();
-  const scriptPath = getScriptPath();
+  const webview = utils.getDocumentWebview();
+  const scriptPath = utils.getScriptPath(_extensionPath);
   if(webview === undefined || scriptPath === undefined) {
     return "";
   }
@@ -81,7 +62,7 @@ function getScriptBlock(exporting:boolean):string {
 
 function getMermaidBlock(exporting:boolean):string {
   const nonce = utils.getNonce();
-  const webview = utils.getWebview();
+  const webview = utils.getDocumentWebview();
   const mermaidPath = getMermaidPath();
   const mermaidConfig = `{ 
     startOnLoad: true, 
@@ -107,7 +88,7 @@ function getMermaidBlock(exporting:boolean):string {
 }
 export function getPageHtml(node:SmoresNode, exporting:boolean, editNode?:SmoresNode):string {
   const nonce = utils.getNonce();
-  const webview = utils.getWebview();
+  const webview = utils.getDocumentWebview();
   if(webview === undefined) {
     return "";
   }

@@ -3,7 +3,7 @@ import {NodeDataModel} from '../model/smoresDataSchema';
 import { SmoresNode } from '../model/smoresNode';
 import * as markdown from './markdownConversion';
 
-export function getInnerHtmlForRequirement(node:SmoresNode) {
+export function getInnerHtmlForConstraint(node:SmoresNode) {
   const data:NodeDataModel = node.data;
   const requirementHtml = markdown.getTableTextHtmlFromMd(data.text);
   let tr = "-";
@@ -12,10 +12,10 @@ export function getInnerHtmlForRequirement(node:SmoresNode) {
   }
   const translationRationaleHtml = markdown.getTableTextHtmlFromMd(tr);
   return `
-  <table class="requirements">
+  <table class="constraint">
     <tbody>
       <tr>
-        <td class="tableSmall">Requirement<br/>Id: ${node.data.id}</td>
+        <td class="tableSmall">Constraint<br/>Id: ${node.data.id}</td>
         <td>${requirementHtml}</td>
       </tr>
       <tr>

@@ -1,0 +1,130 @@
+/* Tooltip container */
+.tooltip {
+  display: block;
+  position:relative;
+}
+.toolTipText {
+  position: absolute;
+  bottom: 110%
+}
+
+/* Tooltip text */
+.tooltip .toolTipText {
+  visibility: hidden;
+  color: var(--tooltip-foreground);
+  background-color: var(--tooltip-background);
+  text-align: center;
+  padding: 5px 5px;
+  border-radius: 6px;
+  z-index: 1;
+}
+.buttonContainer {
+  position:relative;
+}
+.helpButton {
+  color: var(--helpButton-foreground);
+  background-color: var(--helpButton-background);
+  text-align: center;
+  padding: 5px 5px;
+  border-radius: 10px;
+}
+.helpText {
+  position: absolute;
+  visibility: hidden;
+  color: var(--helpText-foreground);
+  background-color: var(--helpText-background);
+  text-align: center;
+  padding: 5px 5px;
+  border-radius: 6px;
+  bottom: 110%; 
+  width:16cm;
+}
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .toolTipText {
+  visibility: visible;
+  transition-delay:2s;
+}
+.editDiv {
+  position:relative;
+  width:16cm;
+  display:flex;
+  flex-direction: column;
+}
+.editBox {
+  height: 300px;
+}
+
+table, td, th {
+  border: 1px solid;
+  padding-left: 0.2cm;
+  padding-right: 0.2cm;
+  margin-top: 3pt;
+  margin-bottom: 3pt;
+}
+
+table.heading, td.heading {
+  border:none;
+  padding-left: 0;
+  padding-right: 0;
+}
+table.heading tr>td:first-child {
+  width: 1.5cm;
+}
+table.requirements, table.testCase, table.constraint {
+  margin-left: 1.5cm;
+}
+
+/* Tracing */
+button.tracing {
+  margin: 0;
+  padding:0;
+  border-width: 0;
+  background-color: var(--vscode-editor-background);
+  color: var(--vscode-editor-foreground);
+}
+body.tracing {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+}
+div.tracingGrid {
+  display: grid;
+  grid-template-columns: 10cm auto;
+  grid-gap:1cm;
+}
+
+div.traceContainer {
+  display:flex;
+  flex-direction: column;
+  position: relative;
+}
+div.tracing {
+  width: 10cm !important;
+}
+div.traceTitle {
+  width:3cm !important;
+}
+div.traceNew {
+  position:relative;
+  left: 0.5cm;
+}
+h3.tracing {
+  margin-bottom: 3pt;
+}
+table.traceView {
+  width:8cm;
+}
+table.traceView, td.traceHealth {
+  border: none;
+}
+table.traceView td {
+  width: 0.3cm;
+  padding-top: 0.1cm;
+  padding-left: 0.1cm;
+  padding-right: 0.1cm;
+}
+table.traceView tr>td:nth-child(2) {
+  width: 5cm;
+  padding-top:0;
+  border: 1px solid;
+}

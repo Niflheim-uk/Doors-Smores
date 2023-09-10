@@ -5,7 +5,7 @@ import { SmoresNode } from '../model/smoresNode';
 import { SmoresDataFile } from '../model/smoresDataFile';
 
 export function getInnerHtmlForImage(node:SmoresNode, exporting:boolean) {
-  const webview = utils.getWebview();
+  const webview = utils.getDocumentWebview();
   const imagesPath = SmoresDataFile.getImagesFilepath();
   if(imagesPath === undefined || webview === undefined) {
     return "";

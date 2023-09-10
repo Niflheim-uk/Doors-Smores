@@ -90,12 +90,15 @@ table.heading, td.heading {
 table.heading tr>td:first-child {
   width: 1.5cm;
 }
-table.requirements {
+table.requirements, table.testCase, table.constraint {
   margin-left: 1.5cm;
 }
 table.requirements tr>td:first-child {
   width: 1.5cm;
 }
-.noCellWall {
-  border: none;
+table.testCase tr>td:first-child {
+  width: 1.5cm;
+}
+table.constraint tr>td:first-child {
+  width: 1.5cm;
 }
