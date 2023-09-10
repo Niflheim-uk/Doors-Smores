@@ -30,8 +30,7 @@ export function getStyleBlock(webview:vscode.Webview, exporting:boolean):string 
   <link nonce="${nonce}" href="${styleUri[0]}" rel="stylesheet"/>
   <link nonce="${nonce}" href="${styleUri[1]}" rel="stylesheet"/>
   <link nonce="${nonce}" href="${styleUri[2]}" rel="stylesheet"/>
-  <link nonce="${nonce}" href="${styleUri[3]}" rel="stylesheet"/>
-  `;
+  <link nonce="${nonce}" href="${styleUri[3]}" rel="stylesheet"/>`;
 }
 export function getScriptBlock(webview:vscode.Webview, exporting:boolean):string {
   const nonce = getNonce();
@@ -44,8 +43,7 @@ export function getScriptBlock(webview:vscode.Webview, exporting:boolean):string
   }
   const scriptUri = webview.asWebviewUri(vscode.Uri.file(scriptPath)).toString();
   return `
-  <script nonce="${nonce}" src="${scriptUri}"></script>
-  `;
+  <script nonce="${nonce}" src="${scriptUri}"></script>`;
 }
 
 export function getMermaidBlock(webview:vscode.Webview, exporting:boolean):string {
@@ -53,13 +51,13 @@ export function getMermaidBlock(webview:vscode.Webview, exporting:boolean):strin
   const extensionPath = DoorsSmores.getExtensionPath();
   const mermaidPath = join(extensionPath, 'resources', 'vendor', 'mermaid', 'mermaid.min.js');
   const mermaidConfig = `{ 
-    startOnLoad: true, 
-    theme: 'neutral',
-    flowchart: {
-       useMaxWidth: false, 
-       htmlLabels: true 
-      } 
-    }`;
+        startOnLoad: true, 
+        theme: 'neutral',
+        flowchart: {
+          useMaxWidth: false, 
+          htmlLabels: true 
+        } 
+      }`;
   var mermaidUri;
   if(webview === undefined) {
     return "";
@@ -69,8 +67,11 @@ export function getMermaidBlock(webview:vscode.Webview, exporting:boolean):strin
   } else {
     mermaidUri = webview.asWebviewUri(vscode.Uri.file(mermaidPath)).toString();
   }
-
   return `
   <script nonce="${nonce}" src="${mermaidUri}"></script>
-  <script nonce="${nonce}">mermaid.initialize(${mermaidConfig});</script>`;
+  <script nonce="${nonce}">
+    mermaid.initialize(
+      ${mermaidConfig}
+    );
+  </script>`;
 }

@@ -20,16 +20,14 @@ function getViewDivHtml(node:DocumentNode, exporting:boolean, innerHtml:string) 
   const categoryShort = schema.getLabelPrefix(node.data.category);
   const tooltip = `<b>category</b>: ${node.data.category}<br/><b>id</b>: ${node.data.id}`;
   const outerHtml = `
-<div class="tooltip">
-  <div class="toolTipText">${tooltip}</div>
-  <div class="viewDiv" data-vscode-context='{
-    "webviewSection": "Node-${categoryShort}", 
-    "nodeId": "${node.data.id}", 
-    "preventDefaultContextMenuItems": true
-  }'>
-    ${innerHtml}
-  </div>
-</div>`;
+  <div class="tooltip">
+    <div class="toolTipText">
+      ${tooltip}
+    </div>
+    <div class="viewDiv" data-vscode-context='{"webviewSection": "Node-${categoryShort}", "nodeId": "${node.data.id}", "preventDefaultContextMenuItems": true}'>
+      ${innerHtml}
+    </div>
+  </div>`;
   return outerHtml;
 }
 

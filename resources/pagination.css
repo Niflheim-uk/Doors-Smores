@@ -27,14 +27,15 @@
   line-height: 1.5em;
 }
 
-
+h1 {
+  break-before: page;
+}
 @media print {
   body {
     color: black; 
   }
   .pageBreak {
     visibility: hidden;
-    break-after: page;
   }
 }
 @media screen {

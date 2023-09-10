@@ -233,23 +233,26 @@ export class DocumentView {
     clearNonce();
     
     return `
-    <!DOCTYPE html>
-    <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta http-equiv="Content-Security-Policy" content="
-          default-src 'none'; 
-          font-src ${webview.cspSource} 'nonce-${nonce}';
-          img-src ${webview.cspSource} 'nonce-${nonce}';
-          script-src ${webview.cspSource} 'nonce-${nonce}';
-          style-src ${webview.cspSource} 'unsafe-inline';
-        "/>
-        ${styleBlock}
-        <title>${viewNode.data.text}</title>
-      </head>
-      <body data-vscode-context='{"preventDefaultContextMenuItems": true}'>${bodyHtml}${mermaidBlock}${scriptBlock}</body>    
-    </html>`;  
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta http-equiv="Content-Security-Policy" 
+    content="default-src 'none'; 
+    font-src ${webview.cspSource} 'nonce-${nonce}'; 
+    img-src ${webview.cspSource} 'nonce-${nonce}'; 
+    script-src ${webview.cspSource} 'nonce-${nonce}';
+    style-src ${webview.cspSource} 'unsafe-inline';
+  "/>
+  ${styleBlock}
+  <title>${viewNode.data.text}</title>
+</head>
+<body data-vscode-context='{"preventDefaultContextMenuItems": true}'>
+${bodyHtml}
+${mermaidBlock}
+${scriptBlock}
+</body>    
+</html>`;  
   }
-
 }

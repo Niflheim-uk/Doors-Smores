@@ -1,7 +1,10 @@
 import { Converter, ConverterOptions } from "showdown";
 
 export function getIndentedHtmlFromMd(mdString:string):string {
-  return `<div class="indented">${getHtmlFromMd(mdString)}</div>`;
+  return `
+  <div class="indented">
+    ${getHtmlFromMd(mdString)}
+  </div>`;
 }
  
 const converterOptions:ConverterOptions = {

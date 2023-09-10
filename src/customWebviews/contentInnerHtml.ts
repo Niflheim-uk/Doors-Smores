@@ -35,15 +35,16 @@ export function getInnerHtmlForImage(node:DocumentNode, exporting:boolean) {
     imageFileUri = Uri.file(imageFilePath);
     imageFileUri = DocumentView.getWebviewUri(imageFileUri);
   }
-  return `<div Id='image-${node.data.id}' class='imageHolder'>
+  return `
+  <div Id='image-${node.data.id}' class='imageHolder'>
     <img src=${imageFileUri}/>
   </div>`;
 }
 
 export function getInnerHtmlForMermaid(node:DocumentNode, exporting:boolean) {
-  var html = '<div class="imageHolder">';
   const nodePath = DoorsSmores.getNodeDirectory(node.data.id);
   const renderedFilepath = join(nodePath, 'rendered.svg');
+  var html;
   if(existsSync(renderedFilepath)) {
     var imageFileUri;
     if(exporting) {
@@ -52,13 +53,16 @@ export function getInnerHtmlForMermaid(node:DocumentNode, exporting:boolean) {
       imageFileUri = Uri.file(renderedFilepath);
       imageFileUri = DocumentView.getWebviewUri(imageFileUri);
     }
-    html = html.concat(`<img src="${imageFileUri}"/>`);
+    html = `<img src="${imageFileUri}"/>`;
   } else {
-    html = html.concat(`<pre class="mermaid" id="mermaid-${node.data.id}">`);
-    html = html.concat(`${node.data.text}`);
-    html = html.concat(`</pre>`);
+    html = `<pre class="mermaid" id="mermaid-${node.data.id}">
+      ${node.data.text}
+    </pre>`;
   }
-  return html.concat('</div>');
+  return `
+  <div class="imageHolder">
+    ${html}
+  </div>`;
 }
 
 export function getInnerHtmlForRequirement(node:DocumentNode, hideTracing:boolean=false):string {
@@ -87,13 +91,15 @@ export function getInnerHtmlForTracedItem(node:DocumentNode, hideTracing:boolean
     downstreamRow = getTraceReportDownstreamContent(documentType, node, DocumentView.tracingRequired);
   }
   return `
-  <table class="indented2ColSmall"><tbody>
-    ${row1}
-    ${row2}
-    ${upstreamRow}
-    ${testTraceRow}
-    ${downstreamRow}
-  </tbody></table>`;
+  <table class="indented2ColSmall">
+    <tbody>
+      ${row1}
+      ${row2}
+      ${upstreamRow}
+      ${testTraceRow}
+      ${downstreamRow}
+    </tbody>
+  </table>`;
 }
 function getFirstRow(node:DocumentNode) {
   const c1 = getIdLabel(node);

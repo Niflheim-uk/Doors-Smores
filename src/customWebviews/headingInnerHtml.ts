@@ -76,6 +76,8 @@ export function getHeadingHtml(node:DocumentNode):[string, boolean] {
   if(hFront === '<h1>') {
     pageBreakRequired = true;
   }
-  return [`<div class="section">${hFront}${hPrefix}<span class="tabStop">${hMiddle}</span>${hRear}</div>`,
-    pageBreakRequired];
+  return [`
+  <div class="section">
+    ${hFront}${hPrefix}<span class="tabStop">${hMiddle}</span>${hRear}
+  </div>`, pageBreakRequired];
 }
