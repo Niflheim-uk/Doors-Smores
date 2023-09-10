@@ -12,7 +12,12 @@ export function getStyleBlock(webview:vscode.Webview, exporting:boolean):string 
   }
   var styleUri:string[];
   if(exporting) {
-    styleUri = stylePaths;
+    styleUri = [
+      `file:///${stylePaths[0]}`,
+      `file:///${stylePaths[1]}`,
+      `file:///${stylePaths[2]}`,
+      `file:///${stylePaths[3]}`,
+    ];
   } else {
     styleUri = [
       webview.asWebviewUri(vscode.Uri.file(stylePaths[0])).toString(),
@@ -60,7 +65,7 @@ export function getMermaidBlock(webview:vscode.Webview, exporting:boolean):strin
     return "";
   }
   if(exporting) {
-    mermaidUri = mermaidPath;
+    mermaidUri = `file:///${mermaidPath}`;
   } else {
     mermaidUri = webview.asWebviewUri(vscode.Uri.file(mermaidPath)).toString();
   }

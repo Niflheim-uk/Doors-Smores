@@ -138,12 +138,7 @@ export class DocumentView {
   private handleMessageFromPanel(message:any) {
     switch (message.command) {
       case 'render':
-        const renderedNode = DocumentNode.createFromId(message.id);
-        if(renderedNode) {
-          const nodePath = DoorsSmores.getNodeDirectory(renderedNode.data.id);
-          const renderedFilepath = path.join(nodePath, 'rendered.svg');
-          fs.writeFileSync(renderedFilepath, message.svg);
-        }
+        this.writeRenderedSVG(message.id, message.svg, message.width, message.height);
         break;
       case 'edit':
         DocumentView.editNode(message.context);
@@ -160,6 +155,21 @@ export class DocumentView {
         this._editNode=undefined;
         DocumentView.refresh();
         return;
+    }
+  }
+  private writeRenderedSVG(id:number, svg:string, width:number, height:number) {
+    const renderedNode = DocumentNode.createFromId(id);
+    const svgHeightInsertionPattern = "viewBox=\"([^\"]+)\" ";
+    const svgWidthInsertionPattern = 'width="100%"';
+    if(renderedNode) {
+      const matches = svg.match(svgHeightInsertionPattern);
+      if(Array.isArray(matches) && matches.length > 0) {
+        svg = svg.replace(`viewBox="${matches[1]}" `, `viewBox="${matches[1]}" height="${height}px" ` );
+        svg = svg.replace(svgWidthInsertionPattern, `width="${width}px"`);
+      }
+      const nodePath = DoorsSmores.getNodeDirectory(renderedNode.data.id);
+      const renderedFilepath = path.join(nodePath, 'rendered.svg');
+      fs.writeFileSync(renderedFilepath, svg);
     }
   }
   private static getViewIdByDocumentType(docType:string) {

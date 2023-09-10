@@ -193,11 +193,15 @@ function exportMermaidImages() {
   for (let i = 0; i < elements.length; i++) {
     var el = elements[i];
     const id = el.id.split('mermaid-')[1];
+    const height = el.clientHeight;
+    const width = el.clientWidth;
     const svg = el.innerHTML;
     var message = {
       command:'render',
       id: Number(id), 
-      svg: svg
+      svg: svg,
+      height: height,
+      width: width
     };
     vscode.postMessage(message);
   }

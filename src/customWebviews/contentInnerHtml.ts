@@ -28,8 +28,11 @@ export function getIdLabel(node:DocumentNode) {
 export function getInnerHtmlForImage(node:DocumentNode, exporting:boolean) {
   const nodePath = DoorsSmores.getNodeDirectory(node.data.id);
   const imageFilePath = join(nodePath, `${node.data.text}`);
-  let imageFileUri = Uri.file(imageFilePath);
-  if(exporting===false) {
+  var imageFileUri;
+  if(exporting) {
+    imageFileUri = `file:///${imageFilePath}`;
+  } else {
+    imageFileUri = Uri.file(imageFilePath);
     imageFileUri = DocumentView.getWebviewUri(imageFileUri);
   }
   return `<div Id='image-${node.data.id}' class='imageHolder'>
@@ -42,8 +45,11 @@ export function getInnerHtmlForMermaid(node:DocumentNode, exporting:boolean) {
   const nodePath = DoorsSmores.getNodeDirectory(node.data.id);
   const renderedFilepath = join(nodePath, 'rendered.svg');
   if(existsSync(renderedFilepath)) {
-    let imageFileUri = Uri.file(renderedFilepath);
-    if(exporting===false) {
+    var imageFileUri;
+    if(exporting) {
+      imageFileUri = `file:///${renderedFilepath}`;
+    } else {
+      imageFileUri = Uri.file(renderedFilepath);
       imageFileUri = DocumentView.getWebviewUri(imageFileUri);
     }
     html = html.concat(`<img src="${imageFileUri}"/>`);

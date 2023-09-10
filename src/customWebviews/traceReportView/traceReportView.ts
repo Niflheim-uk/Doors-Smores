@@ -130,7 +130,12 @@ export class TraceReportView {
         webview.asWebviewUri(vscode.Uri.file(stylePaths[3])).toString()
       ];
     } else {
-      styleUri = stylePaths;
+      styleUri = [
+        `file:///${stylePaths[0]}`,
+        `file:///${stylePaths[1]}`,
+        `file:///${stylePaths[2]}`,
+        `file:///${stylePaths[3]}`,
+      ];
     }
     const styleBlock = `
     <link nonce="${nonce}" href="${styleUri[0]}" rel="stylesheet"/>
