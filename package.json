@@ -217,7 +217,7 @@
         },
         {
           "command": "doors-smores.ViewTraces",
-          "when": "webviewId =~ /smores[A-Z]{3,4}View/ && (webviewSection =~ /Node-[USAD]N?FR/ || webviewSection =~ /Node-[USAD]T/)",
+          "when": "webviewId =~ /smores[A-Z]{3,4}View/ && (webviewSection =~ /Node-[USAD]N?FR/ || webviewSection =~ /Node-[USAD]DC/ || webviewSection =~ /Node-[USAD]T/)",
           "group": "smores0@1"
         },
         {
