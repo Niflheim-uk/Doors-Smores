@@ -1,4 +1,7 @@
 import * as vscode from "vscode";
+import * as fs from "fs";
+import * as path from "path";
+import { SmoresNode } from "./model/smoresNode";
 
 export function getWorkspaceRoot() :string|undefined {
   const rootPath =
@@ -8,3 +11,4 @@ export function getWorkspaceRoot() :string|undefined {
     : undefined;
   return rootPath;
 }
+

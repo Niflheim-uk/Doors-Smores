@@ -1,8 +1,8 @@
 import * as vscode from "vscode";
+import * as path from "path";
 import {Converter} from "showdown";
 import { TreeNode } from "../treeView/treeNode";
 import { SmoresNode } from "../model/smoresNode";
-const test: vscode.MarkdownString = new vscode.MarkdownString("# Hello World");
 
 export class NodeViewer {
   private _extensionUri!:vscode.Uri;
@@ -22,9 +22,8 @@ export class NodeViewer {
         }
       ),
       vscode.commands.registerCommand(
-        "doors-smores.Edit-Section", 
-        async (context:any) => {
-          await this.editNode(context);
+        "doors-smores.Edit-Section",(context:any) => {
+          this.editNode(context);
         }
       )
     );
@@ -42,12 +41,20 @@ export class NodeViewer {
   async showNode(node: SmoresNode) {
     this.referenceNode = node;
     if (this.viewPanel === undefined) {
+      const nodeUri = vscode.Uri.file(path.dirname(node.filePath.toString()));
       this.viewPanel = vscode.window.createWebviewPanel(
         "smoresNodeView", // Identifies the type of the webview. Used internally
         "Smores Preview", // Title of the panel displayed to the user
         vscode.ViewColumn.One, // Editor column to show the new webview panel in.
-        {enableScripts: true} // Webview options. More on these later.
+        {
+          enableScripts: true,
+          localResourceRoots:[
+            vscode.Uri.joinPath(this._extensionUri, 'resources'),
+            vscode.Uri.joinPath(nodeUri, "images")            
+          ]
+        }
       );
+      console.log(path.dirname(node.filePath.toString()));
       
       // Handle messages from the webview
       this.viewPanel.webview.onDidReceiveMessage(async (message) => {
@@ -118,15 +125,21 @@ export class NodeViewer {
     return outerHtml;
   
   }
-  private async getHtmlForMermaid(node:SmoresNode, tooltip:string) {
-    if(node.data.id === this.nodeToEdit?.data.id) {
-      return this.getHtmlForEditor(node.data.id, node.data.text, "use mermaid syntax");
-    } else {
-      const innerHtml = `<div Id='mermaid-${node.data.id}' class='mermaidHolder'>
-          <pre  class='mermaid'>${node.data.text}</pre>
-        </div>`;
-      return this.getHtmlForViewing(node.data.id, innerHtml, tooltip);
+  private async getHtmlForImage(node:SmoresNode, tooltip:string) {
+    if(this.viewPanel === undefined) {
+      return "";
     }
+    const nodeDir = path.dirname(node.filePath.toString());
+    const nodeUri = vscode.Uri.file(nodeDir);
+    const imageFilePath = vscode.Uri.joinPath(nodeUri, 'images', `${node.data.text}`);
+//    const normalised = imageFilePath.replace(/\\/g,'/');
+    const imageFileUri = vscode.Uri.joinPath(this._extensionUri, 'resources', 'failure.png');//vscode.Uri.parse(normalised);
+            
+    const imageWebUri = this.viewPanel.webview.asWebviewUri(imageFilePath);
+    const innerHtml = `<div Id='mermaid-${node.data.id}' class='mermaidHolder'>
+      <img src=${imageWebUri}>
+    </div>`;
+    return this.getHtmlForViewing(node.data.id, innerHtml, tooltip);
   }
   private getHtmlFromMd(node:SmoresNode, mdString:string, tooltip:string) {
     if(node.data.id === this.nodeToEdit?.data.id) {
@@ -144,8 +157,8 @@ export class NodeViewer {
     switch(node.data.category) {
       case "document":
         return "";
-      case "mermaidImage":
-        return await this.getHtmlForMermaid(node, tooltip);
+      case "image":
+        return await this.getHtmlForImage(node, tooltip);
       case "heading":
         mdString = this.getMdForHeading(node);
         return this.getHtmlFromMd(node, mdString, tooltip);
@@ -186,12 +199,10 @@ export class NodeViewer {
     // Local path to css styles
 		const stylesPath = vscode.Uri.joinPath(this._extensionUri, 'resources', 'smores.css');
 		const scriptPath = vscode.Uri.joinPath(this._extensionUri, 'resources', 'smoresScript.js');
-    const mermaidPath = vscode.Uri.joinPath(this._extensionUri, 'resources', 'mermaid.min.js');
-		// Convert to webviewUri
+    // Convert to webviewUri
 		const stylesUri = this.viewPanel.webview.asWebviewUri(stylesPath);
 		const scriptUri = this.viewPanel.webview.asWebviewUri(scriptPath);
-		const mermaidUri = this.viewPanel.webview.asWebviewUri(mermaidPath);
-    const bodyHtml = await this.getHtmlForNode(this.referenceNode);
+		const bodyHtml = await this.getHtmlForNode(this.referenceNode);
     
     this.viewPanel!.webview.html =`
     <!DOCTYPE html>
@@ -200,11 +211,10 @@ export class NodeViewer {
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link href="${stylesUri}" rel="stylesheet">
-        <script src="${mermaidUri}"></script>
         <script src="${scriptUri}"></script>
 				<title>Smores Preview</title>
       </head>
-      <body onLoad="renderAllMermaidImages()">${bodyHtml}</body>
+      <body>${bodyHtml}</body>
     </html>`;  
   }
 }

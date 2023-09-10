@@ -1,8 +1,6 @@
 import * as vscode from 'vscode';
-import * as utils from './utils';
 import { TreeNodeProvider } from './treeView/treeNodeProvider';
 import { NodeViewer } from './webView/nodeViewer';
-
 
 export function activate(context: vscode.ExtensionContext) {
 	console.log('Congratulations, your extension "doors-smores" is now active!');
