@@ -45,10 +45,10 @@ function getStyleBlock(exporting:boolean):string {
     ];
   } else {
     styleUri = [
-      webview.asWebviewUri(vscode.Uri.parse(stylePaths[0])).toString(),
-      webview.asWebviewUri(vscode.Uri.parse(stylePaths[1])).toString(),
-      webview.asWebviewUri(vscode.Uri.parse(stylePaths[2])).toString(),
-      webview.asWebviewUri(vscode.Uri.parse(stylePaths[3])).toString()
+      webview.asWebviewUri(vscode.Uri.file(stylePaths[0])).toString(),
+      webview.asWebviewUri(vscode.Uri.file(stylePaths[1])).toString(),
+      webview.asWebviewUri(vscode.Uri.file(stylePaths[2])).toString(),
+      webview.asWebviewUri(vscode.Uri.file(stylePaths[3])).toString()
     ];
   }
   return `
@@ -69,7 +69,7 @@ function getScriptBlock(exporting:boolean):string {
   if(exporting) {
     scriptUri = scriptPath;
   } else {
-    scriptUri = webview.asWebviewUri(vscode.Uri.parse(scriptPath)).toString();
+    scriptUri = webview.asWebviewUri(vscode.Uri.file(scriptPath)).toString();
   }
   return `
   <script nonce="${nonce}" src="${scriptUri}"></script>

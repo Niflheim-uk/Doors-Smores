@@ -5,7 +5,7 @@ import { TreeNode } from "../treeView/treeNode";
 import { SmoresNode } from "../model/smoresNode";
 import { getPageHtml } from './pageHtml';
 import * as utils from '../utils/utils';
-import { setImagesUri } from "./imageInnerHtml";
+import { setImagesPath } from "./imageInnerHtml";
 
 export class DocumentViewer {
   private _extensionUri!:vscode.Uri;
@@ -107,7 +107,7 @@ export class DocumentViewer {
     this._referenceNode = node;
     const nodeUri = vscode.Uri.file(path.dirname(node.filePath.toString()));
     this._imagesUri = vscode.Uri.joinPath(nodeUri, "images");
-    setImagesUri(this._imagesUri);
+    setImagesPath(this._imagesUri.path);
     this._viewPanel = vscode.window.createWebviewPanel(
       "smoresNodeView", // Identifies the type of the webview. Used internally
       "Smores Preview", // Title of the panel displayed to the user

@@ -1,22 +1,23 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 import * as utils from '../utils/utils';
 import { SmoresNode } from '../model/smoresNode';
 
-var _imagesUri:vscode.Uri;
-export function setImagesUri(imagesUri:vscode.Uri) {
-  _imagesUri = imagesUri;
+var _imagesPath:string|undefined;
+export function setImagesPath(imagesPath:string) {
+  _imagesPath = imagesPath;
 }
 export function getInnerHtmlForImage(node:SmoresNode, exporting:boolean) {
   const webview = utils.getWebview();
-  if(_imagesUri === undefined || webview === undefined) {
+  if(_imagesPath === undefined || webview === undefined) {
     return "";
   }
-  const imageFileUri = vscode.Uri.joinPath(_imagesUri, `${node.data.text}`);
-  let imageWebUri = imageFileUri;
+  const imageFilePath = path.join(_imagesPath, `${node.data.text}`);
+  let imageFileUri = vscode.Uri.file(imageFilePath);
   if(exporting===false) {
-    imageWebUri = webview.asWebviewUri(imageFileUri);
+    imageFileUri = webview.asWebviewUri(imageFileUri);
   }
   return `<div Id='image-${node.data.id}' class='imageHolder'>
-    <img src=${imageWebUri}>
+    <img src=${imageFileUri}>
   </div>`;
 }
