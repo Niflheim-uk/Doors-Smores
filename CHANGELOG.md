@@ -2,6 +2,11 @@
 
 All notable changes to the "doors-smores" extension will be documented in this file.
 
+## 0.4.0
+- Restructured codebase
+- Added 2nd TreeView to view container for managing projects. 
+- Existing TreeView now only contains the active document.
+
 ## 0.3.0
 - Implemented tracing between documents
 - Implemented trace suspicion on content change and verification process

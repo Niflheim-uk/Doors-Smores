@@ -31,23 +31,18 @@
     "viewsWelcome": [
       {
         "view": "doors-smores.documentTree",
-        "when": "workspaceFolderCount > 0 && !doors-smores.projectOpen",
-        "contents": "No current doors-smores project.\n[learn more](https://xkcd.com/1319/).\n[Start New Project](command:doors-smores.New-Project)\n[Open Existing Project](command:doors-smores.Open-Project)"
+        "when": "!doors-smores.projectOpen",
+        "contents": "No current doors-smores project.\n[learn more](https://xkcd.com/1319/).\n[Start New Project](command:doors-smores.NewProject)\n[Open Existing Project](command:doors-smores.OpenProject)"
       },
       {
-        "view": "doors-smores.projectView",
-        "when": "workspaceFolderCount > 0 && !doors-smores.projectOpen",
-        "contents": "No current doors-smores project.\n[learn more](https://xkcd.com/1319/).\n[Start New Project](command:doors-smores.New-Project)\n[Open Existing Project](command:doors-smores.Open-Project)"
-      },
-      {
-        "view": "doors-smores.documentTree",
-        "when": "workspaceFolderCount > 0 && doors-smores.projectOpen",
-        "contents": "Empty project found.\n[New Document](command:doors-smores.New-Document)"
+        "view": "doors-smores.projectTree",
+        "when": "!doors-smores.projectOpen",
+        "contents": "No recent doors-smores project.\n[learn more](https://xkcd.com/1319/).\n[Start New Project](command:doors-smores.NewProject)\n[Open Existing Project](command:doors-smores.OpenProject)"
       },
       {
         "view": "doors-smores.documentTree",
-        "when": "workspaceFolderCount == 0",
-        "contents": "You have not yet opened a folder.\n[Open Folder](command:vscode.openFolder)"
+        "when": "doors-smores.projectOpen",
+        "contents": "No open document.\n[New Document](command:doors-smores.NewDocument)"
       }
     ],
     "viewsContainers": {
@@ -68,7 +63,7 @@
           "contextualTitle": "Doors Smores: Document Tree"
         },
         {
-          "id": "doors-smores.projectView",
+          "id": "doors-smores.projectTree",
           "name": "Smores Project View",
           "icon": "$(flame)",
           "contextualTitle": "Doors Smores: Project View"
@@ -77,174 +72,132 @@
     },
     "commands": [
       {
-        "command": "doors-smores.New-Project",
-        "category": "Smores",
-        "title": "New Project"
-      },
-      {
-        "command": "doors-smores.Open-Project",
+        "command": "doors-smores.OpenProject",
         "category": "Smores",
         "title": "Open Project",
         "icon": "$(folder-opened)"
       },
       {
-        "command": "doors-smores.Set-Active-Project",
-        "category": "Smores",
-        "title": "Set Active Project"
-      },
-      {
-        "command": "doors-smores.Close-Project",
+        "command": "doors-smores.CloseProject",
         "category": "Smores",
         "title": "Close Project",
         "icon": "$(folder)"
       },
       {
-        "command": "doors-smores.New-Document",
+        "command": "doors-smores.NewDocument",
         "category": "Smores",
-        "title": "New Document"
+        "title": "New Document",
+        "icon": "$(new-file)"
       },
       {
-        "command": "doors-smores.Update-Views",
+        "command": "doors-smores.RefreshViews",
         "category": "Smores",
         "title": "Refresh Doors Smores views",
         "icon": "$(extensions-refresh)"
       },
       {
-        "command": "doors-smores.Export-Document",
+        "command": "doors-smores.ExportDocument",
         "category": "Smores",
         "title": "Export the current Document",
         "icon": "$(output)"
       },
       {
-        "command": "doors-smores.View-TreeNode",
+        "command": "doors-smores.ViewDocumentNode",
         "category": "Smores",
         "title": "View document item, and sub-items",
         "icon": "$(eye)"
       },
       {
-        "command": "doors-smores.Trace-TreeNode",
+        "command": "doors-smores.EditDocumentNode",
+        "category": "Smores",
+        "title": "Edit document item",
+        "icon": "$(pen)"
+      },
+      {
+        "command": "doors-smores.ViewTraces",
         "category": "Smores",
         "title": "Trace document item",
         "icon": "$(link)"
       },
       {
-        "command": "doors-smores.Trace-WebviewNode",
-        "category": "Smores",
-        "title": "Trace document item",
-        "icon": "$(link)"
-      },
-      {
-        "command": "doors-smores.Delete-TreeNode",
+        "command": "doors-smores.DeleteDocumentNode",
         "category": "Smores",
         "title": "Delete document item, and sub-items",
         "icon": "$(trash)"
       },
       {
-        "command": "doors-smores.Edit-Section",
+        "command": "doors-smores.DeleteDocument",
         "category": "Smores",
-        "title": "Edit document section"
+        "title": "Delete document item, and sub-items",
+        "icon": "$(trash)"
       },
       {
-        "command": "doors-smores.Promote-Node",
+        "command": "doors-smores.RemoveRecentProject",
+        "category": "Smores",
+        "title": "Remove recent project from history",
+        "icon": "$(close)"
+      },
+      {
+        "command": "doors-smores.Promote",
         "category": "Smores",
         "title": "Promote",
         "icon": "$(arrow-small-left)"
       },
       {
-        "command": "doors-smores.Demote-Node",
+        "command": "doors-smores.Demote",
         "category": "Smores",
         "title": "Demote",
         "icon": "$(arrow-small-right)"
       },
       {
-        "command": "doors-smores.Move-Node-Up",
+        "command": "doors-smores.MoveUp",
         "category": "Smores",
         "title": "Move Up",
         "icon": "$(arrow-small-up)"
       },
       {
-        "command": "doors-smores.Move-Node-Down",
+        "command": "doors-smores.MoveDown",
         "category": "Smores",
         "title": "Move Down",
         "icon": "$(arrow-small-down)"
       },
       {
-        "command": "doors-smores.New-TreeHeading",
+        "command": "doors-smores.NewHeading",
         "category": "Smores",
         "title": "New Heading"
       },
       {
-        "command": "doors-smores.New-TreeComment",
+        "command": "doors-smores.NewComment",
         "category": "Smores",
         "title": "New Comment"
       },
       {
-        "command": "doors-smores.New-TreeFuncReq",
+        "command": "doors-smores.NewFuncReq",
         "category": "Smores",
         "title": "New Functional Requirement"
       },
       {
-        "command": "doors-smores.New-TreeNonFuncReq",
+        "command": "doors-smores.NewNonFuncReq",
         "category": "Smores",
         "title": "New Non-Functional Requirement"
       },
       {
-        "command": "doors-smores.New-TreeDesCon",
+        "command": "doors-smores.NewDesCon",
         "category": "Smores",
         "title": "New Design Constraint"
       },
       {
-        "command": "doors-smores.New-TreeTest",
+        "command": "doors-smores.NewTest",
         "category": "Smores",
         "title": "New Test Case"
       },
       {
-        "command": "doors-smores.New-TreeImage",
+        "command": "doors-smores.NewImage",
         "category": "Smores",
         "title": "New Image (File)"
       },
       {
-        "command": "doors-smores.New-TreeMermaidImage",
-        "category": "Smores",
-        "title": "New Image (Mermaid Syntax)"
-      },
-      {
-        "command": "doors-smores.New-WebHeading",
-        "category": "Smores",
-        "title": "New Heading"
-      },
-      {
-        "command": "doors-smores.New-WebComment",
-        "category": "Smores",
-        "title": "New Comment"
-      },
-      {
-        "command": "doors-smores.New-WebFuncReq",
-        "category": "Smores",
-        "title": "New Functional Requirement"
-      },
-      {
-        "command": "doors-smores.New-WebNonFuncReq",
-        "category": "Smores",
-        "title": "New Non-Functional Requirement"
-      },
-      {
-        "command": "doors-smores.New-WebDesCon",
-        "category": "Smores",
-        "title": "New Design Constraint"
-      },
-      {
-        "command": "doors-smores.New-WebTest",
-        "category": "Smores",
-        "title": "New Test Case"
-      },
-      {
-        "command": "doors-smores.New-WebImage",
-        "category": "Smores",
-        "title": "New Image (File)"
-      },
-      {
-        "command": "doors-smores.New-WebMermaidImage",
+        "command": "doors-smores.NewMermaidImage",
         "category": "Smores",
         "title": "New Image (Mermaid Syntax)"
       }
@@ -252,167 +205,166 @@
     "menus": {
       "webview/context": [
         {
-          "command": "doors-smores.New-Project",
-          "when": "webviewId=='doors-smores.projectView'"
-        },
-        {
-          "command": "doors-smores.Edit-Section",
+          "command": "doors-smores.EditDocumentNode",
           "when": "webviewId =~ /smores[A-Z]{3,4}View/ && webviewSection =~ /Node-/",
           "group": "smores0@1"
         },
         {
-          "command": "doors-smores.Trace-WebviewNode",
+          "command": "doors-smores.ViewTraces",
           "when": "webviewId =~ /smores[A-Z]{3,4}View/ && (webviewSection =~ /Node-[USAD]N?FR/ || webviewSection =~ /Node-[USAD]T/)",
           "group": "smores0@1"
         },
         {
-          "command": "doors-smores.New-WebHeading",
+          "command": "doors-smores.NewHeading",
           "when": "webviewId =~ /smores[A-Z]{3,4}View/ && webviewSection =~ /Node-/",
           "group": "smores1@1"
         },
         {
-          "command": "doors-smores.New-WebComment",
+          "command": "doors-smores.NewComment",
           "when": "webviewId =~ /smores[A-Z]{3,4}View/ && webviewSection =~ /Node-/",
           "group": "smores1@2"
         },
         {
-          "command": "doors-smores.New-WebFuncReq",
+          "command": "doors-smores.NewFuncReq",
           "when": "webviewId =~ /smores((URS)|(SRS)|(ADS)|(DDS)|(Node))View/ && (webviewSection =~ /Node-/)",
           "group": "smores2@1"
         },
         {
-          "command": "doors-smores.New-WebNonFuncReq",
+          "command": "doors-smores.NewNonFuncReq",
           "when": "webviewId =~ /smores((URS)|(SRS)|(ADS)|(DDS)|(Node))View/ && (webviewSection =~ /Node-/)",
           "group": "smores2@2"
         },
         {
-          "command": "doors-smores.New-WebDesCon",
+          "command": "doors-smores.NewDesCon",
           "when": "webviewId =~ /smores((URS)|(SRS)|(ADS)|(DDS)|(Node))View/ && (webviewSection =~ /Node-/)",
           "group": "smores2@3"
         },
         {
-          "command": "doors-smores.New-WebTest",
+          "command": "doors-smores.NewTest",
           "when": "webviewId =~ /smores((ATP)|(STP)|(ITP)|(UTP)|(Node))View/ && (webviewSection =~ /Node-/)",
           "group": "smores3@1"
         },
         {
-          "command": "doors-smores.New-WebImage",
+          "command": "doors-smores.NewImage",
           "when": "webviewId =~ /smores[A-Z]{3,4}View/ && webviewSection =~ /Node-/",
           "group": "smores4@1"
         },
         {
-          "command": "doors-smores.New-WebMermaidImage",
+          "command": "doors-smores.NewMermaidImage",
           "when": "webviewId =~ /smores[A-Z]{3,4}View/ && (webviewSection =~ /Node-/)",
           "group": "smores4@2"
         }
       ],
       "view/title": [
         {
-          "command": "doors-smores.Update-Views",
-          "when": "view == doors-smores.documentTree",
-          "group": "navigation"
-        },
-        {
-          "command": "doors-smores.Close-Project",
-          "when": "view == doors-smores.projectView && doors-smores.projectOpen"
-        },
-        {
-          "command": "doors-smores.Open-Project",
-          "when": "view == doors-smores.projectView"
-        },
-        {
-          "command": "doors-smores.Close-Project",
-          "when": "view == doors-smores.projectView && doors-smores.projectOpen",
-          "group": "navigation@2"
-        },
-        {
-          "command": "doors-smores.Open-Project",
-          "when": "view == doors-smores.projectView",
+          "command": "doors-smores.NewDocument",
+          "when": "view == doors-smores.documentTree || view == doors-smores.projectTree",
           "group": "navigation@1"
         },
         {
-          "command": "doors-smores.New-Document",
-          "when": "view == doors-smores.documentTree"
+          "command": "doors-smores.OpenProject",
+          "when": "view == doors-smores.projectTree",
+          "group": "navigation@5"
+        },
+        {
+          "command": "doors-smores.ExportDocument",
+          "when": "view == doors-smores.documentTree",
+          "group": "navigation@5"
+        },
+        {
+          "command": "doors-smores.CloseProject",
+          "when": "view == doors-smores.projectTree && doors-smores.projectOpen",
+          "group": "navigation@6"
+        },
+        {
+          "command": "doors-smores.RefreshViews",
+          "when": "view == doors-smores.documentTree || view == doors-smores.projectTree",
+          "group": "navigation@9"
         }
       ],
       "view/item/context": [
         {
-          "command": "doors-smores.Promote-Node",
+          "command": "doors-smores.Promote",
           "when": "view == doors-smores.documentTree && viewItem =~ /PROMOTE/",
           "group": "inline@1"
         },
         {
-          "command": "doors-smores.Demote-Node",
+          "command": "doors-smores.Demote",
           "when": "view == doors-smores.documentTree && viewItem =~ /DEMOTE/",
           "group": "inline@2"
         },
         {
-          "command": "doors-smores.Move-Node-Up",
+          "command": "doors-smores.MoveUp",
           "when": "view == doors-smores.documentTree && !(viewItem =~ /MIN_CHILD/)",
           "group": "inline@3"
         },
         {
-          "command": "doors-smores.Move-Node-Down",
+          "command": "doors-smores.MoveDown",
           "when": "view == doors-smores.documentTree && !(viewItem =~ /MAX_CHILD/)",
           "group": "inline@4"
         },
         {
-          "command": "doors-smores.View-TreeNode",
+          "command": "doors-smores.ViewDocumentNode",
           "when": "view == doors-smores.documentTree",
           "group": "inline@5"
         },
         {
-          "command": "doors-smores.Trace-TreeNode",
+          "command": "doors-smores.ViewTraces",
           "when": "view == doors-smores.documentTree && (viewItem =~ /^[USAD]N?FR/ || viewItem =~ /^[USAD]DC/ || viewItem =~ /^[USAD]T/)",
           "group": "inline@6"
         },
         {
-          "command": "doors-smores.Export-Document",
-          "when": "view == doors-smores.documentTree",
+          "command": "doors-smores.DeleteDocumentNode",
+          "when": "view == doors-smores.documentTree && !(viewItem =~ /^DOC/)",
           "group": "inline@7"
         },
         {
-          "command": "doors-smores.Delete-TreeNode",
-          "when": "view == doors-smores.documentTree",
+          "command": "doors-smores.DeleteDocument",
+          "when": "view == doors-smores.projectTree && viewItem == document",
+          "group": "inline@7"
+        },
+        {
+          "command": "doors-smores.RemoveRecentProject",
+          "when": "view == doors-smores.projectTree && viewItem == recentProject",
           "group": "inline@8"
         },
         {
-          "command": "doors-smores.New-TreeHeading",
+          "command": "doors-smores.NewHeading",
           "when": "view == doors-smores.documentTree",
           "group": "smores1@1"
         },
         {
-          "command": "doors-smores.New-TreeComment",
+          "command": "doors-smores.NewComment",
           "when": "view == doors-smores.documentTree",
           "group": "smores1@2"
         },
         {
-          "command": "doors-smores.New-TreeFuncReq",
+          "command": "doors-smores.NewFuncReq",
           "when": "view == doors-smores.documentTree && (viewItem =~ /((URS)|(SRS)|(ADS)|(DDS)|(UKN))/)",
           "group": "smores2@1"
         },
         {
-          "command": "doors-smores.New-TreeNonFuncReq",
+          "command": "doors-smores.NewNonFuncReq",
           "when": "view == doors-smores.documentTree && (viewItem =~ /((URS)|(SRS)|(ADS)|(DDS)|(UKN))/)",
           "group": "smores2@2"
         },
         {
-          "command": "doors-smores.New-TreeDesCon",
+          "command": "doors-smores.NewDesCon",
           "when": "view == doors-smores.documentTree && (viewItem =~ /((URS)|(SRS)|(ADS)|(DDS)|(UKN))/)",
           "group": "smores2@3"
         },
         {
-          "command": "doors-smores.New-TreeTest",
+          "command": "doors-smores.NewTest",
           "when": "view == doors-smores.documentTree && (viewItem =~ /((ATP)|(STP)|(ITP)|(UTP)|(UKN))/)",
           "group": "smores3@1"
         },
         {
-          "command": "doors-smores.New-TreeImage",
+          "command": "doors-smores.NewImage",
           "when": "view == doors-smores.documentTree",
           "group": "smores4@1"
         },
         {
-          "command": "doors-smores.New-TreeMermaidImage",
+          "command": "doors-smores.NewMermaidImage",
           "when": "view == doors-smores.documentTree",
           "group": "smores4@2"
         }

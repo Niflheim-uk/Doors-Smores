@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
-import { SmoresNode } from "../model/smoresNode";
-import * as schema from "../model/smoresDataSchema";
-import { getExtensionBasedPath } from './getExtension';
-
+import * as schema from "../model/schema";
+import { DocumentNode } from '../model/documentNode';
+import { DoorsSmores } from '../doorsSmores';
+import { join } from 'path';
 
 const ursLevelColour = 'terminal.ansiGreen';
 const srsLevelColour = 'debugConsole.errorForeground';
@@ -13,7 +13,7 @@ const nonFuncReqColour = 'debugConsole.warningForeground';
 const desConColour = 'debugIcon.restartForeground';
 const imageColour = 'debugConsole.warningForeground';
 const mermaidColour = 'debugIcon.restartForeground';
-export function getDocumentColour(node:SmoresNode):vscode.ThemeColor|undefined {
+export function getDocumentColour(node:DocumentNode):vscode.ThemeColor|undefined {
   switch(node.getDocumentType()) {
     case `${schema.ursDocType}`: 
       return new vscode.ThemeColor(ursLevelColour);
@@ -42,58 +42,58 @@ export function getDocumentColour(node:SmoresNode):vscode.ThemeColor|undefined {
   return undefined;
 }
 
-export function getNodeIcon(node:SmoresNode):vscode.ThemeIcon {
+export function getNodeIcon(node:DocumentNode):vscode.ThemeIcon {
   var iconColour:vscode.ThemeColor|undefined;
   const projectData:any = node.data;
   if(projectData.documentIds) {
     return vscode.ThemeIcon.Folder;
   }
   switch(node.data.category) {
-  case schema.projectType:
+  case schema.projectCategory:
     return vscode.ThemeIcon.Folder;
-  case schema.documentType:
+  case schema.documentCategory:
     iconColour = getDocumentColour(node);
     return new vscode.ThemeIcon('book', iconColour);
-  case schema.headingType:
+  case schema.headingCategory:
     iconColour = new vscode.ThemeColor('foreground');
     return new vscode.ThemeIcon('symbol-text', iconColour);
-  case schema.userFRType:
-  case schema.softFRType:
-  case schema.archFRType:
-  case schema.desFRType:
+  case schema.userFRCategory:
+  case schema.softFRCategory:
+  case schema.archFRCategory:
+  case schema.desFRCategory:
     iconColour = new vscode.ThemeColor(funcReqColour);
     return new vscode.ThemeIcon('law', iconColour);
-  case schema.userNFRType:
-  case schema.softNFRType:
-  case schema.archNFRType:
-  case schema.desNFRType:
+  case schema.userNFRCategory:
+  case schema.softNFRCategory:
+  case schema.archNFRCategory:
+  case schema.desNFRCategory:
     iconColour = new vscode.ThemeColor(nonFuncReqColour);
     return new vscode.ThemeIcon('law', iconColour);
-  case schema.userDCType:
-  case schema.softDCType:
-  case schema.archDCType:
-  case schema.desDCType:
+  case schema.userDCCategory:
+  case schema.softDCCategory:
+  case schema.archDCCategory:
+  case schema.desDCCategory:
     iconColour = new vscode.ThemeColor(desConColour);
     return new vscode.ThemeIcon('lock', iconColour);
-  case schema.userTestType:
+  case schema.userTestCategory:
     iconColour = new vscode.ThemeColor(ursLevelColour);
     return new vscode.ThemeIcon('beaker', iconColour);
-  case schema.softTestType:
+  case schema.softTestCategory:
     iconColour = new vscode.ThemeColor(srsLevelColour);
     return new vscode.ThemeIcon('beaker', iconColour);
-  case schema.archTestType:
+  case schema.archTestCategory:
     iconColour = new vscode.ThemeColor(adsLevelColour);
     return new vscode.ThemeIcon('beaker', iconColour);
-  case schema.desTestType:
+  case schema.desTestCategory:
     iconColour = new vscode.ThemeColor(ddsLevelColour);
     return new vscode.ThemeIcon('beaker', iconColour);
-  case schema.commentType:
+  case schema.commentCategory:
     iconColour = new vscode.ThemeColor('foreground');
     return new vscode.ThemeIcon('selection', iconColour);
-  case schema.imageType:
+  case schema.imageCategory:
     iconColour = new vscode.ThemeColor(imageColour);
     return new vscode.ThemeIcon('symbol-color', iconColour);
-  case schema.mermaidType:
+  case schema.mermaidCategory:
     iconColour = new vscode.ThemeColor(mermaidColour);
     return new vscode.ThemeIcon('symbol-color', iconColour);
   default:
@@ -102,33 +102,37 @@ export function getNodeIcon(node:SmoresNode):vscode.ThemeIcon {
   }
 }
 export function getDocumentStylePaths():string[] {
+  const extensionPath = DoorsSmores.getExtensionPath();
   // Local path to css styles
   const stylesPaths:string[] = [
-    getExtensionBasedPath(['resources', 'theme.css']),
-    getExtensionBasedPath(['resources', 'document.css']),
-    getExtensionBasedPath(['resources', 'displayStyle.css']),
-    getExtensionBasedPath(['resources', 'pagination.css']),
+    join(extensionPath, 'resources', 'theme.css'),
+    join(extensionPath, 'resources', 'document.css'),
+    join(extensionPath, 'resources', 'displayStyle.css'),
+    join(extensionPath, 'resources', 'pagination.css'),
   ];
   return stylesPaths;
 }
 export function getTracingStylePaths():string[] {
+  const extensionPath = DoorsSmores.getExtensionPath();
   const stylesPaths:string[] = [
-    getExtensionBasedPath(['resources', 'theme.css']),
-    getExtensionBasedPath(['resources', 'tracing.css']),
-    getExtensionBasedPath(['resources', 'displayStyle.css']),
-    getExtensionBasedPath(['resources', 'pagination.css']),
-    getExtensionBasedPath(['resources', 'vendor', 'vscode', 'codicon.css'])
+    join(extensionPath, 'resources', 'theme.css'),
+    join(extensionPath, 'resources', 'tracing.css'),
+    join(extensionPath, 'resources', 'displayStyle.css'),
+    join(extensionPath, 'resources', 'pagination.css'),
+    join(extensionPath, 'resources', 'vendor', 'vscode', 'codicon.css')
   ];
   return stylesPaths;
 }
 export function getProjectStylePaths():string[] {
+  const extensionPath = DoorsSmores.getExtensionPath();
   const stylesPaths:string[] = [
-    getExtensionBasedPath(['resources', 'displayStyle.css']),
-    getExtensionBasedPath(['resources', 'projectView.css']),
-    getExtensionBasedPath(['resources', 'vendor', 'vscode', 'codicon.css'])
+    join(extensionPath, 'resources', 'displayStyle.css'),
+    join(extensionPath, 'resources', 'projectView.css'),
+    join(extensionPath, 'resources', 'vendor', 'vscode', 'codicon.css')
   ];
   return stylesPaths;
 }
 export function getScriptPath():string {
-  return getExtensionBasedPath(['resources', 'smoresScript.js']);
+  const extensionPath = DoorsSmores.getExtensionPath();
+  return join(extensionPath, 'resources', 'smoresScript.js');
 }

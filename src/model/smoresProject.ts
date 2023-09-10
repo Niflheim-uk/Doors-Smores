@@ -1,8 +1,9 @@
 import * as vscode from "vscode";
-import * as schema from "./smoresDataSchema";
-import * as fs from "fs";
-import { SmoresDataFile } from "./smoresDataFile";
-import { getExtensionBasedUri } from "../utils/getExtension";
+import { SmoresFile } from "./smoresFile";
+import { DoorsSmores } from "../doorsSmores";
+import { DocumentNode, DocumentNodeData } from "./documentNode";
+import { documentCategory } from "./schema";
+import { VersionController } from "../versionControl/versionController";
 
 export interface ProjectDataModel {
   idBase: number;
@@ -14,54 +15,25 @@ export interface ProjectDataModel {
   uniqueIds: number[];
   documentIds: number[];
 }
-export function getProject():SmoresProject|undefined {
-  const projectFilepath = SmoresDataFile.getProjectFilepath();
-  if(projectFilepath) {
-    return new SmoresProject(projectFilepath);
-  }
-  return undefined;
-}
-export class SmoresProject extends SmoresDataFile {
+export class SmoresProject extends SmoresFile {
   declare readonly data:ProjectDataModel;
-  constructor (readonly projectFilepath:fs.PathLike) {
-    super(projectFilepath);
-    SmoresDataFile.setProjectFilepath(projectFilepath);
+  constructor (filepath:string) {
+    super(filepath);
     if(this.setDefaults()) {
       this.setDefaultImage();
     }
   }
-  private setDefaultImage() {
-    const imageSrcUri = getExtensionBasedUri(['resources', 'defaultImage.jpg']);
-    const projectDataUri = vscode.Uri.file(SmoresDataFile.getDataFilepath());
-    const imageDestUri = vscode.Uri.joinPath(projectDataUri, 'defaultImage.jpg');
-    vscode.workspace.fs.copy(imageSrcUri, imageDestUri, {overwrite:true});
-  }
-  private setDefaults():boolean {
-    let change = false;
-    if(this.data.idBase === undefined) {
-      this.data.idBase = 10000;
-      change = true;
-    }
-    if(this.data.gitInUse === undefined) {
-      this.data.gitInUse = false;
-    }
-    if(this.data.maxContributors === undefined) {
-      this.data.maxContributors = 100;
-      change = true;
-    }
-    if(change) {
-      this.write();
-    }
-    return change;
-  }
-  verifyId(nodeId:number):boolean {
-    const nodePath = SmoresDataFile.getNodeFilepath(nodeId);
-    if(nodePath) {
-      if(fs.existsSync(nodePath)) {
-        return true;
+  getDocuments():DocumentNode[] {
+    let documents:DocumentNode[] = [];
+    if(this.data.documentIds && this.data.documentIds.length > 0) {
+      const documentIds = this.data.documentIds;
+      for (let index = 0; index < documentIds.length; index++) {
+        const filepath = DoorsSmores.getNodeFilepath(documentIds[index]);
+        const document:DocumentNode = new DocumentNode(filepath);
+        documents.push(document);
       }
     }
-    return false;
+    return documents;
   }
   getUniqueId():number {
     const userIndex = this.getUserIndex();
@@ -74,67 +46,81 @@ export class SmoresProject extends SmoresDataFile {
     this.write();
     return nextId;
   }
-  getDocumentPaths():fs.PathLike[] {
-    let documentPaths = undefined;
-    if(this.data.documentIds && this.data.documentIds.length > 0) {
-      const documentIds = this.data.documentIds;
-      for (let index = 0; index < documentIds.length; index++) {
-        const childId = documentIds[index];
-        const nodeFilepath = SmoresDataFile.getNodeFilepath(childId);
-        if(nodeFilepath === undefined) {
-          return [];
-        }
-        if(Array.isArray(documentPaths)) {
-          documentPaths.push(nodeFilepath);
-        } else {
-          documentPaths = [nodeFilepath];
-        }
-      }
-    }
-    if(documentPaths) {
-      return documentPaths;
-    }
-    return [];
-  }
-  newDocument(title:string, docType:string): string|undefined {
-    console.log("New document called");
-    const newId = this.getUniqueId();
-    const newNodePath = SmoresDataFile.getNodeFilepath(newId);
-    if(newNodePath === undefined) {
-      return undefined;
-    }
-    const newDocument = new SmoresDataFile(newNodePath);
-    const newDocumentData:schema.NodeDataModel = {
-      id:newId,
-      category:schema.documentType,
-      text:title,
+  newDocument(documentName:string, documentType:string) {
+    const documentId = this.getUniqueId();
+    const filepath = DoorsSmores.getNodeFilepath(documentId);
+    const newDocument:DocumentNode = new DocumentNode(filepath);
+    const newDocumentData:DocumentNodeData = {
+      id:documentId,
+      category:documentCategory,
+      text:documentName,
       parent:0,
+      children:[],
       traces:{traceIds:[],suspectIds:[]},
-      documentData:{documentType:docType}
+      documentData:{documentType}
     };
     newDocument.data = newDocumentData;
     newDocument.write();
-    if(this.data.documentIds && this.data.documentIds.length > 0) {
-      this.data.documentIds.push(newId);
-    } else {
-      this.data.documentIds = [newId];
-    }
+    this.data.documentIds.push(documentId);
     this.write();
-    return newNodePath;
+    return newDocument;
   }
+
   deleteDocument(documentId:number) {
-    if(this.data.documentIds !== undefined) {
-      let docs:number[] = this.data.documentIds;
-      const idPos = docs.findIndex(id => documentId === id);
-      if(idPos >= 0) {
-        this.data.documentIds.splice(idPos,1);
-      }
+    let change = false;
+    if(SmoresFile.exists(documentId)) {
+      const filepath = DoorsSmores.getNodeFilepath(documentId);
+      const document:DocumentNode = new DocumentNode(filepath);
+      document.delete();
+      change = true;
+    }
+    const idPos = this.data.documentIds.findIndex(id => documentId === id);
+    if(idPos >= 0) {
+      this.data.documentIds.splice(idPos,1);
+      change = true;
       this.write();
     }
+    if(change) {
+      VersionController.commitChanges(`Document ${documentId} and child nodes deleted`);
+    }
   }
 
 
 
+  private setDefaultImage() {
+    // const imageSrcUri = getExtensionBasedUri(['resources', 'defaultImage.jpg']);
+    // const projectDataUri = vscode.Uri.file(SmoresDataFile.getDataFilepath());
+    // const imageDestUri = vscode.Uri.joinPath(projectDataUri, 'defaultImage.jpg');
+    // vscode.workspace.fs.copy(imageSrcUri, imageDestUri, {overwrite:true});
+  }
+  private setDefaults():boolean {
+    let change = false;
+    if(this.data.idBase === undefined) {
+      this.data.idBase = 10000;
+      this.data.maxContributors = 100;
+      this.data.gitInUse = false;
+      this.data.repoPathspec = "";
+      this.data.repoRoot = "";
+      this.data.knownContributors = [];
+      this.data.uniqueIds = [];
+      this.data.documentIds = [];
+      change = true;
+    }
+    if(change) {
+      this.write();
+    }
+    // empty arrays don't get saved
+    if(this.data.knownContributors === undefined) {
+      this.data.knownContributors = [];
+    }
+    if(this.data.uniqueIds === undefined) {
+      this.data.uniqueIds = [];
+    }
+    if(this.data.documentIds === undefined) {
+      this.data.documentIds = [];
+    }
+    return change;
+  }
 
   private getUserId():string {
     return vscode.env.machineId;

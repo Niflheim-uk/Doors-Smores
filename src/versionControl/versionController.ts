@@ -1,8 +1,6 @@
 import { pathspec, SimpleGitOptions, simpleGit } from 'simple-git';
-import { SmoresDataFile } from '../model/smoresDataFile';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { getProject } from '../model/smoresProject';
 import { DoorsSmores } from '../doorsSmores';
 
 var _open:boolean = false;
@@ -21,7 +19,7 @@ export class VersionController {
     _open = false;
   }
   public static async repoExists():Promise<boolean> {
-    const projDir = SmoresDataFile.getProjectRoot();
+    const projDir = DoorsSmores.getProjectDirectory();
     const options: Partial<SimpleGitOptions> = {
       binary: 'git',
       maxConcurrentProcesses:6,
@@ -38,7 +36,7 @@ export class VersionController {
   }
 
   public static async commitChanges(msg:string) {
-    DoorsSmores.exportAll();
+//    DoorsSmores.exportAll();
     console.log(msg);
     if(!_open) {
       return; 
@@ -54,7 +52,7 @@ export class VersionController {
   }
 
   public static async initialise() {
-    const projectNode = getProject();
+    const projectNode = DoorsSmores.getActiveProject();
     if(projectNode === undefined || !projectNode.data.gitInUse) {
       console.log("Repo not in use");
       return;
@@ -119,7 +117,7 @@ function filterIgnoredFiles(filesChanged:string[], filesIgnored?:string[]):strin
   }
 }
 function makeRepo() {
-  _gitOptions.baseDir = SmoresDataFile.getProjectRoot();
+  _gitOptions.baseDir = DoorsSmores.getProjectDirectory();
   _pathSpec = '.';
   simpleGit(_gitOptions)
   .init()
@@ -131,7 +129,7 @@ function makeRepo() {
   });
 }
 function startRepoUse():void {
-  const projDir = SmoresDataFile.getProjectRoot();
+  const projDir = DoorsSmores.getProjectDirectory();
   _gitOptions.baseDir = projDir;
   if(projDir === undefined) {
     return;
@@ -148,7 +146,7 @@ function startRepoUse():void {
   });
 }
 async function updateProjectNodeWithGitUse():Promise<void> {
-  const projNode = getProject();
+  const projNode = DoorsSmores.getActiveProject();
   if(projNode === undefined) {
     return;
   }

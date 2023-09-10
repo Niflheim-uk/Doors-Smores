@@ -1,131 +1,239 @@
 import * as vscode from 'vscode';
-import { TreeNode } from "./treeView/treeNode";
-import { TreeNodeProvider } from './treeView/treeNodeProvider';
-import { DocumentViewer } from './documentViewer/documentViewer';
-import { TraceView } from './traceView/traceView';
-import { ProjectManagement } from './projectManagement/projectManagement';
-import { deleteNode } from "./projectManagement/deleteNode";
-import { 
-  newTreeHeading, newWebviewHeading,
-  newTreeComment, newWebviewComment,
-  newTreeFuncReq, newWebviewFuncReq,
-  newTreeNonFuncReq, newWebviewNonFuncReq,
-  newTreeDesCon, newWebviewDesCon,
-  newTreeTest, newWebviewTest,
-  newTreeImage, newWebviewImage,
-  newTreeMermaidImage, newWebviewMermaidImage, getNodeFromContext 
-} from "./projectManagement/newNode";
-import { promoteNode, demoteNode, moveNodeDown, moveNodeUp } from './projectManagement/moveNode';
-import { getProject } from './model/smoresProject';
-import { SmoresNode } from './model/smoresNode';
+import { basename, dirname, join } from 'path';
+import { SmoresFile } from './model/smoresFile';
+import { SmoresProject } from './model/smoresProject';
+import { DocumentNode } from './model/documentNode';
+import { ProjectTreeProvider } from './projectTree/projectTreeProvider';
+import { DocumentTreeProvider } from './documentTree/documentTreeProvider';
+import { registerNewContentCommands } from './model/newContext';
+import { DocumentView } from './customWebviews/documentView/documentView';
+import { TraceView } from './customWebviews/traceView/traceView';
+import { newDocument } from './model/newDocument';
 
+export type ProjectInfo = {
+  name:string,
+  path:string
+};
+const recentProjectsKey = 'recentProjects2';
 export class DoorsSmores {
-  static treeView:TreeNodeProvider;
-  static documentView:DocumentViewer;
-  static traceView:TraceView;
-  public static extensionContext:vscode.ExtensionContext;
-  constructor(context: vscode.ExtensionContext) {
-    DoorsSmores.extensionContext = context;
-    DoorsSmores.treeView = new TreeNodeProvider();
-    ProjectManagement.createAndRegister(context);
-    this.register(context);
-  }
-
-  private register(context: vscode.ExtensionContext) {
+  private extensionContext:vscode.ExtensionContext;
+  private recentProjects:ProjectInfo[];
+  private activeProject:SmoresProject|undefined;
+  private activeDocument:DocumentNode|undefined;
+  private static app:DoorsSmores;
+  constructor(context:vscode.ExtensionContext) {
+    this.extensionContext = context;
+    const jsonString:string|undefined = context.globalState.get(recentProjectsKey);
+    if(jsonString) {
+      this.recentProjects = JSON.parse(jsonString);
+    } else {
+      this.recentProjects = [];
+    }
+    DoorsSmores.app = this;
+    DoorsSmores.refreshViews();
     const registrations = [
-      vscode.window.registerTreeDataProvider('doors-smores.documentTree', DoorsSmores.treeView),
-      vscode.window.createTreeView('doors-smores.documentTree', {treeDataProvider: DoorsSmores.treeView, showCollapseAll: false}),
-      ...this.registerTreeViewCommands(),
-      ...this.registerDocumentViewerCommands(),
-      ...this.registerProjectCommands(),
-      vscode.commands.registerCommand('doors-smores.Update-Views', DoorsSmores.refreshViews),
-      vscode.commands.registerCommand("doors-smores.View-TreeNode", DoorsSmores.viewTreeNode),
-      vscode.commands.registerCommand('doors-smores.Export-Document', (node: TreeNode) => {DoorsSmores.exportDocument(node.smoresNode);})
+      vscode.commands.registerCommand('doors-smores.RefreshViews', DoorsSmores.refreshViews),
     ];
     context.subscriptions.push(...registrations);
+    registerNewContentCommands(context);
+    DocumentView.registerCommands();
   }
-  static refreshViews() {
-    if(DocumentViewer.currentPanel) {
-      DocumentViewer.currentPanel.refresh();
-    }
-    ProjectManagement.refresh();
-    DoorsSmores.treeView.refresh();
-  }
-  static viewTreeNode(node:TreeNode) {
-    DocumentViewer.render(node.smoresNode);
-  }
-  static traceTreeNode(node:TreeNode) {
-    TraceView.render(node.smoresNode);
-  }
-  static traceWebviewNode(context:any) {
-    const node = getNodeFromContext(context);
-    if(node) {
-      TraceView.render(node);
+  public static register(registrations:vscode.Disposable[]) {
+    if(DoorsSmores.app) {
+      DoorsSmores.app.extensionContext.subscriptions.push(...registrations);
     }
   }
-  static editWebviewNode(context:any) {
-    if(DocumentViewer.currentPanel) {
-      DocumentViewer.currentPanel.editNode(context);
+  public static refreshViews() {
+    DocumentTreeProvider.refresh();
+    ProjectTreeProvider.refresh();
+    DocumentView.refresh();
+    TraceView.refresh();
+  }
+  public static getWorkspaceDirectory() {
+    const rootPath =
+    vscode.workspace.workspaceFolders &&
+    vscode.workspace.workspaceFolders.length > 0
+      ? vscode.workspace.workspaceFolders[0].uri.fsPath
+      : undefined;
+    return rootPath;
+  }
+  public static getExtensionPath() {
+    return DoorsSmores.app.extensionContext.extensionPath;
+  }
+  public static getProjectDirectory():string {
+    if(DoorsSmores.app.activeProject) {
+      const projectFilepath = DoorsSmores.app.activeProject.getFilepath();
+      return dirname(projectFilepath);
+    } else {
+      return "";
     }
   }
-  static exportAll() {
-    console.log('export all');
-    const project = getProject();
-    if(project === undefined) {
-      return;
+  public static getDataDirectory():string {
+    const projectDirectory = DoorsSmores.getProjectDirectory();
+    return join(projectDirectory, SmoresFile.dataSubDirName);
+  }
+  public static getImagesDirectory():string {
+    const dataDirectory = DoorsSmores.getDataDirectory();
+    return join(dataDirectory, SmoresFile.imagesSubDirName);
+  }
+  public static getNodeFilepath(id:number):string {
+    const nodeFilename = `${id}${SmoresFile.nodeExtension}`;
+    const dataDirectory = DoorsSmores.getDataDirectory();
+    return join(dataDirectory, nodeFilename);
+  }
+
+  public static getActiveProject() {
+    return DoorsSmores.app.activeProject;
+  }
+  public static getRecentProjects() {
+    return DoorsSmores.app.recentProjects;
+  }
+  public static async newProjectGui() {
+    var defaultUri;
+    const workspace = DoorsSmores.getWorkspaceDirectory();
+    if(workspace) {
+      defaultUri = vscode.Uri.file(workspace);
     }
-    const documentPaths = project.getDocumentPaths();
-    for(let i=0; i<documentPaths.length; i++) {
-      const document = new SmoresNode(documentPaths[i]);
-      DoorsSmores.exportDocument(document, false);
+    const directory = await vscode.window.showOpenDialog({
+      openLabel:"Select project location",
+      canSelectFolders:true,
+      canSelectFiles:false,
+      canSelectMany:false,
+      defaultUri
+    });  
+    if(directory) {
+      const projectName = await vscode.window.showInputBox({
+        title:"Enter project name",
+      });
+      if(projectName) {
+        const projectUri = vscode.Uri.joinPath(directory[0], `${projectName}${SmoresFile.projectExtension}`);
+        DoorsSmores.openProjectPath(projectUri.fsPath);
+      }
     }
   }
-  static exportDocument(documentNode:SmoresNode, userAction:boolean=true) {
-    DocumentViewer.exportDocument(documentNode, userAction);
+  public static async openProjectGui() {
+    var defaultUri;
+    const workspace = DoorsSmores.getWorkspaceDirectory();
+    if(workspace) {
+      defaultUri = vscode.Uri.file(workspace);
+    }
+    const uri = await vscode.window.showOpenDialog({
+      openLabel:"Select project",
+      canSelectFiles:true,
+      canSelectFolders:false,
+      canSelectMany:false,
+      /* eslint-disable-next-line  @typescript-eslint/naming-convention */
+      filters:{'Smores Projects': [SmoresFile.projectExtension]},
+      defaultUri
+    });
+    if(uri) {
+      DoorsSmores.openProjectPath(uri[0].fsPath);
+    }
   }
-  
-  private registerProjectCommands():vscode.Disposable[] {
-    const registrations = [
-      vscode.commands.registerCommand("doors-smores.New-Project", ProjectManagement.newProject),
-      vscode.commands.registerCommand("doors-smores.Open-Project", ProjectManagement.openProject),
-      vscode.commands.registerCommand("doors-smores.Set-Active-Project", ProjectManagement.setActiveProject),
-      vscode.commands.registerCommand("doors-smores.Close-Project", ProjectManagement.closeProject),
-      vscode.commands.registerCommand("doors-smores.New-Document", ProjectManagement.newDocument),
-    ];
-    return registrations;
+  public static openProjectPath(path:string) {
+    DoorsSmores.app.activeProject = new SmoresProject(path);
+    vscode.commands.executeCommand('setContext', 'doors-smores.projectOpen', true);
+    DoorsSmores.updateRecentProjects();
+    const projectDocuments = DoorsSmores.getDocuments();
+    if(projectDocuments.length > 0) {
+      DoorsSmores.openDocument(projectDocuments[0]);
+    } else {
+      DoorsSmores.app.activeDocument = undefined;
+      DoorsSmores.refreshViews();  
+    }
   }
-  private registerTreeViewCommands():vscode.Disposable[] {
-    const registrations = [
-      vscode.commands.registerCommand("doors-smores.Trace-TreeNode", DoorsSmores.traceTreeNode),
-      vscode.commands.registerCommand("doors-smores.New-TreeHeading", newTreeHeading),
-      vscode.commands.registerCommand("doors-smores.New-TreeComment", newTreeComment),
-      vscode.commands.registerCommand("doors-smores.New-TreeFuncReq", newTreeFuncReq),
-      vscode.commands.registerCommand("doors-smores.New-TreeNonFuncReq", newTreeNonFuncReq),
-      vscode.commands.registerCommand("doors-smores.New-TreeDesCon", newTreeDesCon),
-      vscode.commands.registerCommand("doors-smores.New-TreeTest", newTreeTest),
-      vscode.commands.registerCommand("doors-smores.New-TreeImage", newTreeImage),
-      vscode.commands.registerCommand("doors-smores.New-TreeMermaidImage", newTreeMermaidImage),
-      vscode.commands.registerCommand("doors-smores.Move-Node-Up", moveNodeUp),
-      vscode.commands.registerCommand("doors-smores.Move-Node-Down", moveNodeDown),
-      vscode.commands.registerCommand("doors-smores.Promote-Node", promoteNode),
-      vscode.commands.registerCommand("doors-smores.Demote-Node", demoteNode),
-      vscode.commands.registerCommand("doors-smores.Delete-TreeNode", deleteNode)
-    ];
-    return registrations;
+  public static closeActiveProject() {
+    DoorsSmores.app.activeProject = undefined;
+    DoorsSmores.app.activeDocument = undefined;
+    vscode.commands.executeCommand('setContext', 'doors-smores.projectOpen', false);
+    DoorsSmores.refreshViews();  
   }
-  private registerDocumentViewerCommands():vscode.Disposable[] {
-    const registrations = [
-      vscode.commands.registerCommand("doors-smores.Edit-Section", DoorsSmores.editWebviewNode),
-      vscode.commands.registerCommand("doors-smores.Trace-WebviewNode", DoorsSmores.traceWebviewNode),
-      vscode.commands.registerCommand("doors-smores.New-WebHeading", newWebviewHeading),
-      vscode.commands.registerCommand("doors-smores.New-WebComment", newWebviewComment),
-      vscode.commands.registerCommand("doors-smores.New-WebFuncReq", newWebviewFuncReq),
-      vscode.commands.registerCommand("doors-smores.New-WebNonFuncReq", newWebviewNonFuncReq),
-      vscode.commands.registerCommand("doors-smores.New-WebDesCon", newWebviewDesCon),
-      vscode.commands.registerCommand("doors-smores.New-WebTest", newWebviewTest),
-      vscode.commands.registerCommand("doors-smores.New-WebImage", newWebviewImage),
-      vscode.commands.registerCommand("doors-smores.New-WebMermaidImage", newWebviewMermaidImage)
-    ];
-    return registrations;
+  public static stripProjectInfoFromArray(project:ProjectInfo, array:ProjectInfo[]):ProjectInfo[] {
+    for(let i=0; i<array.length; i++) {
+      const entry = array[i];
+      if(DoorsSmores.matchProjectData(project, entry)) {
+        array.splice(i,1);
+        return array;
+      }
+    }
+    return array;
   }
+  public static updateRecentProjects() {
+    if(DoorsSmores.app.activeProject) {
+      const activeProjectInfo:ProjectInfo = {
+        name:basename(DoorsSmores.app.activeProject.filepath, SmoresFile.projectExtension),
+        path:DoorsSmores.app.activeProject.filepath
+      };
+      var recentProjects = DoorsSmores.getRecentProjects();
+      recentProjects = DoorsSmores.stripProjectInfoFromArray(activeProjectInfo, recentProjects);
+      recentProjects = [activeProjectInfo, ...recentProjects];
+      DoorsSmores.writeRecentProjects(recentProjects);
+    }
+  }
+  public static getActiveDocument():DocumentNode|undefined {
+    if(DoorsSmores.app.activeProject) {
+      return DoorsSmores.app.activeDocument;
+    } else {
+      return undefined;
+    }
+  }
+  public static getDocuments():DocumentNode[] {
+    if(DoorsSmores.app.activeProject) {
+      return DoorsSmores.app.activeProject.getDocuments();
+    } else {
+      return [];
+    }
+  }
+  public static openDocument(document:DocumentNode) {
+    DoorsSmores.app.activeDocument = document;
+    DoorsSmores.refreshViews();  
+  }
+  public static closeDocument() {
+    DoorsSmores.app.activeDocument = undefined;
+    DoorsSmores.refreshViews();
+  }
+  public static async newDocumentGui() {
+    if(DoorsSmores.app.activeProject) {
+      const document = await newDocument();
+      if(document) {
+        DoorsSmores.openDocument(document);
+      }
+    }
+  }
+  public static async deleteDocument(documentId:number) {
+    const confirmationString = 'delete me';
+    const confirmation= await vscode.window.showInputBox({
+      prompt:`Enter '${confirmationString}' to confirm`,
+      placeHolder:`${confirmationString}`
+    });
+    if(confirmation === confirmationString) {    
+      if(DoorsSmores.app.activeDocument?.data.id === documentId) {
+        DoorsSmores.closeDocument();
+      }
+      if(DoorsSmores.app.activeProject) {
+        DoorsSmores.app.activeProject.deleteDocument(documentId);
+      }
+      DoorsSmores.refreshViews();
+    }
+  }
+  public static getUniqueId():number {
+    if(DoorsSmores.app.activeProject) {
+      return DoorsSmores.app.activeProject.getUniqueId();
+    } else {
+      return -1;
+    }
+  }
+
+  public static writeRecentProjects(newList:ProjectInfo[]) {
+    const jsonString = JSON.stringify(newList);
+    DoorsSmores.app.extensionContext.globalState.update(recentProjectsKey, jsonString);
+    DoorsSmores.app.recentProjects = newList;
+    DoorsSmores.refreshViews(); 
+  }
+  private static matchProjectData(project1:ProjectInfo, project2:ProjectInfo):boolean {
+    if(project1.name !== project2.name) {return false;}
+    if(project1.path !== project2.path) {return false;}
+    return true;
+  } 
 }
+
