@@ -23,7 +23,6 @@ export class IssueView {
       await commands.executeCommand('workbench.action.closeActiveEditor');
       IssueView.currentPanel = undefined;
     }
-    await document.duplicateDocumentNodes(traceReport);
     IssueView.currentPanel = new IssueView(document, traceReport);
     IssueView.refresh();
   }
@@ -48,7 +47,6 @@ export class IssueView {
       this.document.data.documentData!.revisionHistory.push(item);
     }
     this.document.write();
-    await this.document.removeTempDirectory();
     if(this.traceReport) {
       await this.document.exportTraceReport();
     } else {
@@ -70,9 +68,6 @@ export class IssueView {
     IssueView.currentPanel = undefined;      
   }
   private dispose() {
-    if(IssueView.currentPanel) {
-      IssueView.currentPanel.document.removeTempDirectory();
-    }
     IssueView.currentPanel = undefined;
     this.panel.dispose();
     while (this._disposables.length) {

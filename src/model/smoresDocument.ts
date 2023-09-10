@@ -39,23 +39,6 @@ export class SmoresDocument extends DocumentNode {
     await IssueView.issueDocument(this, false);
   }
 
-  public async duplicateDocumentNodes(includeTracedNodes:boolean) {
-    const srcRoot = DoorsSmores.getDataDirectory();
-    const destRoot = await this.removeTempDirectory();
-    await workspace.fs.createDirectory(Uri.file(destRoot));
-    await this.copyNodeFiles(this, includeTracedNodes, srcRoot, destRoot);
-  }
-  public async completeDuplication(stubName:string) {
-    const srcRoot = DoorsSmores.getDataTempDirectory();
-    const dataRoot = DoorsSmores.getDataDirectory();
-    const destRoot = dataRoot.concat(`_${stubName}`);
-    await workspace.fs.rename(Uri.file(srcRoot), Uri.file(destRoot));
-  }
-  public async removeTempDirectory() {
-    const tempRoot = DoorsSmores.getDataTempDirectory();
-    await workspace.fs.delete(Uri.file(tempRoot), {recursive:true, useTrash:false});
-    return tempRoot;
-  }
   
   private async copyNodeFiles(node:DocumentNode, includeTracedNodes:boolean, srcRoot:string, destRoot:string) {
     const thisNodeDir = node.getDirPath();
