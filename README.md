@@ -27,7 +27,7 @@ Requirement analysis software doesn't have to be that complicated... right?
 ![y](https://www.iconfinder.com/icons/1930264/download/png/16) Auto export all on change to support document level diff \
 ![n](https://www.iconfinder.com/icons/1891023/download/png/16) Tracing reports (partly implemented) \
 ![y](https://www.iconfinder.com/icons/1930264/download/png/16) Option to include tracing information in primary documents \
-![n](https://www.iconfinder.com/icons/1891023/download/png/16) Option to highlight missing traces \
+![y](https://www.iconfinder.com/icons/1930264/download/png/16) Option to highlight missing traces \
 ![n](https://www.iconfinder.com/icons/1891023/download/png/16) Some instructions \
 ![y](https://www.iconfinder.com/icons/1930264/download/png/16) Convert multi-line fields to external file references (easier for diff/merge)
 

@@ -199,16 +199,6 @@ export class TraceReportView {
     }
     return "";
   }
-  private static getTraceReportHeading(node:DocumentNode, pageBreak:string) {
-    let innerHtml:string = "";
-    let insertPageBreak = false;
-      [innerHtml, insertPageBreak] = heading.getHeadingHtml(node);
-    if(insertPageBreak) {
-      return pageBreak.concat(TraceReportView.getViewDivHtml(node, innerHtml));
-    } else {
-      return TraceReportView.getViewDivHtml(node, innerHtml);
-    }
-  }
   private static getTraceReportItem(documentType:string, node:DocumentNode) {
     const c1 = getIdLabel(node);
     const c2 = getTableTextHtmlFromMd(node.data.text.split('\n')[0]);
@@ -222,10 +212,6 @@ export class TraceReportView {
     ${testRow}
     ${downstreamRow}
   </tbody></table>`;
-  }
-  private static getViewDivHtml(node:DocumentNode, innerHtml:string) {
-    const categoryShort = schema.getLabelPrefix(node.data.category);
-    return `<div class="viewDiv" data-vscode-context='{"webviewSection": "Node-${categoryShort}", "nodeId": "${node.data.id}", "preventDefaultContextMenuItems": true}'>${innerHtml}</div>`;
   }
     
 }

@@ -17,9 +17,9 @@ import {
 import { getTableRow } from "../contentInnerHtml";
 
 
-export function getTraceReportUpstreamContent(documentType:string, node:DocumentNode) {
+export function getTraceReportUpstreamContent(documentType:string, node:DocumentNode, tracingRequired:boolean=true) {
   const c1 = "Upstream:";
-  if(isUpstreamTraceMissing(documentType, node)) {
+  if(isUpstreamTraceMissing(documentType, node) && tracingRequired) {
     return getTableRow(c1, "MISSING TRACE!");
   }
   const traces = node.data.traces.traceIds;
@@ -37,9 +37,9 @@ export function getTraceReportUpstreamContent(documentType:string, node:Document
   }
   return "";
 }
-export function getTraceReportTestsContent(documentType:string, node:DocumentNode) {
+export function getTraceReportTestsContent(documentType:string, node:DocumentNode, tracingRequired:boolean=true) {
   const c1 = "Tests:";
-  if(isTestTraceMissing(documentType, node)) {
+  if(isTestTraceMissing(documentType, node) && tracingRequired) {
     return getTableRow(c1, "MISSING TRACE!");
   }
   const traces = node.data.traces.traceIds;
@@ -55,9 +55,9 @@ export function getTraceReportTestsContent(documentType:string, node:DocumentNod
   }
   return "";
 }
-export function getTraceReportDownstreamContent(documentType:string, node:DocumentNode) {
+export function getTraceReportDownstreamContent(documentType:string, node:DocumentNode, tracingRequired:boolean=true) {
   const c1 = "Downstream:";
-  if(isDownstreamTraceMissing(documentType, node)) {
+  if(isDownstreamTraceMissing(documentType, node) && tracingRequired) {
     return getTableRow(c1, "MISSING TRACE!");
   }
   const traces = node.data.traces.traceIds;
@@ -78,7 +78,7 @@ export function getTraceReportDownstreamContent(documentType:string, node:Docume
 
 function addTracesType(currentContent:string, traces:number[], label:string):string {
   if(traces.length > 0) {
-    currentContent = currentContent.concat(`<b>${label}:</b><br/>`);
+    currentContent = currentContent.concat(`<u>${label}:</u><br/>`);
     for(let i=0; i<traces.length; i++) {
       const trace = DocumentNode.createFromId(traces[i]);
       currentContent = currentContent.concat(`${trace.data.id}: ${trace.data.text.split('\n')[0]}<br/>`);

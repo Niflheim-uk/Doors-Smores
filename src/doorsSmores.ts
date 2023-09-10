@@ -204,6 +204,9 @@ export class DoorsSmores {
   }
   public static openDocument(document:SmoresDocument) {
     DoorsSmores.app.activeDocument = document;
+    if(DocumentView.currentPanel) {
+      DocumentView.render(document);
+    }
     DoorsSmores.refreshViews();  
   }
   public static closeDocument() {

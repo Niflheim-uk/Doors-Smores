@@ -38,7 +38,7 @@
           "documents.tracingRequired": {
             "type": "boolean",
             "default": false,
-            "description": "(Future) If set, upstream, downstream and test traces are expected, as applicable. Items missing traces are highlighted."
+            "description": "If set, upstream, downstream and test traces are expected, as applicable. Items missing traces are highlighted."
           }
         }
       }

@@ -13,6 +13,7 @@ import { VersionController } from "../../versionControl/versionController";
 export class DocumentView {
   public static currentPanel: DocumentView | undefined;
   public static includeTraceInfo:boolean|undefined=false;
+  public static tracingRequired:boolean|undefined=false;
   private readonly _panel: vscode.WebviewPanel;
   private _disposables: vscode.Disposable[] = [];
   private _viewNode:DocumentNode;
@@ -205,6 +206,7 @@ export class DocumentView {
   private static getPageHtml(webview:vscode.Webview, viewNode:DocumentNode, exporting:boolean, editNode?:DocumentNode):string {
     const settings = vscode.workspace.getConfiguration('documents');
     DocumentView.includeTraceInfo = settings.get("includeTraceDetailInDocuments");
+    DocumentView.tracingRequired = settings.get("tracingRequired");
     const nonce = getNonce();
     const bodyHtml = getBodyHtml(viewNode, exporting, editNode);
     const styleBlock = getStyleBlock(webview, exporting);

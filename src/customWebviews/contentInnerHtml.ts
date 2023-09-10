@@ -6,6 +6,7 @@ import * as schema from '../model/schema';
 import { DoorsSmores } from '../doorsSmores';
 import { DocumentView } from './documentView/documentView';
 import {getDecomposedFromTraceType, getDecomposesToTraceType, getDetailedByTraceType, getDetailsTraceType, getSatisfiedByTraceType, getSatisfiesTraceType, getTraceCategoryLabels, getVerifiedByTraceType, getVerifiesTraceType} from '../model/traceSorting';
+import { getTraceReportDownstreamContent, getTraceReportTestsContent, getTraceReportUpstreamContent } from './traceReportView/traceReportContent';
 
 export function getIdLabel(node:DocumentNode) {
   if(node.data.category === schema.headingCategory) {
@@ -37,45 +38,37 @@ export function getInnerHtmlForImage(node:DocumentNode, exporting:boolean) {
 }
 
 export function getInnerHtmlForRequirement(node:DocumentNode, hideTracing:boolean=false):string {
-  const reqRow = getFirstRow(node);
-  const trRow = getTranslationRationaleRow(node);
-  let traceRows:string = "";
-  if(!hideTracing && DocumentView.includeTraceInfo) {
-    traceRows = getTraceRows(node);
-  }
-  return `
-  <table class="indented2ColSmall"><tbody>
-    ${reqRow}
-    ${trRow}
-    ${traceRows}
-  </tbody></table>`;
+  const row1 = getFirstRow(node);
+  const row2 = getTranslationRationaleRow(node);
+  return getInnerHtmlForTracedItem(node, hideTracing, row1, row2);
 }
 export function getInnerHtmlForConstraint(node:DocumentNode, hideTracing:boolean=false):string {
-  const constRow = getFirstRow(node);
-  const trRow = getTranslationRationaleRow(node);
-  let traceRows:string = "";
-  if(!hideTracing && DocumentView.includeTraceInfo) {
-    traceRows = getTraceRows(node);
-  }
-  return `
-  <table class="indented2ColSmall"><tbody>
-    ${constRow}
-    ${trRow}
-    ${traceRows}
-  </tbody></table>`;
+  const row1 = getFirstRow(node);
+  const row2 = getTranslationRationaleRow(node);
+  return getInnerHtmlForTracedItem(node, hideTracing, row1, row2);
 }
 export function getInnerHtmlForTest(node:DocumentNode, hideTracing:boolean=false):string {
-  const testRow = getFirstRow(node);
-  const erRow = getExpectedResultsRow(node);
-  let traceRows:string = "";
+  const row1 = getFirstRow(node);
+  const row2 = getExpectedResultsRow(node);
+  return getInnerHtmlForTracedItem(node, hideTracing, row1, row2);
+}
+export function getInnerHtmlForTracedItem(node:DocumentNode, hideTracing:boolean, row1:string, row2:string):string {
+  const documentType = node.getDocumentType();
+  let upstreamRow:string = "";
+  let testTraceRow:string = "";
+  let downstreamRow:string = "";
   if(!hideTracing && DocumentView.includeTraceInfo) {
-    traceRows = getTraceRows(node);
+    upstreamRow = getTraceReportUpstreamContent(documentType, node, DocumentView.tracingRequired);
+    testTraceRow = getTraceReportTestsContent(documentType, node, DocumentView.tracingRequired);
+    downstreamRow = getTraceReportDownstreamContent(documentType, node, DocumentView.tracingRequired);
   }
   return `
   <table class="indented2ColSmall"><tbody>
-    ${testRow}
-    ${erRow}
-    ${traceRows}
+    ${row1}
+    ${row2}
+    ${upstreamRow}
+    ${testTraceRow}
+    ${downstreamRow}
   </tbody></table>`;
 }
 function getFirstRow(node:DocumentNode) {
@@ -114,7 +107,7 @@ function getTraceRow(label:string, traceIds:number[]) {
   }
   return getTableRow(label,c2);
 }
-function getTraceRows(node:DocumentNode):string {
+function getTraceRows(node:DocumentNode, tracingRequired:boolean):string {
   const originCategory = node.data.category;
   const originCategoryLabel = schema.getLabelPrefix(originCategory);
   const traces = node.data.traces.traceIds;
@@ -124,6 +117,7 @@ function getTraceRows(node:DocumentNode):string {
     const verifies = getVerifiesTraceType(originCategoryLabel, traces, traceCategoryLabels);
     traceRows = traceRows.concat(getTraceRow("Verifies", verifies));
   } else {
+
     const decomposedFrom = getDecomposedFromTraceType(originCategoryLabel, traces, traceCategoryLabels);
     const satisfies = getSatisfiesTraceType(originCategoryLabel, traces, traceCategoryLabels);
     const details = getDetailsTraceType(originCategoryLabel, traces, traceCategoryLabels);
