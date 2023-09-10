@@ -13,6 +13,7 @@ import { getTraceReportDownstreamContent, getTraceReportTestsContent, getTraceRe
 import { SmoresDocument } from "../../model/smoresDocument";
 import { getPageBreak } from "../getPageBreak";
 import { getTraceReportIntroFromTemplate } from "./traceReportIntroTemplate";
+import { writeDocumentPdf } from "../writeDocumentPdf";
 
 export class TraceReportView {
   public static currentPanel: TraceReportView | undefined;
@@ -78,6 +79,8 @@ export class TraceReportView {
     content = TraceReportView.getPageHtml(panel.webview, node, true);
     vscode.commands.executeCommand('workbench.action.closeActiveEditor');
     writeFileSync(filePath, content);
+    const document = SmoresDocument.createDocumentFromId(node.data.id);
+    writeDocumentPdf(document, filePath, true);
   }
   private static createPanel(viewId:string, title:string) {
     const projUri = vscode.Uri.file(DoorsSmores.getProjectDirectory());    
@@ -95,19 +98,6 @@ export class TraceReportView {
       }  
     );
     return panel;
-  }
-  private static getViewIdByDocumentType(docType:string) {
-    switch (docType) {
-      case schema.ursDocType: return "smoresURSView";
-      case schema.srsDocType: return "smoresSRSView";
-      case schema.adsDocType: return "smoresADSView";
-      case schema.ddsDocType: return "smoresDDSView";
-      case schema.atpDocType: return "smoresATPView";
-      case schema.stpDocType: return "smoresSTPView";
-      case schema.itpDocType: return "smoresITPView";
-      case schema.utpDocType: return "smoresUTPView";
-      default: return "smoresNodeView";
-    }
   }
   private static getPageHtml(webview:vscode.Webview, viewNode:SmoresDocument, exporting:boolean):string {
     if(webview === undefined || viewNode === undefined) {
@@ -205,9 +195,6 @@ export class TraceReportView {
       return TraceReportView.getTraceReportItem(documentType, node);
     }
     return "";
-  }
-  private static getTraceReportCover(documentType:string, documentName:string) {
-    return `<h1>Trace Report: ${documentType} - ${documentName}</h1>`;
   }
   private static getTraceReportIntro(documentType:string, node:DocumentNode) {
     return getTraceReportIntroFromTemplate(documentType, node.data.text);

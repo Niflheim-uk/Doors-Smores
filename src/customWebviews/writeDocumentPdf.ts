@@ -4,6 +4,7 @@ import { generateCoverHtmlFile, generateHistoryFile } from "./coverPage";
 import { DoorsSmores } from "../doorsSmores";
 import { basename, dirname, join } from "path";
 import { generateHeaderFooterHtmlFiles } from "./headerAndFooter";
+import { window } from "vscode";
 
 
 export function writeDocumentPdf(document:SmoresDocument, htmlDocFilepath:string, traceReport:boolean) {
@@ -32,6 +33,7 @@ export function writeDocumentPdf(document:SmoresDocument, htmlDocFilepath:string
 function wkhtmltopdfCallback(error:ExecException|null, stdout:string, stderr:string) {
   if (error) {
     console.error(`wkhtmltopdf error: ${error}`);
+    window.showErrorMessage("Failed to generate PDF document. Is file open?");
     return;
   }
   console.log(`wkhtmltopdf stdout: ${stdout}`);
