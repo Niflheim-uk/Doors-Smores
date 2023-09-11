@@ -25,45 +25,45 @@
       {
         "title": "Doors Smores",
         "properties": {
-          "projectView.maximumRecentProjects": {
+          "history.maximumRecentProjects": {
             "type": "integer",
             "default": 5,
             "description": "The maximum number of recent projects to maintain in the projects tree view."
-          },
-          "documents.includeTraceDetailInDocuments": {
-            "type": "boolean",
-            "default": false,
-            "description": "If set, traces will be included as additional rows on requirement and test case tables."
-          },
-          "documents.tracingRequired": {
-            "type": "boolean",
-            "default": false,
-            "description": "If set, upstream, downstream and test traces are expected, as applicable. Items missing traces are highlighted."
-          },
-          "documents.useCustomHeader": {
-            "type": "boolean",
-            "default": false,
-            "description": "If set, the default header is replaced with the content provided by the file path below."
-          },
-          "style.customHeaderHtml": {
-            "type": "string",
-            "default": "",
-            "description": "(WIP) This setting should provide the path to a file containing the html snippet to be included in the header."
-          },
-          "documents.useCustomFooter": {
-            "type": "boolean",
-            "default": false,
-            "description": "If set, the default footer is replaced with the content provided by the file path below."
-          },
-          "style.customFooterHtml": {
-            "type": "string",
-            "default": "",
-            "description": "(WIP) This setting should provide the path to a file containing the html snippet to be included in the footer."
           },
           "documentRelease.rollUpMinorReleasesIntoMajor": {
             "type": "boolean",
             "default": true,
             "description": "If set, the revision history will only show major revisions and minor revisions since last major.\nIf not set, major and minor releases are treated equally in the revision history."
+          },
+          "tracing.includeTraceDetailInDocuments": {
+            "type": "boolean",
+            "default": false,
+            "description": "If set, traces will be included as additional rows on requirement and test case tables."
+          },
+          "tracing.tracingRequired": {
+            "type": "boolean",
+            "default": false,
+            "description": "If set, upstream, downstream and test traces are expected, as applicable. Items missing traces are highlighted."
+          },
+          "customisation.header.customHeader": {
+            "type": "boolean",
+            "default": false,
+            "description": "If set, the default header is replaced with the content provided by the file path below."
+          },
+          "customisation.header.customHeaderHtml": {
+            "type": "string",
+            "default": "",
+            "description": "This setting should provide the relative path from the project file to a file containing the html snippet to be included in the header. For example snippets, export the document without customisation and view header.html within the .smoresData directory."
+          },
+          "customisation.footer.customFooter": {
+            "type": "boolean",
+            "default": false,
+            "description": "If set, the default footer is replaced with the content provided by the file path below."
+          },
+          "customisation.footer.customFooterHtml": {
+            "type": "string",
+            "default": "",
+            "description": "This setting should provide the relative path from the project file to a file containing the html snippet to be included in the footer. For example snippets, export the document without customisation and view footer.html within the .smoresData directory."
           }
         }
       }

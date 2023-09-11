@@ -125,6 +125,7 @@ export class DoorsSmores {
         const projectUri = vscode.Uri.joinPath(directory[0], `${projectName}`, `${projectName}.${SmoresFile.projectExtension}`);
         DoorsSmores.openProjectPath(projectUri.fsPath, false);
         await VersionController.startRepoUse();
+        await VersionController.addGitIgnore();
       }
     }
   }
@@ -149,13 +150,6 @@ export class DoorsSmores {
   }
   public static openProjectPath(path:string, initRepo:boolean) {
     DoorsSmores.app.activeProject = new SmoresProject(path);
-    const remoteRepositoryPath = DoorsSmores.app.activeProject.data.repoRemote;
-    const settings = vscode.workspace.getConfiguration('repository');
-    if(remoteRepositoryPath) {
-      settings.update("remoteRepositoryPath", remoteRepositoryPath, true);
-    } else {
-      settings.update("remoteRepositoryPath", "", true);
-    }
     vscode.commands.executeCommand('setContext', 'doors-smores.projectOpen', true);
     if(initRepo) {
       VersionController.initialise();
@@ -168,6 +162,7 @@ export class DoorsSmores {
       DoorsSmores.app.activeDocument = undefined;
       DoorsSmores.refreshViews();  
     }
+    VersionController.syncWithRemote();
   }
   public static closeActiveProject() {
     DoorsSmores.app.activeProject = undefined;
@@ -255,7 +250,7 @@ export class DoorsSmores {
   }
 
   public static writeRecentProjects(newList:ProjectInfo[]) {
-    const settings = vscode.workspace.getConfiguration('projectView');
+    const settings = vscode.workspace.getConfiguration('history');
     const maxRecentProjects:number|undefined = settings.get("maximumRecentProjects");
     if(maxRecentProjects && newList.length > maxRecentProjects) {
       newList.splice(maxRecentProjects);

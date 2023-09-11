@@ -2,6 +2,10 @@
 
 All notable changes to the "doors-smores" extension will be documented in this file.
 
+### 0.6 patches (0.7 coming soon)
+- User defined header and footers are implemented in document exports.
+- Fixed issue on initial sync when specifying a bare repo as the remote 
+
 ## 0.6
 - Releasing documents
   - Documents may be issued as major or minor releases, with a summary of changes. 

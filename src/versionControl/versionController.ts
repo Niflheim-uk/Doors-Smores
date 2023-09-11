@@ -34,6 +34,7 @@ export class VersionController {
   private static readonly firstTagMessage:string = "DO NOT REMOVE: Used for diff";
   private static readonly syncPeriod:number = (1000 * 60 * 5);
   private static readonly remoteName:string = "smores-remote";
+  private static readonly gitIgnoreContent:string = "cover.html\nfooter.html\nheader.html\nhistory.html";
   public static isOpen() {
     return VersionController.open;
   }
@@ -264,6 +265,11 @@ export class VersionController {
     } else {
       VersionController.initNewRepo(false);
     }  
+  }
+  public static async addGitIgnore() {
+    const dataDir = DoorsSmores.getDataDirectory();
+    const ignoreFile = path.join(dataDir, '.gitIgnore');
+    writeFileSync(ignoreFile, VersionController.gitIgnoreContent);
   }
   public static async getUserName() {
     return simpleGit(VersionController.gitOptions).raw('config', 'user.name').catch(err=>{return "Unknown";});

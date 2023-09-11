@@ -108,13 +108,13 @@ export class DocumentView {
     }
     var filePath:string;
     var content:string;
-    const defaultFilename = `${documentNode!.data.text}.html`;
+    const defaultFilename = `${documentNode!.data.text}`;
     const projectRoot = DoorsSmores.getProjectDirectory();
     const filename = await vscode.window.showInputBox({value:defaultFilename});
     if(filename === undefined) {
       return;
     }
-    filePath = path.join(projectRoot, filename);
+    filePath = path.join(projectRoot, `${filename}.html`);
     const panel = DocumentView.createPanel('smoresNodeView', 'Exporting');
     content = DocumentView.getPageHtml(panel.webview, documentNode!, true);
     vscode.commands.executeCommand('workbench.action.closeActiveEditor');
@@ -226,7 +226,7 @@ export class DocumentView {
     }  
   }
   private static getPageHtml(webview:vscode.Webview, viewNode:DocumentNode, exporting:boolean, editNode?:DocumentNode):string {
-    const settings = vscode.workspace.getConfiguration('documents');
+    const settings = vscode.workspace.getConfiguration('tracing');
     DocumentView.includeTraceInfo = settings.get("includeTraceDetailInDocuments");
     DocumentView.tracingRequired = settings.get("tracingRequired");
     const nonce = getNonce();

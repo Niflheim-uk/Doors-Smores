@@ -4,16 +4,19 @@ import { generateCoverHtmlFile, generateHistoryFile } from "./coverAndHistoryPag
 import { DoorsSmores } from "../doorsSmores";
 import { basename, dirname, join } from "path";
 import { generateHeaderFooterHtmlFiles } from "./headerAndFooter";
-import { window } from "vscode";
+import { window, workspace } from "vscode";
+import { existsSync, rmSync } from "fs";
 
+var _htmlDocFilepath:string|undefined="";
 
 export function writeDocumentPdf(document:SmoresDocument, htmlDocFilepath:string, traceReport:boolean) {
-  const dataPath = DoorsSmores.getDataDirectory();
+  _htmlDocFilepath = htmlDocFilepath;
+  const dataPath = DoorsSmores.getDataDirectory();   
   const margins = "-T 40 -B 25 -L 25 -R 25";
   const coverPath = join(dataPath, "cover.html");
-  const headerPath = join(dataPath, "header.html");
-  const footerPath = join(dataPath, "footer.html");
   const historyPath = join(dataPath, "history.html");
+  const headerPath = getHeaderPath();
+  const footerPath = getFooterPath();
   const outputName = basename(htmlDocFilepath, ".html");
   const outputFilename = `${outputName}.pdf`;
   const outputPath = join(dirname(htmlDocFilepath), outputFilename);
@@ -38,4 +41,44 @@ function wkhtmltopdfCallback(error:ExecException|null, stdout:string, stderr:str
   }
   console.log(`wkhtmltopdf stdout: ${stdout}`);
   console.error(`wkhtmltopdf stderr: ${stderr}`);
+  if(_htmlDocFilepath) {
+    rmSync(_htmlDocFilepath);
+    _htmlDocFilepath = undefined;
+  }
+}
+
+function getHeaderPath() {
+  const dataPath = DoorsSmores.getDataDirectory();
+  const customHeader = workspace.getConfiguration('customisation.header').get("customHeader");
+  const customHeaderPath:string|undefined = workspace.getConfiguration('customisation.header').get("customHeaderHtml");
+  if(customHeaderPath) {
+    const parts = customHeaderPath.split(/[\/\\]/);
+    const userHeaderHtml = join(dataPath, '..', ...parts);
+    if(customHeader) {
+      if (existsSync(userHeaderHtml)){
+        return userHeaderHtml;
+      } else {
+        window.showErrorMessage(`Could not find user specified header: ${userHeaderHtml}.`);
+      }
+    }
+  }
+  return join(dataPath, "header.html");
+}
+
+function getFooterPath() {
+  const dataPath = DoorsSmores.getDataDirectory();
+  const customFooter = workspace.getConfiguration('customisation.footer').get("customFooter");
+  const customFooterPath:string|undefined = workspace.getConfiguration('customisation.footer').get("customFooterHtml");
+  if(customFooterPath) {
+    const parts = customFooterPath.split(/[\/\\]/);
+    const userFooterHtml = join(dataPath, '..', ...parts);
+    if(customFooter) {
+      if (existsSync(userFooterHtml)){
+        return userFooterHtml;
+      } else {
+        window.showErrorMessage(`Could not find user specified footer: ${userFooterHtml}.`);
+      }
+    }
+  }
+  return join(dataPath, "footer.html");
 }

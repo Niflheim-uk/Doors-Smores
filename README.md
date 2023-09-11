@@ -52,7 +52,7 @@ Requirement analysis software doesn't have to be that complicated... right?
 # Planned release schedule
 
 ### 0.7
-![n](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/incomplete_icon.png?raw=true) User defined header & footer to allow document branding. \
+![y](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/complete_icon.png?raw=true) User defined header & footer to allow document branding. \
 ![n](https://github.com/Niflheim-uk/Doors-Smores-Docs/blob/main/media/incomplete_icon.png?raw=true) User defined document styles
 
 ### 0.8
