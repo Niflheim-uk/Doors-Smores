@@ -4,10 +4,14 @@
   "displayName": "Doors Smores",
   "icon": "resources/smores.png",
   "description": "Requirements simplified",
-  "repository": {
-    "url": "",
-    "type": ""
+  "sponsor": {
+    "url": "https://www.buymeacoffee.com/crnsp74c9fp"
   },
+  "repository": {
+    "url": "https://github.com/Niflheim-uk/Doors-Smores",
+    "type": "git"
+  },
+  "keywords": ["requirements","documentation"],
   "preview": true,
   "version": "0.6.4",
   "engines": {
