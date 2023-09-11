@@ -45,8 +45,8 @@ export async function createIntroduction(parentNode:DocumentNode) {
 
 export async function documentStart(docNode:DocumentNode) {
   const node_1 = await createIntroduction(docNode);
-  await createGlossaryTable(node_1!);
   await createReferenceTable(node_1!);
+  await createGlossaryTable(node_1!);
 }
 
 async function createTestSetup(parentNode:DocumentNode) {
