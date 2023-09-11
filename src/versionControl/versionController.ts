@@ -191,12 +191,14 @@ export class VersionController {
     const remotePath = VersionController.getRemotePath();
     const git = simpleGit(VersionController.gitOptions);
     const remotes = await git.getRemotes(true);
+    const branchName = await git.revparse(['--abbrev-ref', 'HEAD']);
     // if currently have a remote mapped
     if(VersionController.confirmRemoteExists(remotes, VersionController.remoteName)) {
       await git.removeRemote(VersionController.remoteName);
     }
     if(remotePath) {
-      await git.addRemote(VersionController.remoteName, remotePath);
+      await git.addRemote(VersionController.remoteName, remotePath)
+      .raw(['push', VersionController.remoteName, branchName]);
     }
   }
 

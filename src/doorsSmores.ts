@@ -284,7 +284,7 @@ export class DoorsSmores {
       }
       remotePath = await vscode.window.showInputBox({
         prompt:`Enter remote repository path`,
-        placeHolder:`${remotePath}`
+        value:`${remotePath}`
       });
       if(remotePath !== undefined || remotePath !== "") {
         if(project.data.repoRemote !== remotePath) {
@@ -292,6 +292,8 @@ export class DoorsSmores {
           project.write();
         }
         VersionController.updateRemote();
+        VersionController.commitChanges(`Updated remote repository`);
+
       }
     }
   }
