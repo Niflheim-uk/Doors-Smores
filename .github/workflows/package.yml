@@ -1,0 +1,27 @@
+name: VSCE Package
+
+on: 
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup npm
+      uses: actions/setup-node@v3
+      with:
+        node-version: 20.x
+        cache: 'npm'
+    - run: npm ci
+    - run: npm install -g @vscode/vsce
+    - name: Build minify
+      run: npm run esbuild-base -- --minify
+    - name: Package VSIX
+      run: vsce package patch
+    - name: Archive artifacts
+      uses: actions/upload-artifact@v3.1.3
+      with: 
+        path: doors-smores*.vsix
