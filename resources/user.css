@@ -1,0 +1,80 @@
+:root {
+  /* default */
+  --document-font: 'Arial';
+  --default-font-size: 10pt;
+  --indentation: 10%;
+  /* code */
+  --code-font: 'Courier New', Courier, monospace;
+  --code-font-size: 10pt;
+  /* headings */
+  --h1-font-size: 12pt;
+  --h1-font-style: normal;
+  --h1-font-weight: bold;
+  --h1-font-margin-top: 0;
+  --h1-font-margin-bottom: 12pt;
+  --h1-font-text-decoration: none;
+
+  --h1-front-font-size: 20pt;
+  --h1-front-font-style: normal;
+  --h1-front-font-weight: normal;
+
+  --h2-font-size: 11pt;
+  --h2-font-style: normal;
+  --h2-font-weight: bold;
+  --h2-font-margin-top: 0;
+  --h2-font-margin-bottom: 12pt;
+  --h2-font-text-decoration: none;
+
+  --h2-front-font-size: 16pt;
+  --h2-front-font-style: normal;
+  --h2-front-font-weight: normal;
+
+  --h3-font-size: 10pt;
+  --h3-font-style: normal;
+  --h3-font-weight: bold;
+  --h3-font-margin-top: 0;
+  --h3-font-margin-bottom: 12pt;
+  --h3-font-text-decoration: none;
+
+  --h3-front-font-size: 12pt;
+  --h3-front-font-style: normal;
+  --h3-front-font-weight: normal;
+
+  --h4-font-size: 10pt;
+  --h4-font-style: italic;
+  --h4-font-weight: bold;
+  --h4-font-margin-top: 0;
+  --h4-font-margin-bottom: 12pt;
+  --h4-font-text-decoration: none;
+
+  /* tables */
+  --table-font-size: 10pt;
+  --table-font-style: normal;
+  --table-font-weight: normal;
+  --table-font-margin-top: 3pt;
+  --table-font-margin-bottom: 3pt;
+  --table-font-text-decoration: none;
+
+  --table-small-font-size: 7pt;
+  --table-small-font-style: normal;
+  --table-small-font-weight: normal;
+  --table-small-font-margin-top: 3pt;
+  --table-small-font-margin-bottom: 3pt;
+  --table-small-font-text-decoration: none;
+
+  --table-title-font-size: 10pt;
+  --table-title-font-style: normal;
+  --table-title-font-weight: bold;
+  --table-title-font-margin-top: 3pt;
+  --table-title-font-margin-bottom: 3pt;
+  --table-title-font-text-decoration: none;
+
+  /* lists */
+  --list-font-size: 10pt;
+  --list-font-style: normal;
+  --list-font-weight: normal;
+  --list-font-margin-top: 0;
+  --list-font-margin-bottom: 0;
+  --list-font-text-decoration: none;
+}
+
