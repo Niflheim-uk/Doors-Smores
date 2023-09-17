@@ -3,6 +3,7 @@ import { DoorsSmores } from "../doorsSmores";
 import { clearNonce, getNonce } from "./getNonce";
 import { writeFileSync } from "fs";
 import { Uri } from "vscode";
+import { getStylePaths } from "./resources";
 
 export function generateHeaderFooterHtmlFiles(saveFilename:string) {
   const projectDir = DoorsSmores.getDataDirectory();
@@ -22,21 +23,19 @@ function getFooterHtml(saveFilename:string) {
   return getHtml(content);
 }
 function getHtml(content:string) {
-  const nonce = getNonce();
   const extensionPath = DoorsSmores.getExtensionPath();
+  const stylePaths = getStylePaths();
   const scriptPath = Uri.file(join(extensionPath, 'resources', 'wkhtmltopdfScript.js'));
   clearNonce();
   return `<!DOCTYPE html>
 <html>
 <head>
-  <meta http-equiv="Content-Security-Policy" 
-    content="default-src 'self'; 
-    style-src 'unsafe-inline';
-  "/>
+  <link href="file:///${stylePaths.base}" rel="stylesheet"/>
+  <link href="file:///${stylePaths.user}" rel="stylesheet"/>
 </head>
-<body style="border:0; margin: 0;">
+<body>
   ${content}
-  <script nonce="${nonce}" src="${scriptPath}"></script>
+  <script src="${scriptPath}"></script>
 </body>
 </html>`;
 }
@@ -50,10 +49,10 @@ function getFooterBody(saveFilename:string) {
 }
 function getDefaultFooterHtml(saveFilename:string) {
   return `
-  <table style="width: 100%; font-family: Arial; font-size: 7pt;">
+  <table class="footer">
     <tr>
-      <td>${saveFilename}</td>
-      <td style="text-align:right">Page <span class="page"></span> of <span class="topage"></span></td>
+      <td class="footer">${saveFilename}</td>
+      <td class="footer" style="text-align:right">Page <span class="page"></span> of <span class="topage"></span></td>
     </tr>
   </table>
   `;

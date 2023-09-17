@@ -85,7 +85,7 @@ export function getInnerHtmlForTracedItem(node:DocumentNode, hideTracing:boolean
     downstreamRow = getTraceReportDownstreamContent(documentType, node, DocumentView.tracingRequired);
   }
   return `
-  <table class="indented2ColSmall">
+  <table class="indented2ColSmall indented">
     <tbody>
       ${row1}
       ${row2}

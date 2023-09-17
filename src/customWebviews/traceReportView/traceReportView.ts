@@ -6,7 +6,7 @@ import { DoorsSmores } from "../../doorsSmores";
 import { join } from "path";
 import { writeFileSync } from "fs";
 import * as heading from '../headingInnerHtml';
-import { getDocumentStylePaths, getScriptPath } from "../resources";
+import { getStylePaths, getScriptPath } from "../resources";
 import { getIdLabel, getTableRow } from "../contentInnerHtml";
 import { getTableTextHtmlFromMd } from "../markdownConversion";
 import { getTraceReportDownstreamContent, getTraceReportTestsContent, getTraceReportUpstreamContent } from "./traceReportContent";
@@ -14,6 +14,7 @@ import { SmoresDocument } from "../../model/smoresDocument";
 import { getPageBreak } from "../getPageBreak";
 import { getTraceReportIntroFromTemplate } from "./traceReportIntroTemplate";
 import { writeDocumentPdf } from "../writeDocumentPdf";
+import { generateUserCss } from "../userStyle";
 
 export class TraceReportView {
   public static currentPanel: TraceReportView | undefined;
@@ -103,27 +104,30 @@ export class TraceReportView {
     if(webview === undefined || viewNode === undefined) {
       return "";
     }
+    generateUserCss();
     const nonce = getNonce();
     const bodyHtml = TraceReportView.getBodyHtml(viewNode);
     let scriptBlock = "";
     var styleUri:string[];
-    const stylePaths = getDocumentStylePaths();
+    const stylePaths = getStylePaths();
     if(exporting === false) {
       const scriptPath = getScriptPath();
       const scriptUri = webview.asWebviewUri(vscode.Uri.file(scriptPath)).toString();
       scriptBlock = `<script nonce="${nonce}" src="${scriptUri}"></script>`;
       styleUri = [
-        webview.asWebviewUri(vscode.Uri.file(stylePaths[0])).toString(),
-        webview.asWebviewUri(vscode.Uri.file(stylePaths[1])).toString(),
-        webview.asWebviewUri(vscode.Uri.file(stylePaths[2])).toString(),
-        webview.asWebviewUri(vscode.Uri.file(stylePaths[3])).toString()
+        webview.asWebviewUri(vscode.Uri.file(stylePaths.base)).toString(),
+        webview.asWebviewUri(vscode.Uri.file(stylePaths.user)).toString(),
+        webview.asWebviewUri(vscode.Uri.file(stylePaths.gui)).toString(),
+        webview.asWebviewUri(vscode.Uri.file(stylePaths.tracing)).toString(),
+        webview.asWebviewUri(vscode.Uri.file(stylePaths.icons)).toString()
       ];
     } else {
       styleUri = [
-        `file:///${stylePaths[0]}`,
-        `file:///${stylePaths[1]}`,
-        `file:///${stylePaths[2]}`,
-        `file:///${stylePaths[3]}`,
+        `file:///${stylePaths.base}`,
+        `file:///${stylePaths.user}`,
+        `file:///${stylePaths.gui}`,
+        `file:///${stylePaths.tracing}`,
+        `file:///${stylePaths.icons}`
       ];
     }
     const styleBlock = `
@@ -131,6 +135,7 @@ export class TraceReportView {
     <link nonce="${nonce}" href="${styleUri[1]}" rel="stylesheet"/>
     <link nonce="${nonce}" href="${styleUri[2]}" rel="stylesheet"/>
     <link nonce="${nonce}" href="${styleUri[3]}" rel="stylesheet"/>
+    <link nonce="${nonce}" href="${styleUri[4]}" rel="stylesheet"/>
     `;
     clearNonce();
     

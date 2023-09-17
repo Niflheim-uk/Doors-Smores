@@ -2,10 +2,11 @@ import { clearNonce, getNonce } from "../getNonce";
 import { RevisionHistoryItem } from "../../model/documentNode";
 import { DoorsSmores } from "../../doorsSmores";
 import { join } from "path";
-import { getCoverStylePaths } from "../resources";
+import { getStylePaths } from "../resources";
 import { SmoresDocument } from "../../model/smoresDocument";
 import { Disposable, Uri, ViewColumn, WebviewPanel, commands, window, workspace } from "vscode";
 import { VersionController } from "../../versionControl/versionController";
+import { generateUserCss } from "../userStyle";
 
 export class IssueView {
   public static currentPanel: IssueView | undefined;
@@ -99,26 +100,29 @@ export class IssueView {
     return panel;
   }
   private async getPageHtml():Promise<string> {
+    generateUserCss();
     const nonce = getNonce();
     const bodyHtml = await this.getBodyHtml();
     let scriptBlock = "";
     var styleUri:string[];
-    const stylePaths = getCoverStylePaths();
+    const stylePaths = getStylePaths();
     const extensionPath = DoorsSmores.getExtensionPath();
     const scriptPath = join(extensionPath, 'resources', 'issueScript.js');
     const scriptUri = this.panel.webview.asWebviewUri(Uri.file(scriptPath)).toString();
     scriptBlock = `<script nonce="${nonce}" src="${scriptUri}"></script>`;
     styleUri = [
-      this.panel.webview.asWebviewUri(Uri.file(stylePaths[0])).toString(),
-      this.panel.webview.asWebviewUri(Uri.file(stylePaths[1])).toString(),
-      this.panel.webview.asWebviewUri(Uri.file(stylePaths[2])).toString(),
-      this.panel.webview.asWebviewUri(Uri.file(stylePaths[3])).toString()
+      this.panel.webview.asWebviewUri(Uri.file(stylePaths.base)).toString(),
+      this.panel.webview.asWebviewUri(Uri.file(stylePaths.user)).toString(),
+      this.panel.webview.asWebviewUri(Uri.file(stylePaths.gui)).toString(),
+      this.panel.webview.asWebviewUri(Uri.file(stylePaths.tracing)).toString(),
+      this.panel.webview.asWebviewUri(Uri.file(stylePaths.icons)).toString()
     ];
     const styleBlock = `
     <link nonce="${nonce}" href="${styleUri[0]}" rel="stylesheet"/>
     <link nonce="${nonce}" href="${styleUri[1]}" rel="stylesheet"/>
     <link nonce="${nonce}" href="${styleUri[2]}" rel="stylesheet"/>
     <link nonce="${nonce}" href="${styleUri[3]}" rel="stylesheet"/>
+    <link nonce="${nonce}" href="${styleUri[4]}" rel="stylesheet"/>
     `;
     clearNonce();
     

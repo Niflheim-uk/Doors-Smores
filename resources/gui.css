@@ -1,0 +1,94 @@
+body {
+  color: var(--vscode-editor-foreground);
+  background: var(--vscode-editor-background);
+}
+body.projectView {
+  color: var(--vscode-sideBar-foreground);
+  background: var(--vscode-sideBar-background);
+}
+button {
+  color: var(--vscode-button-foreground);
+  background-color: var(--vscode-button-background);
+  border: 1px solid var(--vscode-button-border,transparent);
+  box-sizing: border-box;
+  width: 20%;
+  padding: 4px;
+  border-radius: 2px;
+  text-align: center;
+  cursor: pointer;
+  justify-content: center;
+  align-items: center;
+  line-height: 18px;
+}
+button:hover {
+  background-color: var(--vscode-button-hoverBackground);
+}
+button.secondary {
+  color: var(--vscode-button-secondaryForeground);
+  background-color: var(--vscode-button-secondaryBackground);
+}
+button.secondary:hover {
+  background-color: var(--vscode-button-secondaryHoverBackground);
+}
+.buttonContainer {
+  position:relative;
+  justify-content: space-evenly;
+  display: flex;
+}
+/* Tooltips */
+.tooltip {
+  display: block;
+  position:relative;
+}
+.toolTipText {
+  position: absolute;
+  bottom: 110%
+}
+.tooltip .toolTipText {
+  visibility: hidden;
+  color: var(--vscode-input-foreground);
+  background-color: var(--vscode-input-background);
+  border: solid;
+  border-color: var(--vscode-input-border);
+  text-align: center;
+  padding: 5px 5px;
+  border-radius: 6px;
+  z-index: 1;
+}
+@media screen {
+  /* Show the tooltip text when you mouse over the tooltip container */
+  .tooltip:hover .toolTipText {
+    visibility: visible;
+    transition-delay:2s;
+  }
+  .tooltip:hover .viewDiv {
+    background-color: var(--vscode-editor-hoverHighlightBackground);
+    transition-delay:2s;
+  }
+}
+.helpText {
+  position: absolute;
+  visibility: hidden;
+  color: var(--vscode-input-foreground);
+  background-color: var(--vscode-input-background);
+  border:solid;
+  border-color: var(--vscode-input-border);
+  text-align: center;
+  padding: 5px 5px;
+  border-radius: 6px;
+  bottom: 110%; 
+  width:85%;
+}
+.editDiv {
+  position:relative;
+  width:80%;
+  display:flex;
+  flex-direction: column;
+  margin-top: 1cm;
+  margin-left:10%;
+  margin-right:10%;
+  margin-bottom: 1cm;
+}
+.editBox {
+  height: 300px;
+}

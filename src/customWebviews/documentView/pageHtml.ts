@@ -1,36 +1,33 @@
 import * as vscode from "vscode";
 import { getNonce } from "../getNonce";
-import { getDocumentStylePaths, getScriptPath } from "../resources";
+import { getStylePaths, getScriptPath } from "../resources";
 import { DoorsSmores } from "../../doorsSmores";
 import { join } from "path";
 
 export function getStyleBlock(webview:vscode.Webview, exporting:boolean):string {
   const nonce = getNonce();
-  const stylePaths = getDocumentStylePaths();
+  const stylePaths = getStylePaths();
   if(webview === undefined) {
     return "";
   }
   var styleUri:string[];
   if(exporting) {
-    styleUri = [
-      `file:///${stylePaths[0]}`,
-      `file:///${stylePaths[1]}`,
-      `file:///${stylePaths[2]}`,
-      `file:///${stylePaths[3]}`,
-    ];
+    return `
+  <link nonce="${nonce}" href="file:///${stylePaths.base}" rel="stylesheet"/>
+  <link nonce="${nonce}" href="file:///${stylePaths.user}" rel="stylesheet"/>`;
   } else {
     styleUri = [
-      webview.asWebviewUri(vscode.Uri.file(stylePaths[0])).toString(),
-      webview.asWebviewUri(vscode.Uri.file(stylePaths[1])).toString(),
-      webview.asWebviewUri(vscode.Uri.file(stylePaths[2])).toString(),
-      webview.asWebviewUri(vscode.Uri.file(stylePaths[3])).toString()
+      webview.asWebviewUri(vscode.Uri.file(stylePaths.base)).toString(),
+      webview.asWebviewUri(vscode.Uri.file(stylePaths.user)).toString(),
+      webview.asWebviewUri(vscode.Uri.file(stylePaths.gui)).toString(),
+      webview.asWebviewUri(vscode.Uri.file(stylePaths.icons)).toString(),
     ];
-  }
-  return `
+    return `
   <link nonce="${nonce}" href="${styleUri[0]}" rel="stylesheet"/>
   <link nonce="${nonce}" href="${styleUri[1]}" rel="stylesheet"/>
   <link nonce="${nonce}" href="${styleUri[2]}" rel="stylesheet"/>
   <link nonce="${nonce}" href="${styleUri[3]}" rel="stylesheet"/>`;
+  }
 }
 export function getScriptBlock(webview:vscode.Webview, exporting:boolean):string {
   const nonce = getNonce();

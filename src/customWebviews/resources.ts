@@ -1,36 +1,17 @@
 import { join } from "path";
 import { DoorsSmores } from "../doorsSmores";
 
-export function getDocumentStylePaths():string[] {
+export function getStylePaths() {
   const extensionPath = DoorsSmores.getExtensionPath();
+  const dataDirectory = DoorsSmores.getDataDirectory();
   // Local path to css styles
-  const stylesPaths:string[] = [
-    join(extensionPath, 'resources', 'document.css'),
-    join(extensionPath, 'resources', 'displayStyle.css'),
-    join(extensionPath, 'resources', 'pagination.css'),
-    join(extensionPath, 'resources', 'vendor', 'vscode', 'codicon.css')
-  ];
-  return stylesPaths;
-}
-export function getCoverStylePaths():string[] {
-  const extensionPath = DoorsSmores.getExtensionPath();
-  // Local path to css styles
-  const stylesPaths:string[] = [
-    join(extensionPath, 'resources', 'document.css'),
-    join(extensionPath, 'resources', 'displayStyle.css'),
-    join(extensionPath, 'resources', 'pagination.css'),
-    join(extensionPath, 'resources', 'cover.css')
-  ];
-  return stylesPaths;
-}
-export function getTracingStylePaths():string[] {
-  const extensionPath = DoorsSmores.getExtensionPath();
-  const stylesPaths:string[] = [
-    join(extensionPath, 'resources', 'tracing.css'),
-    join(extensionPath, 'resources', 'displayStyle.css'),
-    join(extensionPath, 'resources', 'pagination.css'),
-    join(extensionPath, 'resources', 'vendor', 'vscode', 'codicon.css')
-  ];
+  const stylesPaths = {
+    base:join(extensionPath, 'resources', 'base.css'),
+    gui:join(extensionPath, 'resources', 'gui.css'),
+    tracing:join(extensionPath, 'resources', 'tracing.css'),
+    user:join(dataDirectory, 'user.css'),
+    icons:join(extensionPath, 'resources', 'vendor', 'vscode', 'codicon.css')
+  };
   return stylesPaths;
 }
 export function getScriptPath():string {

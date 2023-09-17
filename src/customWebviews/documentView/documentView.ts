@@ -11,6 +11,7 @@ import { SmoresFile } from "../../model/smoresFile";
 import { VersionController } from "../../versionControl/versionController";
 import { writeDocumentPdf } from "../writeDocumentPdf";
 import { SmoresDocument } from "../../model/smoresDocument";
+import { generateUserCss } from "../userStyle";
 
 export class DocumentView {
   public static currentPanel: DocumentView | undefined;
@@ -163,14 +164,10 @@ export class DocumentView {
   }
   private writeRenderedSVG(id:number, svg:string, width:number, height:number) {
     const renderedNode = DocumentNode.createFromId(id);
-    const svgHeightInsertionPattern = "viewBox=\"([^\"]+)\" ";
-    const svgWidthInsertionPattern = 'width="100%"';
+    // const svgWidthPattern = 'width=\"([^\"]+)\"';
     if(renderedNode) {
-      const matches = svg.match(svgHeightInsertionPattern);
-      if(Array.isArray(matches) && matches.length > 0) {
-        svg = svg.replace(`viewBox="${matches[1]}" `, `viewBox="${matches[1]}" height="${height}px" ` );
-        svg = svg.replace(svgWidthInsertionPattern, `width="${width}px"`);
-      }
+      // svg = svg.replace(svgWidthPattern, 'width="100%"');
+      svg = svg.replace(/<br>/g, '<br/>');
       const nodePath = DoorsSmores.getNodeDirectory(renderedNode.data.id);
       const renderedFilepath = path.join(nodePath, 'rendered.svg');
       fs.writeFileSync(renderedFilepath, svg);
@@ -229,6 +226,7 @@ export class DocumentView {
     const settings = vscode.workspace.getConfiguration('tracing');
     DocumentView.includeTraceInfo = settings.get("includeTraceDetailInDocuments");
     DocumentView.tracingRequired = settings.get("tracingRequired");
+    generateUserCss();
     const nonce = getNonce();
     const bodyHtml = getBodyHtml(viewNode, exporting, editNode);
     const styleBlock = getStyleBlock(webview, exporting);

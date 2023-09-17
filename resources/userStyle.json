@@ -1,0 +1,91 @@
+{
+  "page": {
+    "indentation": 10,
+    "margins": {
+      "top": 40,
+      "bottom": 25,
+      "left": 25,
+      "right": 25
+    },
+    "header": {
+      "fontSize": "7pt"
+    },
+    "footer": {
+      "fontSize": "7pt"
+    }
+  },  
+  "default": {
+    "font": "Arial",
+    "fontSize": "10pt",
+    "fontStyle": "normal",
+    "fontWeight": "normal",
+    "marginTop": "0pt",
+    "marginBottom": "12pt",
+    "paddingTop": "0pt",
+    "paddingBottom": "0pt",
+    "textDecoration": "none"
+  },
+  "code": {
+    "font": "'Courier New', Courier, monospace"
+  },
+  "headings": {
+    "h1": {
+      "fontSize": "12pt",
+      "fontWeight": "bold"
+    },
+    "h2": {
+      "fontSize": "11pt",
+      "fontWeight": "bold"
+    },
+    "h3": {
+      "fontWeight": "bold"
+    },
+    "h4": {
+      "fontWeight": "bold",
+      "fontStyle": "italic"
+    },
+    "h1Frontpage": {
+      "fontSize": "20pt",
+      "fontWeight": "bold",
+      "paddingTop": "18cm"
+    },
+    "h2Frontpage": {
+      "fontSize": "16pt",
+      "fontWeight": "bold"
+    },
+    "h3Frontpage": {
+      "fontSize": "12pt",
+      "fontWeight": "bold"
+    }
+  },
+  "tables": {
+    "standard": {
+      "marginTop": "0pt",
+      "marginBottom": "0pt",
+      "paddingTop": "3pt",
+      "paddingBottom": "3pt"
+    },
+    "small": {
+      "fontSize": "7pt",
+      "marginTop": "0pt",
+      "marginBottom": "0pt",
+      "paddingTop": "3pt",
+      "paddingBottom": "3pt"
+    },
+    "heading": {
+      "fontWeight": "bold",
+      "marginTop": "0pt",
+      "marginBottom": "0pt",
+      "paddingTop": "3pt",
+      "paddingBottom": "3pt"
+    }
+  },
+  "lists": {
+    "marginTop": "0pt",
+    "marginBottom": "0pt",
+    "paddingTop": "0pt",
+    "paddingBottom": "0pt"
+  }
+}
+
+

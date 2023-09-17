@@ -1,21 +1,8 @@
 /* Tooltip container */
 
-table, td, th {
-  border: 1px solid;
-  padding-left: 0.2cm;
-  padding-right: 0.2cm;
-  margin-top: 3pt;
-  margin-bottom: 3pt;
-}
 table.indented2ColSmall {
   width:10cm !important;
   margin-left: 0cm !important;
-}
-
-table.heading, td.heading {
-  border:none;
-  padding-left: 0;
-  padding-right: 0;
 }
 
 i.tracing {
@@ -37,15 +24,6 @@ button.tracing:hover {
   background-color: var(--vscode-editor-foreground);
 }
 
-/* Tracing */
-body.tracing {
-  position: absolute;
-  margin: 0;
-  padding: 0;
-}
-div.tracingOuter {
-  position: relative;
-}
 div.tracingArrow {
   position: absolute;
   overflow: visible;

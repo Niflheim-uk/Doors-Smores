@@ -1,7 +1,7 @@
 import { join } from 'path';
 import { DoorsSmores } from '../doorsSmores';
 import { writeFileSync } from 'fs';
-import { getCoverStylePaths } from './resources';
+import { getStylePaths } from './resources';
 import { SmoresDocument } from '../model/smoresDocument';
 import { RevisionHistoryItem } from '../model/documentNode';
 import { workspace } from 'vscode';
@@ -29,7 +29,7 @@ function getCoverHtml(document:SmoresDocument, projectName:string, traceReport:b
   if(document.data.documentData === undefined) {
     return "";
   }
-  const stylePaths = getCoverStylePaths();
+  const stylePaths = getStylePaths();
   const date = new Date();
   var tracePrelude = "";
   if(traceReport) {
@@ -41,14 +41,12 @@ function getCoverHtml(document:SmoresDocument, projectName:string, traceReport:b
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="file:///${stylePaths[0]}" rel="stylesheet"/>
-    <link href="file:///${stylePaths[1]}" rel="stylesheet"/>
-    <link href="file:///${stylePaths[2]}" rel="stylesheet"/>
-    <link href="file:///${stylePaths[3]}" rel="stylesheet"/>
+    <link href="file:///${stylePaths.base}" rel="stylesheet"/>
+    <link href="file:///${stylePaths.user}" rel="stylesheet"/>
   </head>
   <body >
     <h1 class="frontpage">${tracePrelude}${document.data.documentData.documentType}</h1>
-    <h2 class="frontpage">${document.data.text}</h1>
+    <h2 class="frontpage">${document.data.text}</h2>
     <h3 class="frontpage">${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}</h3>
     <h2 class="frontpage">${projectName}</h2>
   </body>    
@@ -57,7 +55,7 @@ function getCoverHtml(document:SmoresDocument, projectName:string, traceReport:b
 }
 
 export function getHistoryHtml(document:SmoresDocument, traceReport:boolean) {
-  const stylePaths = getCoverStylePaths();
+  const stylePaths = getStylePaths();
   const historyTableRows:string = getHistoryTable(document, traceReport);
   return `
 <!DOCTYPE html>
@@ -65,10 +63,8 @@ export function getHistoryHtml(document:SmoresDocument, traceReport:boolean) {
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="file:///${stylePaths[0]}" rel="stylesheet"/>
-    <link href="file:///${stylePaths[1]}" rel="stylesheet"/>
-    <link href="file:///${stylePaths[2]}" rel="stylesheet"/>
-    <link href="file:///${stylePaths[3]}" rel="stylesheet"/>
+    <link href="file:///${stylePaths.base}" rel="stylesheet"/>
+    <link href="file:///${stylePaths.user}" rel="stylesheet"/>
   </head>
   <body >
     <h1 class="historyDiv">History</h1>

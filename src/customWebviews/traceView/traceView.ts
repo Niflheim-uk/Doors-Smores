@@ -8,11 +8,12 @@ import {
   getTracedItemHtml
  } from "./traceHtml";
 import { clearNonce, getNonce } from "../getNonce";
-import { getScriptPath, getTracingStylePaths } from "../resources";
+import { getScriptPath, getStylePaths } from "../resources";
 import { getTraceSelection } from "./traceSelection";
 import { DocumentNode } from "../../model/documentNode";
 import { DoorsSmores } from "../../doorsSmores";
 import { DocumentTreeItem } from "../../treeViews/documentTree/documentTreeItem";
+import { generateUserCss } from "../userStyle";
 
 export class TraceView {
   public static currentPanel: TraceView | undefined;
@@ -127,14 +128,16 @@ export class TraceView {
     if(this._viewNode === undefined) {
       return "";
     }
+    generateUserCss();
     const nonce =  getNonce();
-    const stylePaths = getTracingStylePaths();
+    const stylePaths = getStylePaths();
     const scriptPath = getScriptPath();
     const webUri = [
-      this._panel.webview.asWebviewUri(vscode.Uri.file(stylePaths[0])).toString(),
-      this._panel.webview.asWebviewUri(vscode.Uri.file(stylePaths[1])).toString(),
-      this._panel.webview.asWebviewUri(vscode.Uri.file(stylePaths[2])).toString(),
-      this._panel.webview.asWebviewUri(vscode.Uri.file(stylePaths[3])).toString(),
+      this._panel.webview.asWebviewUri(vscode.Uri.file(stylePaths.base)).toString(),
+      this._panel.webview.asWebviewUri(vscode.Uri.file(stylePaths.user)).toString(),
+      this._panel.webview.asWebviewUri(vscode.Uri.file(stylePaths.gui)).toString(),
+      this._panel.webview.asWebviewUri(vscode.Uri.file(stylePaths.tracing)).toString(),
+      this._panel.webview.asWebviewUri(vscode.Uri.file(stylePaths.icons)).toString(),
       this._panel.webview.asWebviewUri(vscode.Uri.file(scriptPath)).toString()
     ];
     const bodyHtml = this.getBodyHtml(this._viewNode);
@@ -156,10 +159,11 @@ export class TraceView {
         <link nonce="${nonce}" href="${webUri[1]}" rel="stylesheet"/>
         <link nonce="${nonce}" href="${webUri[2]}" rel="stylesheet"/>
         <link nonce="${nonce}" href="${webUri[3]}" rel="stylesheet"/>
+        <link nonce="${nonce}" href="${webUri[4]}" rel="stylesheet"/>
         <title>Tracing Id: ${this._viewNode.data.id}</title>
       </head>
       <body class='tracing'><div class='tracingOuter'>${bodyHtml}</div>
-        <script nonce="${nonce}" src="${webUri[4]}"></script>
+        <script nonce="${nonce}" src="${webUri[5]}"></script>
       </body>    
     </html>`;  
   }
