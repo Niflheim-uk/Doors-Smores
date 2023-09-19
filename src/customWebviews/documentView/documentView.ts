@@ -11,7 +11,6 @@ import { SmoresFile } from "../../model/smoresFile";
 import { VersionController } from "../../versionControl/versionController";
 import { writeDocumentPdf } from "../writeDocumentPdf";
 import { SmoresDocument } from "../../model/smoresDocument";
-import { generateUserCss } from "../userStyle";
 
 export class DocumentView {
   public static currentPanel: DocumentView | undefined;
@@ -226,7 +225,6 @@ export class DocumentView {
     const settings = vscode.workspace.getConfiguration('tracing');
     DocumentView.includeTraceInfo = settings.get("includeTraceDetailInDocuments");
     DocumentView.tracingRequired = settings.get("tracingRequired");
-    generateUserCss();
     const nonce = getNonce();
     const bodyHtml = getBodyHtml(viewNode, exporting, editNode);
     const styleBlock = getStyleBlock(webview, exporting);

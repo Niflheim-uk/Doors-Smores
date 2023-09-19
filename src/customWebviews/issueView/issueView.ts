@@ -6,7 +6,6 @@ import { getStylePaths } from "../resources";
 import { SmoresDocument } from "../../model/smoresDocument";
 import { Disposable, Uri, ViewColumn, WebviewPanel, commands, window, workspace } from "vscode";
 import { VersionController } from "../../versionControl/versionController";
-import { generateUserCss } from "../userStyle";
 
 export class IssueView {
   public static currentPanel: IssueView | undefined;
@@ -100,7 +99,6 @@ export class IssueView {
     return panel;
   }
   private async getPageHtml():Promise<string> {
-    generateUserCss();
     const nonce = getNonce();
     const bodyHtml = await this.getBodyHtml();
     let scriptBlock = "";

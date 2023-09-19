@@ -11,6 +11,7 @@ import { newDocument } from './model/newDocument';
 import { VersionController } from './versionControl/versionController';
 import { SmoresDocument } from './model/smoresDocument';
 import { StatusBar } from './customWebviews/statusBar';
+import { generateTOCxsl, generateUserCss } from './customWebviews/userStyle';
 
 export async function activate(context: vscode.ExtensionContext) {
   vscode.commands.executeCommand('setContext', 'doors-smores.projectOpen', false);
@@ -56,6 +57,8 @@ export class DoorsSmores {
     }
   }
   public static refreshViews() {
+    generateUserCss();
+    generateTOCxsl();
     DocumentTreeProvider.refresh();
     ProjectTreeProvider.refresh();
     DocumentView.refresh();

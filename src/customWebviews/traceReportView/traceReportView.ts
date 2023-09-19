@@ -14,7 +14,6 @@ import { SmoresDocument } from "../../model/smoresDocument";
 import { getPageBreak } from "../getPageBreak";
 import { getTraceReportIntroFromTemplate } from "./traceReportIntroTemplate";
 import { writeDocumentPdf } from "../writeDocumentPdf";
-import { generateUserCss } from "../userStyle";
 
 export class TraceReportView {
   public static currentPanel: TraceReportView | undefined;
@@ -104,7 +103,6 @@ export class TraceReportView {
     if(webview === undefined || viewNode === undefined) {
       return "";
     }
-    generateUserCss();
     const nonce = getNonce();
     const bodyHtml = TraceReportView.getBodyHtml(viewNode);
     let scriptBlock = "";

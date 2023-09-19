@@ -23,7 +23,7 @@ export function writeDocumentPdf(document:SmoresDocument, htmlDocFilepath:string
   const outputName = basename(htmlDocFilepath, ".html");
   const outputFilename = `${outputName}.pdf`;
   const outputPath = join(dirname(htmlDocFilepath), outputFilename);
-  const tocStylePath = join(DoorsSmores.getExtensionPath(), 'resources', 'wkhtmltopdfTOCxsl.xml');
+  const tocStylePath = join(dataPath, 'TOCxsl.xml');
   const generalOptions = `--dpi 1200 --print-media-type --enable-local-file-access --outline --zoom 1.25`;
   const headerOptions = `--header-html "${headerPath}"`;
   const footerOptions = `--footer-html "${footerPath}"`;

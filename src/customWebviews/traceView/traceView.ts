@@ -13,7 +13,6 @@ import { getTraceSelection } from "./traceSelection";
 import { DocumentNode } from "../../model/documentNode";
 import { DoorsSmores } from "../../doorsSmores";
 import { DocumentTreeItem } from "../../treeViews/documentTree/documentTreeItem";
-import { generateUserCss } from "../userStyle";
 
 export class TraceView {
   public static currentPanel: TraceView | undefined;
@@ -128,7 +127,6 @@ export class TraceView {
     if(this._viewNode === undefined) {
       return "";
     }
-    generateUserCss();
     const nonce =  getNonce();
     const stylePaths = getStylePaths();
     const scriptPath = getScriptPath();
