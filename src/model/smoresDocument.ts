@@ -15,16 +15,16 @@ export interface SmoresDocumentData {
 	relativeProjectPath: string;
 	type: string;
 	name: string;
-	revisionHistory: {
-		entry:RevisionHistoryData[];
-	}
-	traceReportRevisionHistory: {
-		entry:RevisionHistoryData[];
+	history: {
+		document: {
+			revision: RevisionHistoryData[];
+		},
+		traceReport: {
+			revision: RevisionHistoryData[];
+		}
 	}
 	content: {
-		children: {
-			id:number[];
-		}
+		id:number[];
 		text:string;
 	}
 }
@@ -38,25 +38,27 @@ export class SmoresDocument {
 		const parser = new XMLParser({ignorePiTags:true});
 		const parsedXml = parser.parse(raw);
 		let revHistory:RevisionHistoryData[] = [];
-		if(parsedXml.document.revisionHistory != '') {
-			revHistory = parsedXml.document.revisionHistory.entry;
+		if(parsedXml.document.history.document !== '' && parsedXml.document.history.document.revision !== undefined) {
+			revHistory = parsedXml.document.history.document.revision;
 		}
 		let trRevHistory:RevisionHistoryData[] = [];
-		if(parsedXml.document.traceReportRevisionHistory != '') {
-			trRevHistory = parsedXml.document.traceReportRevisionHistory.entry;
+		if(parsedXml.document.history.traceReport !== '' && parsedXml.document.history.document.revision !== undefined) {
+			revHistory = parsedXml.document.history.document.revision;
 		}
 		let childId:number[] = [];
-		if(parsedXml.document.content.children != '') {
-			childId = parsedXml.document.content.children.id;
+		if(parsedXml.document.content.id !== '' && parsedXml.document.content.id !== undefined) {
+			childId = parsedXml.document.content.id;
 		}
 		const textData = parsedXml.document.content.text;
 		const outputData:SmoresDocumentData = {
 			relativeProjectPath:parsedXml.document.relativeProjectPath,
 			type:parsedXml.document.type,
 			name:parsedXml.document.name,
-			revisionHistory: { entry:revHistory	},
-			traceReportRevisionHistory: { entry:trRevHistory },
-			content: {children: {id:childId},	text:textData }
+			history:{
+				document:{ revision:revHistory },
+				traceReport:{ revision:trRevHistory }
+			},
+			content: {id:childId,	text:textData }
 		};
 		return outputData;
 	}

@@ -35,7 +35,17 @@
             "filenamePattern": "*.smores"
           }
         ]
+      },
+      {
+        "viewType": "doors-smores.smoresConverter",
+        "displayName": "Doors Smores Project Converter",
+        "selector": [
+          {
+            "filenamePattern": "*.smores-project"
+          }
+        ]
       }
+
     ]
   },
   "scripts": {
