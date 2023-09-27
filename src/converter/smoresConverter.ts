@@ -128,20 +128,24 @@ export class SmoresConverterProvider implements CustomTextEditorProvider {
 			}
 			documentInfo.push({name:docName, relativePath:docPath});
 		}
+		var repoRelativeRoot = relative(dirname(src.fileName), oldData.repoRoot);
+		if(repoRelativeRoot === '') {
+			repoRelativeRoot = './';
+		}
 		const newData:SmoresProjectData = {
 			dataVersion: 1,
 			repository: {
-				relativeRoot:relative(dirname(src.fileName), oldData.repoRoot),
-				remote:oldData.repoRemote,
-				pathspec:oldData.repoPathspec
+				relativeRoot: repoRelativeRoot,
+				remote: oldData.repoRemote,
+				pathspec: oldData.repoPathspec
 			},
 			contributors: {
-				max:oldData.maxContributors,
-				id:oldData.knownContributors
+				max: oldData.maxContributors,
+				id: oldData.knownContributors
 			},
 			data: {
-				relativeRoot: "./smoresData",
-				documents:{document:documentInfo},
+				relativeRoot: "./.smoresData",
+				documents: { document: documentInfo },
 				uniqueIds: {
 					idBase: oldData.idBase,
 					id: oldData.uniqueIds

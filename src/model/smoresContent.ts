@@ -14,13 +14,13 @@ const badHtml = '<h3>Failed to parse content node</h3>';
 export class SmoresContent {
 	public data:SmoresContentData|undefined;
 	constructor(public filepath:string) {
-    this.data = this.getContentData();
+    this.data = this.getData();
 	}
-  private getContentData():SmoresContentData|undefined {
+  private getData():SmoresContentData|undefined {
     return FileIO.readXmlContentFile(this.filepath);
   }
-  public updateContentData() {
-    this.data = this.getContentData();
+  public updateData() {
+    this.data = this.getData();
   }
   public static getHtml(doc:SmoresDocument, id:number, webview?:Webview):string {
     const dataRoot = FileIO.getContentRoot(doc);

@@ -15,6 +15,13 @@ export class FileIO {
 		const parser = new XMLParser(FileIO.parserOptions);
 		return parser.parse(rawXml);
 	}
+	private static storeAsArray(data:any):any[] {
+		if(Array.isArray(data)) {
+			return data;
+		} else {
+			return [data];
+		}
+	}
 	public static parseProjectRawXml(rawXml:string, fix:boolean=true):SmoresProjectData|undefined {
 		const jsObject = FileIO.parseXml(rawXml);
 		const data = FileIO.parseProjectObject(jsObject);
@@ -43,23 +50,23 @@ export class FileIO {
 	public static parseProjectObject(data:any):SmoresProjectData|undefined {
 		try {
 			let contributorData:string[] = [];
-			if(data.project.contributors.contributor !== '' && data.project.contributors.contributor !== undefined) {
-				contributorData = data.project.contributors.contributor;
+			if(data.project.contributors.id !== '' && data.project.contributors.id !== undefined) {
+				contributorData = FileIO.storeAsArray(data.project.contributors.id);
 			}
 			let documentInfo:DocumentInfo[] = [];
 			if(data.project.data.documents !== '' && data.project.data.documents.document !== undefined) {
-				documentInfo = data.project.data.documents.document;
+				documentInfo = FileIO.storeAsArray(data.project.data.documents.document);
 			}
 			let idData:number[] = [];
 			if(data.project.data.uniqueIds.id !== '' && data.project.data.uniqueIds.id !== undefined) {
-				idData = data.project.data.uniqueIds.id;
+				idData = FileIO.storeAsArray(data.project.data.uniqueIds.id);
 			}
 			const parsedData:SmoresProjectData = {
 				dataVersion: data.project.dataVersion,
 				repository: {
-					relativeRoot: data.project.relativeRoot,
-					pathspec: data.project.pathspec,
-					remote: data.project.remote,
+					relativeRoot: data.project.repository.relativeRoot,
+					pathspec: data.project.repository.pathspec,
+					remote: data.project.repository.remote,
 				},
 				contributors: {
 					max: data.project.contributors.max,
@@ -86,15 +93,15 @@ export class FileIO {
 		try {
 			let revHistory:RevisionHistoryData[] = [];
 			if(data.document.history.document !== '' && data.document.history.document.revision !== undefined) {
-				revHistory = data.document.history.document.revision;
+				revHistory = FileIO.storeAsArray(data.document.history.document.revision);
 			}
 			let trRevHistory:RevisionHistoryData[] = [];
 			if(data.document.history.traceReport !== '' && data.document.history.traceReport.revision !== undefined) {
-				trRevHistory = data.document.history.traceReport.revision;
+				trRevHistory = FileIO.storeAsArray(data.document.history.traceReport.revision);
 			}
 			let childId:number[] = [];
 			if(data.document.content.id !== '' && data.document.content.id !== undefined) {
-				childId = data.document.content.id;
+				childId = FileIO.storeAsArray(data.document.content.id);
 			}
 			const textData = data.document.content.text;
 			const parsedData:SmoresDocumentData = {
@@ -117,11 +124,11 @@ export class FileIO {
 		try {
 			let traceIds:number[] = [];
 			if(data.item.traceData.traces !== '' && data.item.traceData.traces.id !== undefined) {
-				traceIds = data.content.traceData.traces.id;
+				traceIds = FileIO.storeAsArray(data.content.traceData.traces.id);
 			}
 			let suspectIds:number[] = [];
 			if(data.item.traceData.suspects !== '' && data.item.traceData.suspects.id !== undefined) {
-				suspectIds = data.item.traceData.suspects.id;
+				suspectIds = FileIO.storeAsArray(data.item.traceData.suspects.id);
 			}
 			const parsedData:SmoresContentData = {
 				relativeProjectPath: data.item.relativeProjectPath,
@@ -481,29 +488,42 @@ ${builder.build([jsObject])}
 	}
 	public static readProjectFile(filepath:string, fix:boolean=true):SmoresProjectData|undefined {
 		const jsObject = FileIO.readXmlProjectFile(filepath, fix);
-		if(FileIO.isEmpty(jsObject)) {
+		if(jsObject === undefined || FileIO.isEmpty(jsObject)) {
 			return undefined;
 		}
 		return jsObject;
 	}
 	public static readDocumentFile(filepath:string, fix:boolean=true):SmoresDocumentData|undefined {
 		const jsObject = FileIO.readXmlDocumentFile(filepath, fix);
-		if(FileIO.isEmpty(jsObject)) {
+		if(jsObject === undefined || FileIO.isEmpty(jsObject)) {
 			return undefined;
 		}
 		return jsObject;
 	}
 	public static readContentFile(filepath:string, fix:boolean=true):SmoresContentData|undefined {
 		const jsObject = FileIO.readXmlContentFile(filepath, fix);
-		if(FileIO.isEmpty(jsObject)) {
+		if(jsObject === undefined || FileIO.isEmpty(jsObject)) {
 			return undefined;
 		}
 		return jsObject;
 	}
-	private static getProjectPath(doc:SmoresDocument):string|undefined {
+	public static getProjectPath(doc:SmoresDocument):string|undefined {
 		if(doc.data) {
 			const projectPath = join(dirname(doc.document.fileName), doc.data.relativeProjectPath);
 			return projectPath;
+		}
+		return undefined;
+	}
+	public static getProjectDocumentFilepaths(projectFilepath:string):string[]|undefined {
+    const projectData = FileIO.readProjectFile(projectFilepath);
+    if(projectData) {
+			let documentFilepaths:string[] = [];
+			const projectRoot = dirname(projectFilepath);
+			const documentInfo:DocumentInfo[] = projectData.data.documents.document;
+			for(let i=0; i<documentInfo.length; i++) {
+				documentFilepaths.push(join(projectRoot, documentInfo[i].relativePath));
+			}
+			return documentFilepaths;
 		}
 		return undefined;
 	}

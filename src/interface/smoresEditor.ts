@@ -25,7 +25,7 @@ export class SmoresEditorProvider implements vscode.CustomTextEditorProvider {
 
 		const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(e => {
 			if (e.document.uri.toString() === document.uri.toString()) {
-				smoresDocument.updateDocumentData();
+				smoresDocument.updateData();
 				webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview, smoresDocument);
 			}
 		});
@@ -69,67 +69,39 @@ export class SmoresEditorProvider implements vscode.CustomTextEditorProvider {
 
 		// Use a nonce to whitelist which scripts can be run
 		const nonce = getNonce();
-		const bodyHtml = this.getBodyHtml(smoresDocument.data!.content.text);
+		const bodyHtml = smoresDocument.getHtml(webview);
 		return `
-			<!DOCTYPE html>
-			<html lang="en">
-			<head>
-				<meta name="viewport" content="width=device-width, initial-scale=1.0">
-				<style>
-				.autogrow {
-					display: grid;
-				}
-				.autogrow::after {
-					content: attr(data-replicated-value) " ";
-					white-space: pre-wrap;
-					visibility: hidden;
-				}
-				.autogrow > textarea {
-					resize: none;
-					overflow: hidden;
-				}
-					/* Identical styling required!! */
-				.autogrow > textarea, .autogrow::after {
-					color: var(--vscode-editor-foreground);
-					background: var(--vscode-editor-background);				
-					border: none;
-					padding: 0.5rem;
-					font: inherit;
-					/* Place on top of each other */
-					grid-area: 1 / 1 / 2 / 2;
-				}
-				</style>
-				<title>Doors Smores</title>
-			</head>
-			<body>${bodyHtml}</body>
-			</html>`;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<style>
+	.autogrow {
+		display: grid;
 	}
-	private getBodyHtml(text:string) {
-		const pattern = /\[SMORES\.[^\]]+\]/g;
-		const items = text.match(pattern);
-		const sections = text.split(pattern);
-		let divHtml = "";
-		for(let i=0; i < sections.length; i++) {
-			divHtml = divHtml.concat(this.getTextDivHtml(sections[i]));
-			if(items) {
-				divHtml = divHtml.concat(this.getItemHtml(items[i]));
-			}
-		}
-		return divHtml;
+	.autogrow::after {
+		content: attr(data-replicated-value) " ";
+		white-space: pre-wrap;
+		visibility: hidden;
 	}
-	private getTextDivHtml(divText:string) {
-		return `
-			<div class="autogrow" data-replicated-value="${divText}">
-				<textarea onInput="this.parentNode.dataset.replicatedValue = this.value">${divText}</textarea>
-			</div>`;
+	.autogrow > textarea {
+		resize: none;
+		overflow: hidden;
 	}
-	private getItemHtml(itemText:string) {
-		if(itemText === undefined) {
-			return "";
-		}
-		return `
-			<div >
-				<h3>${itemText}</h3>
-			</div>`;
+		/* Identical styling required!! */
+	.autogrow > textarea, .autogrow::after {
+		color: var(--vscode-editor-foreground);
+		background: var(--vscode-editor-background);				
+		border: none;
+		padding: 0.5rem;
+		font: inherit;
+		/* Place on top of each other */
+		grid-area: 1 / 1 / 2 / 2;
+	}
+	</style>
+	<title>Doors Smores</title>
+</head>
+<body>${bodyHtml}</body>
+</html>`;
 	}
 }

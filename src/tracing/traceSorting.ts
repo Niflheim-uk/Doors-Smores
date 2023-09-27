@@ -1,6 +1,8 @@
+import { window } from 'vscode';
 import { FileIO } from '../model/fileIO';
 import * as schema from '../model/schema';
 import { SmoresDocument } from '../model/smoresDocument';
+import { SmoresProject } from '../model/smoresProject';
 
 const ursReqPattern = /^U((FR)|(NFR)|(DC))$/;
 const srsReqPattern = /^S((FR)|(NFR)|(DC))$/;
@@ -226,6 +228,17 @@ export function getVerifiesTraceType(originCategoryLabel:string, traces:number[]
 
 export function isUpstreamTraceMissing(doc:SmoresDocument, itemData:schema.SmoresContentData) {
   const traceCategoryLabels = getTraceCategoryLabels(doc, itemData.traceData.traces.id);
+  const projectFilepath = FileIO.getProjectPath(doc);
+  if(projectFilepath === undefined) { 
+    window.showErrorMessage("Failed to obtain project filepath");
+    return false; 
+  }
+  const documentFilepaths = FileIO.getProjectDocumentFilepaths(projectFilepath);
+  if(documentFilepaths === undefined) { 
+    window.showErrorMessage("Failed to obtain document filepaths");
+    return false; 
+  }
+
   switch(doc.data!.type) {
   case schema.ursDocType:
   case schema.atpDocType:
@@ -235,7 +248,7 @@ export function isUpstreamTraceMissing(doc:SmoresDocument, itemData:schema.Smore
     return false;
   case schema.srsDocType:
     if(itemData.category === schema.softFRCategory) {
-      if(!SmoresProject.ursExists()) {
+      if(!SmoresProject.ursExists(documentFilepaths)) {
         return false;
       } else if(!traceCategoryLabels.includes(schema.userFRPrefix)) {
         return true;
@@ -244,7 +257,7 @@ export function isUpstreamTraceMissing(doc:SmoresDocument, itemData:schema.Smore
     return false;
   case schema.adsDocType:
     if(itemData.category === schema.archFRCategory) {
-      if(!SmoresProject.srsExists()) {
+      if(!SmoresProject.srsExists(documentFilepaths)) {
         return false;
       } else if(!traceCategoryLabels.includes(schema.softFRPrefix)) {
         return true;
@@ -253,7 +266,7 @@ export function isUpstreamTraceMissing(doc:SmoresDocument, itemData:schema.Smore
     return false;
   case schema.ddsDocType:
     if(itemData.category === schema.desFRCategory) {
-      if(!SmoresProject.srsExists() && !SmoresProject.adsExists()) {
+      if(!SmoresProject.srsExists(documentFilepaths) && !SmoresProject.adsExists(documentFilepaths)) {
         return false;
       } else if(!traceCategoryLabels.includes(schema.softFRPrefix) && !traceCategoryLabels.includes(schema.archFRPrefix)) {
         return true;
@@ -265,10 +278,21 @@ export function isUpstreamTraceMissing(doc:SmoresDocument, itemData:schema.Smore
 }
 export function isDownstreamTraceMissing(doc:SmoresDocument, itemData:schema.SmoresContentData) {
   const traceCategoryLabels = getTraceCategoryLabels(doc, itemData.traceData.traces.id);
+  const projectFilepath = FileIO.getProjectPath(doc);
+  if(projectFilepath === undefined) { 
+    window.showErrorMessage("Failed to obtain project filepath");
+    return false; 
+  }
+  const documentFilepaths = FileIO.getProjectDocumentFilepaths(projectFilepath);
+  if(documentFilepaths === undefined) { 
+    window.showErrorMessage("Failed to obtain document filepaths");
+    return false; 
+  }
+
   switch(doc.data!.type) {
   case schema.ursDocType:
     if(itemData.category === schema.userFRCategory) {
-      if(!SmoresProject.srsExists()) {
+      if(!SmoresProject.srsExists(documentFilepaths)) {
         return false;
       } else if(!traceCategoryLabels.includes(schema.softFRPrefix)) {
         return true;
@@ -277,7 +301,7 @@ export function isDownstreamTraceMissing(doc:SmoresDocument, itemData:schema.Smo
     return false;
   case schema.srsDocType:
     if(itemData.category === schema.softFRCategory) {
-      if(!SmoresProject.adsExists() && !SmoresProject.ddsExists()) {
+      if(!SmoresProject.adsExists(documentFilepaths) && !SmoresProject.ddsExists(documentFilepaths)) {
         return false;
       } else if(!traceCategoryLabels.includes(schema.archFRPrefix) && !traceCategoryLabels.includes(schema.desFRPrefix)) {
         return true;
@@ -286,7 +310,7 @@ export function isDownstreamTraceMissing(doc:SmoresDocument, itemData:schema.Smo
     return false;
   case schema.adsDocType:
     if(itemData.category === schema.archFRCategory) {
-      if(!SmoresProject.ddsExists()) {
+      if(!SmoresProject.ddsExists(documentFilepaths)) {
         return false;
       } else if(!traceCategoryLabels.includes(schema.desFRPrefix)) {
         return true;
@@ -304,10 +328,21 @@ export function isDownstreamTraceMissing(doc:SmoresDocument, itemData:schema.Smo
 }
 export function isTestTraceMissing(doc:SmoresDocument, itemData:schema.SmoresContentData) {
   const traceCategoryLabels = getTraceCategoryLabels(doc, itemData.traceData.traces.id);
+  const projectFilepath = FileIO.getProjectPath(doc);
+  if(projectFilepath === undefined) { 
+    window.showErrorMessage("Failed to obtain project filepath");
+    return false; 
+  }
+  const documentFilepaths = FileIO.getProjectDocumentFilepaths(projectFilepath);
+  if(documentFilepaths === undefined) { 
+    window.showErrorMessage("Failed to obtain document filepaths");
+    return false; 
+  }
+
   switch(doc.data!.type) {
   case schema.ursDocType:
     if(itemData.category === schema.userFRCategory || itemData.category === schema.userNFRCategory) {
-      if(!SmoresProject.atpExists()) {
+      if(!SmoresProject.atpExists(documentFilepaths)) {
         return false;
       } else if(!traceCategoryLabels.includes(schema.userTestPrefix)) {
         return true;
@@ -316,7 +351,7 @@ export function isTestTraceMissing(doc:SmoresDocument, itemData:schema.SmoresCon
     return false;
   case schema.srsDocType:
     if(itemData.category === schema.softFRCategory || itemData.category === schema.softNFRCategory) {
-      if(!SmoresProject.stpExists() && !SmoresProject.itpExists()) {
+      if(!SmoresProject.stpExists(documentFilepaths) && !SmoresProject.itpExists(documentFilepaths)) {
         return false;
       } else if(!traceCategoryLabels.includes(schema.softTestPrefix) && !traceCategoryLabels.includes(schema.archTestPrefix)) {
         return true;
@@ -325,7 +360,7 @@ export function isTestTraceMissing(doc:SmoresDocument, itemData:schema.SmoresCon
     return false;
   case schema.adsDocType:
     if(itemData.category === schema.archFRCategory || itemData.category === schema.archNFRCategory) {
-      if(!SmoresProject.itpExists() && !SmoresProject.utpExists()) {
+      if(!SmoresProject.itpExists(documentFilepaths) && !SmoresProject.utpExists(documentFilepaths)) {
         return false;
       } else if(!traceCategoryLabels.includes(schema.archTestPrefix) && !traceCategoryLabels.includes(schema.desTestPrefix)) {
         return true;
@@ -334,7 +369,7 @@ export function isTestTraceMissing(doc:SmoresDocument, itemData:schema.SmoresCon
     return false;
   case schema.ddsDocType:
     if(itemData.category === schema.desFRCategory || itemData.category === schema.desNFRCategory) {
-      if(!SmoresProject.itpExists() && !SmoresProject.utpExists()) {
+      if(!SmoresProject.itpExists(documentFilepaths) && !SmoresProject.utpExists(documentFilepaths)) {
         return false;
       } else if(!traceCategoryLabels.includes(schema.archTestPrefix) && !traceCategoryLabels.includes(schema.desTestPrefix)) {
         return true;
@@ -343,7 +378,7 @@ export function isTestTraceMissing(doc:SmoresDocument, itemData:schema.SmoresCon
     return false;
   case schema.atpDocType:
     if(itemData.category === schema.userTestCategory) {
-      if(!SmoresProject.ursExists()) {
+      if(!SmoresProject.ursExists(documentFilepaths)) {
         return false;
       } else if(!traceCategoryLabels.includes(schema.userFRPrefix) && !traceCategoryLabels.includes(schema.userNFRPrefix)) {
         return true;
@@ -352,7 +387,7 @@ export function isTestTraceMissing(doc:SmoresDocument, itemData:schema.SmoresCon
     return false;
   case schema.stpDocType:
     if(itemData.category === schema.softTestCategory) {
-      if(!SmoresProject.srsExists()) {
+      if(!SmoresProject.srsExists(documentFilepaths)) {
         return false;
       } else if(!traceCategoryLabels.includes(schema.softFRPrefix) && !traceCategoryLabels.includes(schema.softNFRPrefix)) {
         return true;
@@ -361,7 +396,7 @@ export function isTestTraceMissing(doc:SmoresDocument, itemData:schema.SmoresCon
     return false;
   case schema.itpDocType:
     if(itemData.category === schema.archTestCategory) {
-      if(!SmoresProject.srsExists() && !SmoresProject.adsExists() && !SmoresProject.ddsExists()) {
+      if(!SmoresProject.srsExists(documentFilepaths) && !SmoresProject.adsExists(documentFilepaths) && !SmoresProject.ddsExists(documentFilepaths)) {
         return false;
       } else if(!traceCategoryLabels.includes(schema.softFRPrefix) && 
         !traceCategoryLabels.includes(schema.softNFRPrefix) &&
@@ -375,7 +410,7 @@ export function isTestTraceMissing(doc:SmoresDocument, itemData:schema.SmoresCon
     return false;
   case schema.utpDocType:
     if(itemData.category === schema.desTestCategory) {
-      if(!SmoresProject.adsExists() && !SmoresProject.ddsExists()) {
+      if(!SmoresProject.adsExists(documentFilepaths) && !SmoresProject.ddsExists(documentFilepaths)) {
         return false;
       } else if(!traceCategoryLabels.includes(schema.archFRPrefix) && 
         !traceCategoryLabels.includes(schema.archNFRPrefix) &&

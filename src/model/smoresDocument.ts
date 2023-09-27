@@ -6,26 +6,28 @@ import { SmoresContent } from './smoresContent';
 export class SmoresDocument {
 	public data:SmoresDocumentData|undefined;
 	constructor(public document:TextDocument) {
-    this.data = this.getContentData();
+    this.data = this.getData();
 	}
-  private getContentData():SmoresDocumentData|undefined {
+  private getData():SmoresDocumentData|undefined {
     return FileIO.parseDocumentRawXml(this.document.getText());
   }
-  public updateDocumentData() {
-    this.data = this.getContentData();
+  public updateData() {
+    this.data = this.getData();
   }
 	public getHtml(webview: Webview):string {
 		if(this.data === undefined) {
 			return '<H1>Invalid document</H1>';
 		}
 		const text = this.data.content.text;
-		const pattern = /\[SMORES\.[^\]]+\]/g;
+		const pattern = /\[SMORES\.[^\]]+\]\n/g;
 		const items = text.match(pattern);
 		const sections = text.split(pattern);
 		let divHtml = "";
 		for(let i=0; i < sections.length; i++) {
-			divHtml = divHtml.concat(this.getTextDivHtml(sections[i]));
-			if(items) {
+			if(sections[i] && sections[i] !== ""){
+				divHtml = divHtml.concat(this.getTextDivHtml(sections[i]));
+			}
+			if(items && items[i]) {
 				divHtml = divHtml.concat(this.getItemHtml(items[i], webview));
 			}
 		}
