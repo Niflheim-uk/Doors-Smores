@@ -1,3 +1,68 @@
+export interface DocumentInfo {
+	name: string;
+	relativePath: string;
+}
+export interface SmoresProjectData {
+	dataVersion: number;
+	repository: {
+		relativeRoot: string;
+		pathspec: string;
+		remote: string;
+	}
+	contributors: {
+		max: number;
+		id: string[];
+	}
+	data: {
+		relativeRoot: string;
+		documents: { document: DocumentInfo[] }
+		uniqueIds: {
+      idBase: number;
+			id: number[];
+		}
+	}
+}
+export interface RevisionHistoryData {
+	day: number;
+	month: number;
+	year: number;
+	major: number;
+	minor: number;
+	detail: string;
+	author: string;
+	isMajor: boolean;
+}
+export interface SmoresDocumentData {
+	relativeProjectPath: string;
+	type: string;
+	name: string;
+	history: {
+		document: { revision: RevisionHistoryData[] }
+		traceReport: { revision: RevisionHistoryData[] }
+	}
+	content: {
+		id: number[];
+		text: string;
+	}
+}
+export interface TraceData {
+  traces: { id: number[] };
+  suspects: { id: number[] };
+}
+export interface SmoresContentData {
+	relativeProjectPath: string;
+	relativeDocumentPath: string;
+	category: string;
+	id: number;
+  traceData: TraceData;
+	content: {
+		text: string;
+    translationRationale: string;
+    expectedResults: string;
+    relativePath: string;
+    caption: string;
+	}
+}
 export const unknown = "Unknown";
 
 export const ursDocType = "User Requirements Specification";

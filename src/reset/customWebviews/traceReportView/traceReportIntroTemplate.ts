@@ -1,6 +1,5 @@
 import { DoorsSmores } from "../../doorsSmores";
 import { SmoresProject } from "../../model/smoresProject";
-import { Converter, ConverterOptions } from "showdown";
 import { getHtmlFromMd, getIndentedHtmlFromMd } from "../markdownConversion";
 
 const introTemplateMd:string[] = [

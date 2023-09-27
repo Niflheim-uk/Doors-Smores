@@ -1,10 +1,9 @@
-import { CancellationToken, CustomTextEditorProvider, Disposable, ExtensionContext, TextDocument, WebviewPanel, window, workspace } from 'vscode';
-import { RevisionHistoryData, SmoresDocumentData } from '../model/smoresDocument';
-import { XMLParser, XMLBuilder } from "fast-xml-parser";
-import { readFileSync, writeFileSync } from 'fs';
+import { CancellationToken, CustomTextEditorProvider, Disposable, TextDocument, WebviewPanel, window, workspace } from 'vscode';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, rmdirSync } from 'fs';
 import { basename, dirname, join, relative } from 'path';
 import * as schema from '../model/schema';
-
+import { RevisionHistoryData, DocumentInfo, SmoresProjectData, SmoresDocumentData, SmoresContentData } from '../model/schema';
+import { FileIO } from '../model/fileIO';
 
 interface OldProjectDataModel {
   idBase: number;
@@ -17,9 +16,16 @@ interface OldProjectDataModel {
   uniqueIds: number[];
   documentIds: number[];
 }
-export interface TraceData {
-  traceIds:number[];
-  suspectIds:number[];
+interface DocumentData {
+  documentType: string;
+  revisionHistory:RevisionHistoryData[];
+  traceReportRevisionHistory:RevisionHistoryData[];
+}
+interface RequirementData {
+  translationRationale: string;
+}
+interface TestData {
+  expectedResults: string;
 }
 export interface OldDocumentNodeData {
   id: number;
@@ -31,37 +37,11 @@ export interface OldDocumentNodeData {
 		suspectIds:number[];	
 	}
   children: number[];
-  documentData: {
-		documentType: string;
-		revisionHistory:RevisionHistoryData[];
-		traceReportRevisionHistory:RevisionHistoryData[];
-	}
+  documentData?: DocumentData;
+	requirementData?:RequirementData;
+  testData?:TestData;
 }
-interface DocumentInfo {
-	name: string;
-	relativePath: string;
-}
-interface SmoresProjectData {
-	dataVersion:number;
-	repository: {
-		relativeRoot: string;
-		pathspec: string;
-		remote: string;
-	}
-	contributors: {
-		max: number;
-		id:string[];
-	}
-	data : {
-		relativeRoot :string;
-		documents : {
-			document:DocumentInfo[];
-		}
-		uniqueIds: {
-			id:number[];
-		}
-	}
-}
+
 enum SmoresConverterResult {
 	success,
 	failure,
@@ -69,7 +49,6 @@ enum SmoresConverterResult {
 }
 export class SmoresConverterProvider implements CustomTextEditorProvider {
 	private static readonly viewType = 'doors-smores.smoresConverter';
-	private fileIO:FileIO;
 
 	public static register(): Disposable {
 		const provider = new SmoresConverterProvider();
@@ -77,9 +56,7 @@ export class SmoresConverterProvider implements CustomTextEditorProvider {
 		return providerRegistration;
 	}
 
-	constructor() {
-		this.fileIO = new FileIO();
-	 }
+	constructor() {}
 
 	public async resolveCustomTextEditor(document: TextDocument,	webviewPanel: WebviewPanel, _token: CancellationToken): Promise<void> {
 		// Setup initial content for the webview
@@ -124,9 +101,8 @@ export class SmoresConverterProvider implements CustomTextEditorProvider {
 	}
 	private convert(projectDocument:TextDocument) {
 		var result = SmoresConverterResult.noAction;
-		let projectJS = this.fileIO.parseProjectXml(projectDocument.getText());
-		if(this.fileIO.isEmpty(projectJS)) {
-			console.log('Project file is not xml');
+		let projectJS = ConverterFileIO.parseProjectRawXml(projectDocument.getText());
+		if(projectJS === undefined) {
 			result = this.convertProjectJS(projectDocument);
 		}
 		return result;
@@ -146,7 +122,6 @@ export class SmoresConverterProvider implements CustomTextEditorProvider {
 		var documentInfo:DocumentInfo[] = [];
 		for(let i=0; i<oldData.documentIds.length; i++) {
 			const docId = oldData.documentIds[i];
-			const docRoot = join(dirname(src.fileName), '.smoresData', `${docId}`);
 			const [docResult, docName, docPath] = this.convertDocument(src.fileName, docId);
 			if(docResult === SmoresConverterResult.failure) {
 				return docResult;
@@ -168,60 +143,139 @@ export class SmoresConverterProvider implements CustomTextEditorProvider {
 				relativeRoot: "./smoresData",
 				documents:{document:documentInfo},
 				uniqueIds: {
+					idBase: oldData.idBase,
 					id: oldData.uniqueIds
 				}
 			}
 		};
-		const outputFilepath = join(dirname(src.fileName), `${basename(src.fileName, '.smores-project')}2.smores-project`);
-		console.log(src.fileName);
-		console.log(outputFilepath);
-		this.fileIO.writeXmlFile(outputFilepath, newData, 'project');
-		console.log(newData);
+		ConverterFileIO.writeXmlFile(src.fileName, newData, 'project');
 		return result;
 	}
 	private convertDocument(projPath:string, docId:number):[SmoresConverterResult, string, string] {
 		let result = SmoresConverterResult.success;
-		const oldData = this.fileIO.getDocumentJson(projPath, docId);
-		const name = this.fileIO.getDocumentNameFromText(projPath, docId);
+		const name = ConverterFileIO.getDocumentNameFromText(projPath, docId);
 		const outputFilename = `${name}.smores`;
-		const outputFilepath = join(dirname(projPath), outputFilename);
 		const relPath = `./${outputFilename}`;
-		var newChildren:number[] = [];
-		var newText:string = "";
-		[newText, newChildren] = this.extractChildrenAndText(projPath, oldData.children, newText, newChildren, 1);
-	
-		const newData:SmoresDocumentData = {
-			relativeProjectPath: `./${basename(projPath)}`,
-			type: oldData.documentData.documentType,
-			name: name,
-			history: {
-				document: {
-					revision: oldData.documentData.revisionHistory
+		try {
+			const oldData = ConverterFileIO.getDocumentNodeJson(projPath, docId);
+			const outputFilepath = join(dirname(projPath), outputFilename);
+			var newChildren:number[] = [];
+			var newText:string = "";
+			[newText, newChildren] = this.extractChildrenAndText(projPath, outputFilename, oldData.children, newText, newChildren, 1);
+		
+			const newData:SmoresDocumentData = {
+				relativeProjectPath: `./${basename(projPath)}`,
+				type: oldData.documentData!.documentType,
+				name: name,
+				history: {
+					document: {
+						revision: oldData.documentData!.revisionHistory
+					},
+					traceReport: {
+						revision: oldData.documentData!.traceReportRevisionHistory
+					}
 				},
-				traceReport: {
-					revision: oldData.documentData.traceReportRevisionHistory
+				content: {
+					id: newChildren,
+					text: newText
 				}
-			},
-			content: {
-				id: newChildren,
-				text: newText
-			}
-		};
-		this.fileIO.writeXmlFile(outputFilepath, newData, 'document');
+			};
+			ConverterFileIO.writeXmlFile(outputFilepath, newData, 'document');
+			const contentRoot = ConverterFileIO.getContentDir(projPath, docId);
+			rmSync(contentRoot, {recursive:true, force:true});
+		} catch(err) {
+			result = SmoresConverterResult.failure;	
+		}
 		return [result, name, relPath];
 	}
+	private convertContent(projPath:string, docFilename:string, itemId:number) {
+		const outputFilename = `${itemId}.smores-item`;
+		const contentRoot = ConverterFileIO.getContentDir(projPath, itemId);
+		const outputFilepath = join(ConverterFileIO.getDataDir(projPath), outputFilename);
 
-	private extractChildrenAndText(projectFilepath:string, children:number[], text:string, knownChildren:number[], depth:number):[string, number[]] {
+		let result = SmoresConverterResult.success;
+		try {
+			const oldData = ConverterFileIO.getDocumentNodeJson(projPath, itemId);
+			const oldText = ConverterFileIO.getContentText(projPath, itemId);
+			const oldTR = ConverterFileIO.getContentTR(projPath, itemId);
+			const oldER = ConverterFileIO.getContentER(projPath, itemId);
+			let newText = "";
+			let newTR = "";
+			let newER = "";
+			let newRP = "";
+			let newCap = "";
+			switch(oldData.category) {
+			case schema.userFRCategory:
+			case schema.softFRCategory:
+			case schema.archFRCategory:
+			case schema.desFRCategory:
+			case schema.userNFRCategory:
+			case schema.softNFRCategory:
+			case schema.archNFRCategory:
+			case schema.desNFRCategory:
+			case schema.userDCCategory:
+			case schema.softDCCategory:
+			case schema.archDCCategory:
+			case schema.desDCCategory:
+				newText = oldText;
+				newTR = oldTR;
+				break;
+			case schema.userTestCategory:
+			case schema.softTestCategory:
+			case schema.archTestCategory:
+			case schema.desTestCategory:
+				newText = oldText;
+				newER = oldER;
+				break;
+			case schema.imageCategory:
+				const oldFilename = oldText.split('\n')[0];
+				const oldFilenameParts = oldFilename.split('.');
+				const extension = oldFilenameParts[oldFilenameParts.length - 1];
+				const newFilename = `${itemId}.${extension}`;
+				newRP = `./images/${newFilename}`;
+				ConverterFileIO.copyFile(contentRoot, oldFilename, join('..', 'images', newFilename));
+				newCap = 'Enter image caption';
+			case schema.mermaidCategory:
+				newText = oldText;
+				newCap = 'Enter image caption';
+				break;
+			}
+			const newData:SmoresContentData = {
+				relativeProjectPath: `../${basename(projPath)}`,
+				relativeDocumentPath: `../${docFilename}`,
+				category: oldData.category,
+				id: oldData.id,
+				traceData: {
+					traces: { id: oldData.traces.traceIds },
+					suspects: { id: oldData.traces.suspectIds }
+				},
+				content: {
+					text: newText,
+					translationRationale: newTR,
+					expectedResults: newER,
+					relativePath: newRP,
+					caption: newCap
+				}
+			};
+			ConverterFileIO.writeXmlFile(outputFilepath, newData, 'item');
+		} catch(err) {
+			result = SmoresConverterResult.failure;
+		}
+		return result;
+	}
+
+	private extractChildrenAndText(projectFilepath:string, documentFilename:string, children:number[], text:string, knownChildren:number[], depth:number):[string, number[]] {
 		if(children !== undefined) {
 			for(let i=0; i < children.length; i++) {
-				[text, knownChildren] = this.extractChild(projectFilepath, children[i], text, knownChildren, depth);
+				[text, knownChildren] = this.extractChild(projectFilepath, documentFilename, children[i], text, knownChildren, depth);
 			}
 		}
 		return [text, knownChildren];
 	}
-	private extractChild(projectFilepath:string, childId:number, text:string, knownChildren:number[], depth:number):[string, number[]] {
-		const oldData:OldDocumentNodeData = this.fileIO.getContentJson(projectFilepath, childId);
-		const oldText = this.fileIO.getContentText(projectFilepath, childId);
+	private extractChild(projectFilepath:string, documentFilename:string, childId:number, text:string, knownChildren:number[], depth:number):[string, number[]] {
+		const oldData:OldDocumentNodeData = ConverterFileIO.getContentJson(projectFilepath, childId);
+		const oldText = ConverterFileIO.getContentText(projectFilepath, childId);
+		const contentRoot = ConverterFileIO.getContentDir(projectFilepath, childId);
 		switch(oldData.category) {
 		case schema.headingCategory:
 			let mdBangs = "";
@@ -231,10 +285,12 @@ export class SmoresConverterProvider implements CustomTextEditorProvider {
 				bangs++;
 			}
 			text = text.concat(`${mdBangs} ${oldText}\n`);
-			return this.extractChildrenAndText(projectFilepath, oldData.children, text, knownChildren, depth+1);
+			rmSync(contentRoot, {recursive:true, force:true});
+			return this.extractChildrenAndText(projectFilepath, documentFilename, oldData.children, text, knownChildren, depth+1);
 		case schema.commentCategory:
 			text = text.concat(`${oldText}\n`);
-			return this.extractChildrenAndText(projectFilepath, oldData.children, text, knownChildren, depth+1);
+			rmSync(contentRoot, {recursive:true, force:true});
+			return this.extractChildrenAndText(projectFilepath, documentFilename, oldData.children, text, knownChildren, depth+1);
 		case schema.userFRCategory:
 		case schema.softFRCategory:
 		case schema.archFRCategory:
@@ -255,7 +311,9 @@ export class SmoresConverterProvider implements CustomTextEditorProvider {
 		case schema.mermaidCategory:
 			text = text.concat(`[SMORES.ID.${oldData.id}]\n`);
 			knownChildren.push(oldData.id);
-			return this.extractChildrenAndText(projectFilepath, oldData.children, text, knownChildren, depth+1);
+			this.convertContent(projectFilepath, documentFilename, oldData.id);
+			rmSync(contentRoot, {recursive:true, force:true});
+			return this.extractChildrenAndText(projectFilepath, documentFilename, oldData.children, text, knownChildren, depth+1);
 		default:
 			window.showErrorMessage("Unknown category found while converting data version");
 		}
@@ -263,60 +321,55 @@ export class SmoresConverterProvider implements CustomTextEditorProvider {
 	}
 }
 
-class FileIO {
-	private parser:XMLParser;
+class ConverterFileIO extends FileIO{
+	constructor() {super();}
 
-	constructor() {
-		const parserOptions = {ignorePiTags:true};
-		this.parser = new XMLParser(parserOptions);
-	}
-	public parseProjectXml(rawXml:string) {
-		const jsObject = this.parser.parse(rawXml);
-		return jsObject;
-	}
-	private parseDocumentXml(rawXml:string) {
-		const jsObject = this.parser.parse(rawXml);
-		return jsObject;
-	}
-	public readXmlDocumentFile(filepath:string) {
-		const rawXml = readFileSync(filepath, 'utf-8');
-		return this.parseDocumentXml(rawXml);
-	}
-	public writeXmlFile(filepath:string, jsObject:any, baseNode:string) {
-		const xml = this.getXml(jsObject, baseNode);
-		writeFileSync(filepath, xml);
-	}
-	public isEmpty(obj:any) {
-    return Object.keys(obj).length === 0;
-	}
-	private getDataJson(projectFilepath:string, id:number):any {
-		const filePath = join(this.getContentDir(projectFilepath, id), `${id}.json`);
+	private static getDataJson(projectFilepath:string, id:number):any {
+		const filePath = join(ConverterFileIO.getContentDir(projectFilepath, id), `${id}.json`);
 		const data = readFileSync(filePath, 'utf-8');
 		return JSON.parse(data);	
 	}
-	public getContentDir(projectFilepath:string, id:number) {
-		return join(dirname(projectFilepath), '.smoresData', `${id}`);
+	public static getDataDir(projectFilepath:string) {
+		return join(dirname(projectFilepath), '.smoresData');
 	}
-	public getDocumentJson(projectFilepath:string, id:number):OldDocumentNodeData {
+	public static getContentDir(projectFilepath:string, id:number) {
+		return join(ConverterFileIO.getDataDir(projectFilepath), `${id}`);
+	}
+	public static getDocumentNodeJson(projectFilepath:string, id:number):OldDocumentNodeData {
 		return this.getDataJson(projectFilepath, id);
 	}
-	public getContentJson(projectFilepath:string, id:number):OldDocumentNodeData {
+	public static getContentJson(projectFilepath:string, id:number):OldDocumentNodeData {
 		return this.getDataJson(projectFilepath, id);
 	}
-	public getContentText(projectFilepath:string, id:number):string {
-		const docPath = join(this.getContentDir(projectFilepath, id), `text.txt`);
+	public static getContentText(projectFilepath:string, id:number):string {
+		const docPath = join(ConverterFileIO.getContentDir(projectFilepath, id), `Text.txt`);
 		return readFileSync(docPath, 'utf-8');
 	}
-	public getDocumentNameFromText(projectFilepath:string, id:number):string {
-		const data = this.getContentText(projectFilepath, id);
+	public static getContentTR(projectFilepath:string, id:number):string {
+		const docPath = join(ConverterFileIO.getContentDir(projectFilepath, id), `TranslationRationale.txt`);
+		if(existsSync(docPath)) {
+			return readFileSync(docPath, 'utf-8');
+		} 
+		return "";
+	}
+	public static getContentER(projectFilepath:string, id:number):string {
+		const docPath = join(ConverterFileIO.getContentDir(projectFilepath, id), `ExpectedResults.txt`);
+		if(existsSync(docPath)) {
+			return readFileSync(docPath, 'utf-8');
+		} 
+		return "";
+	}
+	public static getDocumentNameFromText(projectFilepath:string, id:number):string {
+		const data = ConverterFileIO.getContentText(projectFilepath, id);
 		return data.split('\n')[0];
 	}
-
-	private getXml(jsObject:any, baseNode:string) {
-		const builder = new XMLBuilder({format:true, arrayNodeName:`${baseNode}`});
-		return `<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE ${baseNode}>
-${builder.build([jsObject])}
-`;
+	public static copyFile(commonBase:string, srcRelPath:string, destRelPath:string) {
+		const srcPath = join(commonBase, srcRelPath);
+		const destPath = join(commonBase, destRelPath);
+		const destRoot = dirname(destPath);
+		if(!existsSync(destRoot)) {
+			mkdirSync(destRoot, {recursive:true});
+		}
+		copyFileSync(srcPath, destPath);
 	}
 }

@@ -3,26 +3,6 @@ import { getNonce } from './getNonce';
 import { SmoresDocument } from '../model/smoresDocument';
 
 
-export interface SmoresProjectData {
-  dataVersion: number;
-	repository: {
-		relativeRoot: string;
-		pathspec: string;
-		remote: string;
-	}
-	contributors: {
-		max: number;
-		contributor: string[];
-	}
-	documents: {
-		name: string[];
-	}
-	uniqueIds: {
-		idBase: number;
-		id: number[];
-	}
-}
-
 export class SmoresEditorProvider implements vscode.CustomTextEditorProvider {
 	private static readonly viewType = 'doors-smores.smoresEditor';
 	public static register(context: vscode.ExtensionContext): vscode.Disposable {
@@ -89,7 +69,7 @@ export class SmoresEditorProvider implements vscode.CustomTextEditorProvider {
 
 		// Use a nonce to whitelist which scripts can be run
 		const nonce = getNonce();
-		const bodyHtml = this.getBodyHtml(smoresDocument.data.content.text);
+		const bodyHtml = this.getBodyHtml(smoresDocument.data!.content.text);
 		return `
 			<!DOCTYPE html>
 			<html lang="en">
