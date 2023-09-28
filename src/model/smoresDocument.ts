@@ -24,7 +24,7 @@ export class SmoresDocument {
 			return [];
 		}
 		const text = this.data.content.text;
-		const pattern = /\[SMORES\.[^\]]+\]\n/g;
+		const pattern = /\[SMORES\.[^\]]+\]/g;
 		const items = text.match(pattern);
 		const sections = text.split(pattern);
 		let blocks:SmoresDocumentBlock[] = [];
@@ -37,6 +37,32 @@ export class SmoresDocument {
 			}
 		}
 		return blocks;
+	}
+	private getTextFromBlocks(blocks:SmoresDocumentBlock[]) {
+		let t = "";
+		for(let i=0; i<blocks.length; i++) {
+			t = t.concat(blocks[i].data);
+		}
+		return t;
+	}
+	public updateBlock(blockNumber:number, edit:any) {
+		var blocks = this.getDocumentBlocks();
+		if(blockNumber < blocks.length) {
+			if(blocks[blockNumber].isText) {
+				if(typeof edit === 'string') {
+					blocks[blockNumber].data = edit;
+					this.data!.content.text = this.getTextFromBlocks(blocks);
+				}
+			} else {
+				const itemId = this.getIdFromItemText(blocks[blockNumber].data);
+				if(itemId && edit !== undefined) {
+					this.updateItem(itemId, edit);
+				}
+			}
+		}
+	}
+	private updateItem(itemId:number, edit:any) {
+
 	}
 	public getHtml(webview: Webview, editBlockNumber?:number):string {
 		if(this.data === undefined) {
