@@ -8,13 +8,13 @@ export class Settings {
     if(value) {
       return value;
     } else {
-//      Settings.set(config, setting, defaultVal);
+      Settings.set(config, setting, defaultVal);
       return defaultVal;
     }
   }
   private static set(config:string, setting:string, defaultVal:any) {
     const configuration = workspace.getConfiguration(config);
-    configuration.set(setting, defaultVal);
+    configuration.update(setting, defaultVal);
   }
   public static getMaxHistory() {
     return Settings.get('history', 'maximumRecentProjects', 5);

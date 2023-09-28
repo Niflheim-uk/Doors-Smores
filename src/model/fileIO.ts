@@ -154,7 +154,7 @@ export class FileIO {
 		return undefined;
 	}
 	private static isType(test:any, typeName:string) {
-		if(test && typeof test === typeName) {
+		if(test !== undefined && typeof test === typeName) {
 			return true;
 		}
 		return false;

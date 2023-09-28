@@ -80,9 +80,15 @@
       "paddingBottom": "3pt"
     }
   },
-  "lists": {
+  "listItems": {
     "marginTop": "0pt",
     "marginBottom": "0pt",
+    "paddingTop": "0pt",
+    "paddingBottom": "0pt"
+  },
+  "listBlocks": {
+    "marginTop": "0pt",
+    "marginBottom": "12pt",
     "paddingTop": "0pt",
     "paddingBottom": "0pt"
   }

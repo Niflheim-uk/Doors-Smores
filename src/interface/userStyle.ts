@@ -1,5 +1,4 @@
 import { copyFileSync, existsSync, readFileSync, writeFileSync } from "fs";
-import { DoorsSmores } from "../doorsSmores";
 import { join } from "path";
 import { window } from "vscode";
 
@@ -15,11 +14,7 @@ export interface Style {
   paddingBottom: any;
   textDecoration: string;
 }
-export function generateTOCxsl():any {
-  if(DoorsSmores.getActiveDocument() === undefined) {
-    return;
-  }
-  const dataPath = DoorsSmores.getDataDirectory();
+export function generateTOCxsl(dataPath:string):any {
   const userStylePath = join(dataPath, 'userStyle.json');
   const userTOCxslPath = join(dataPath, 'TOCxsl.xml');
   const userStyleStr = readFileSync(userStylePath, "utf-8");
@@ -107,12 +102,7 @@ export function generateTOCxsl():any {
 </xsl:stylesheet>`;
   writeFileSync(userTOCxslPath, xmlContent);
 }
-export function generateUserCss():any {
-  if(DoorsSmores.getActiveDocument() === undefined) {
-    return;
-  }
-  const dataPath = DoorsSmores.getDataDirectory();
-  const extensionPath = DoorsSmores.getExtensionPath();
+export function generateUserCss(extensionPath:string, dataPath:string):any {
   const userStylePath = join(dataPath, 'userStyle.json');
   const userCssPath = join(dataPath, 'user.css');
   const defaultUserStylePath = join(extensionPath, 'resources', 'userStyle.json');
@@ -160,7 +150,8 @@ table.header, table.header th, table.header tr, table.header td {
   style = style.concat(generateStyle("td, .tableText", userStyle.default, userStyle.tables.standard));
   style = style.concat(generateStyle(".tableSmall", userStyle.default, userStyle.tables.small));
   style = style.concat(generateStyle("th", userStyle.default, userStyle.tables.heading));
-  style = style.concat(generateStyle("li, ol, ul", userStyle.default, userStyle.lists));
+  style = style.concat(generateStyle("li", userStyle.default, userStyle.listItems));
+  style = style.concat(generateStyle("ol, ul", userStyle.default, userStyle.listBlocks));
   writeFileSync(userCssPath, style);
 }
 

@@ -56,16 +56,13 @@ export class SmoresContent {
       itemText = this.getTestHtml(doc);
       break;
     case schema.imageCategory:
-      itemText = this.getImageHtml(doc);
+      itemText = this.getImageHtml(doc, webview);
       break;
     case schema.mermaidCategory:
-      itemText = this.getMermaidHtml(doc);
+      itemText = this.getMermaidHtml(doc, webview);
       break;
     }
-    return `
-    <div >
-      ${itemText}
-    </div>`;
+    return itemText;
   }
   public getIdLabelHtml() {
     if(this.data === undefined) { return badHtml; }

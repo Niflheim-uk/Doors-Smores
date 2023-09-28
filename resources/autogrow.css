@@ -1,0 +1,22 @@
+.autogrow {
+  display: grid;
+}
+.autogrow::after {
+  content: attr(data-replicated-value) " ";
+  white-space: pre-wrap;
+  visibility: hidden;
+}
+.autogrow > textarea {
+  resize: none;
+  overflow: hidden;
+}
+  /* Identical styling required!! */
+.autogrow > textarea, .autogrow::after {
+  color: var(--vscode-editor-foreground);
+  background: var(--vscode-editor-background);				
+  border: none;
+  padding: 0.5rem;
+  font: inherit;
+  /* Place on top of each other */
+  grid-area: 1 / 1 / 2 / 2;
+}

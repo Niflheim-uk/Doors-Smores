@@ -2,7 +2,12 @@ import { TextDocument, Webview } from 'vscode';
 import { FileIO } from './fileIO';
 import { SmoresDocumentData, SmoresProjectData } from './schema';
 import { SmoresContent } from './smoresContent';
+import * as markdown from '../interface/markdownConversion';
 
+export interface SmoresDocumentBlock {
+	data:string,
+	isText:boolean
+};
 export class SmoresDocument {
 	public data:SmoresDocumentData|undefined;
 	constructor(public document:TextDocument) {
@@ -14,36 +19,68 @@ export class SmoresDocument {
   public updateData() {
     this.data = this.getData();
   }
-	public getHtml(webview: Webview):string {
+	public getDocumentBlocks():SmoresDocumentBlock[] {
 		if(this.data === undefined) {
-			return '<H1>Invalid document</H1>';
+			return [];
 		}
 		const text = this.data.content.text;
 		const pattern = /\[SMORES\.[^\]]+\]\n/g;
 		const items = text.match(pattern);
 		const sections = text.split(pattern);
-		let divHtml = "";
+		let blocks:SmoresDocumentBlock[] = [];
 		for(let i=0; i < sections.length; i++) {
 			if(sections[i] && sections[i] !== ""){
-				divHtml = divHtml.concat(this.getTextDivHtml(sections[i]));
+				blocks.push({data:sections[i], isText:true});
 			}
 			if(items && items[i]) {
-				divHtml = divHtml.concat(this.getItemHtml(items[i], webview));
+				blocks.push({data:items[i], isText:false});
+			}
+		}
+		return blocks;
+	}
+	public getHtml(webview: Webview, editBlockNumber?:number):string {
+		if(this.data === undefined) {
+			return '<H1>Invalid document</H1>';
+		}
+		markdown.SmoresHeading.clear();
+		const blocks = this.getDocumentBlocks();
+		let divHtml = "";
+		for(let i=0; i < blocks.length; i++) {
+			if(blocks[i].isText) {
+				divHtml = divHtml.concat(this.getTextDivHtml(blocks[i].data, i, editBlockNumber));
+			} else {
+				divHtml = divHtml.concat(this.getItemHtml(blocks[i].data, i, webview));
 			}
 		}
 		return divHtml;
 	}
-	private getTextDivHtml(divText:string) {
+	private getBlockDiv(inner:string, blockNumber:number) {
 		return `
-			<div class="autogrow" data-replicated-value="${divText}">
-				<textarea onInput="this.parentNode.dataset.replicatedValue = this.value">${divText}</textarea>
-			</div>`;
+		<div class="block" data-block-number="${blockNumber}">
+			${inner}
+		</div>`;
 	}
-	private getItemHtml(itemText:string, webview?:Webview) {
+	private getTextDivHtml(divText:string, blockNumber:number, editBlockNumber?:number) {
+		if(editBlockNumber !== undefined && blockNumber === editBlockNumber) {
+			return this.getEditDivHtml(divText, blockNumber);
+		} else {
+			const html = markdown.getBodyHtmlFromMd(divText);
+			return this.getBlockDiv(html, blockNumber);
+		}
+	}
+	private getEditDivHtml(divText:string, blockNumber:number) {
+		const html = `
+		<div class="autogrow" data-replicated-value="${divText}">
+			<textarea>${divText}</textarea>
+		</div>`;
+		return this.getBlockDiv(html, blockNumber);
+	}
+	private getItemHtml(itemText:string, blockNumber:number, webview?:Webview) {
 		if(itemText === undefined) {return "<h3>Invalid Doors-Smores node found</h3>";}
 		const itemId = this.getIdFromItemText(itemText);
 		if(itemId === undefined) {return "<h3>Invalid Doors-Smores node found</h3>";}
-		return SmoresContent.getHtml(this, itemId, webview);
+		const html = SmoresContent.getHtml(this, itemId, webview);
+		return this.getBlockDiv(html, blockNumber);
 	}
 	private getIdFromItemText(itemText:string):number|undefined {
 		const pattern = /\[SMORES\.ID\.(\d+)\]/;

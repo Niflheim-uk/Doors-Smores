@@ -1,6 +1,9 @@
 import * as vscode from 'vscode';
 import { getNonce } from './getNonce';
 import { SmoresDocument } from '../model/smoresDocument';
+import { FileIO } from '../model/fileIO';
+import { getEditorStyleBlock, getMermaidBlock, getScriptBlock } from './resources';
+import { generateTOCxsl, generateUserCss } from './userStyle';
 
 
 export class SmoresEditorProvider implements vscode.CustomTextEditorProvider {
@@ -11,22 +14,31 @@ export class SmoresEditorProvider implements vscode.CustomTextEditorProvider {
 		return providerRegistration;
 	}
 
-	constructor(
-		private readonly context: vscode.ExtensionContext
-	) { }
+	constructor(private readonly context: vscode.ExtensionContext) { }
 
 	public async resolveCustomTextEditor(document: vscode.TextDocument,	webviewPanel: vscode.WebviewPanel, _token: vscode.CancellationToken): Promise<void> {
 		const smoresDocument = new SmoresDocument(document);
-		// Setup initial content for the webview
+		const projPath = FileIO.getProjectPath(smoresDocument);
+		const dataPath = FileIO.getContentRoot(smoresDocument);
+		let editBlock:number|undefined = undefined;
+		if(projPath === undefined || dataPath === undefined) {return;}
+		const dataUri = vscode.Uri.file(dataPath);
+		generateUserCss(this.context.extensionUri.fsPath, dataUri.fsPath);
+//    generateTOCxsl(dataUri.toString());
+    
 		webviewPanel.webview.options = {
 			enableScripts: true,
+			localResourceRoots:[
+				vscode.Uri.joinPath(this.context.extensionUri, 'resources'),
+				dataUri
+			]
 		};
-		webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview, smoresDocument);
+		webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview, smoresDocument, dataUri, editBlock);
 
 		const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(e => {
 			if (e.document.uri.toString() === document.uri.toString()) {
 				smoresDocument.updateData();
-				webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview, smoresDocument);
+				webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview, smoresDocument, dataUri, editBlock);
 			}
 		});
 
@@ -37,71 +49,48 @@ export class SmoresEditorProvider implements vscode.CustomTextEditorProvider {
 
 		// Receive message from the webview.
 		webviewPanel.webview.onDidReceiveMessage(e => {
-			switch (e.type) {
-				case 'add':
-//					this.addNewScratch(document);
+			switch (e.command) {
+				case 'editBlock':
+					if(e.blockNumber !== undefined) {
+						editBlock = e.blockNumber;
+						webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview, smoresDocument, dataUri, editBlock);
+					}
 					return;
-
-				case 'delete':
-	//				this.deleteScratch(document, e.id);
+				case 'update':
 					return;
 			}
 		});
 
 	}
 
-	/**
-	 * Get the static html used for the editor webviews.
-	 */
-	private getHtmlForWebview(webview: vscode.Webview, smoresDocument:SmoresDocument): string {
-		// Local path to script and css for the webview
-		const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(
-			this.context.extensionUri, 'media', 'catScratch.js'));
-
-		const styleResetUri = webview.asWebviewUri(vscode.Uri.joinPath(
-			this.context.extensionUri, 'media', 'reset.css'));
-
-		const styleVSCodeUri = webview.asWebviewUri(vscode.Uri.joinPath(
-			this.context.extensionUri, 'media', 'vscode.css'));
-
-		const styleMainUri = webview.asWebviewUri(vscode.Uri.joinPath(
-			this.context.extensionUri, 'media', 'catScratch.css'));
-
-		// Use a nonce to whitelist which scripts can be run
+	private getHtmlForWebview(webview: vscode.Webview, smoresDocument:SmoresDocument, dataUri:vscode.Uri, editBlock?:number): string {
 		const nonce = getNonce();
-		const bodyHtml = smoresDocument.getHtml(webview);
+		const bodyHtml = smoresDocument.getHtml(webview, editBlock);
+		const styleBlock = getEditorStyleBlock(this.context.extensionUri, dataUri, webview);
+    const scriptBlock = getScriptBlock(this.context.extensionUri, webview);
+    const mermaidBlock = getMermaidBlock(this.context.extensionUri, webview);
+
 		return `
 <!DOCTYPE html>
 <html lang="en">
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<style>
-	.autogrow {
-		display: grid;
-	}
-	.autogrow::after {
-		content: attr(data-replicated-value) " ";
-		white-space: pre-wrap;
-		visibility: hidden;
-	}
-	.autogrow > textarea {
-		resize: none;
-		overflow: hidden;
-	}
-		/* Identical styling required!! */
-	.autogrow > textarea, .autogrow::after {
-		color: var(--vscode-editor-foreground);
-		background: var(--vscode-editor-background);				
-		border: none;
-		padding: 0.5rem;
-		font: inherit;
-		/* Place on top of each other */
-		grid-area: 1 / 1 / 2 / 2;
-	}
-	</style>
-	<title>Doors Smores</title>
+	<meta http-equiv="Content-Security-Policy" 
+	content="default-src 'none'; 
+	font-src ${webview.cspSource} 'nonce-${nonce}'; 
+	img-src ${webview.cspSource} 'nonce-${nonce}'; 
+	script-src ${webview.cspSource} 'nonce-${nonce}';
+	style-src ${webview.cspSource} 'unsafe-inline';
+"/>
+${styleBlock}
+<title>Doors Smores</title>
 </head>
-<body>${bodyHtml}</body>
+<body data-vscode-context='{"preventDefaultContextMenuItems": true}'>
+${bodyHtml}
+${mermaidBlock}
+${scriptBlock}
+</body>    
+
 </html>`;
 	}
 }
