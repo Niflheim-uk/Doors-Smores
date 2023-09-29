@@ -1,4 +1,4 @@
-import { TextDocument, Webview } from 'vscode';
+import { Position, Range, TextDocument, TextLine, Webview, WorkspaceEdit, window, workspace } from 'vscode';
 import { FileIO } from './fileIO';
 import { SmoresDocumentData, SmoresProjectData } from './schema';
 import { SmoresContent } from './smoresContent';
@@ -6,7 +6,8 @@ import * as markdown from '../interface/markdownConversion';
 
 export interface SmoresDocumentBlock {
 	data:string,
-	isText:boolean
+	isText:boolean,
+	range:Range
 };
 export class SmoresDocument {
 	public data:SmoresDocumentData|undefined;
@@ -19,7 +20,90 @@ export class SmoresDocument {
   public updateData() {
     this.data = this.getData();
   }
+	public getPositionOfTextField():Position {
+		const nLines = this.document.lineCount;
+		for(let i=0; i<nLines; i++) {
+			const line:TextLine = this.document.lineAt(i);
+			const m = line.text.match(/\s*<text>/);
+			if(m) {
+				const c = m[0].length;
+				return new Position(i,c);
+			}
+		}
+		window.showErrorMessage("Failed to find start of text field");
+		return new Position(-1,-1);
+	}
+	public getPositionFromTextOffset(offsetIntoText:number):Position {
+		const startOfText = this.getPositionOfTextField();
+		let charactersLeft = offsetIntoText;
+		for(let i=startOfText.line; i<this.document.lineCount; i++) {
+			let charactersInLine = this.document.lineAt(i).text.length;
+			if(i === startOfText.line) {
+				charactersInLine -= startOfText.character;
+			}
+			if(charactersLeft < charactersInLine) {
+				return new Position(i, charactersLeft);
+			} else {
+				charactersLeft -= charactersInLine;
+			}
+		}
+		window.showErrorMessage("Failed to find position within document");
+		return new Position(-1,-1);
+
+	}
+	private getTextFieldRange(startPos:number, endPos:number):Range {
+		const start:Position = this.getPositionFromTextOffset(startPos);
+		const end:Position = this.getPositionFromTextOffset(endPos);
+		return new Range(start, end);
+	}
+	private getTextStart():{text:string, startPos:Position} {
+		const startPos = this.getPositionOfTextField();
+		const startLine = this.document.lineAt(startPos.line).text;
+		const text = startLine.slice(startPos.character);
+		return {text, startPos};
+	}
 	public getDocumentBlocks():SmoresDocumentBlock[] {
+		let blocks:SmoresDocumentBlock[] = [];
+		let {text, startPos} = this.getTextStart();
+		const itemPattern = /(.*)(\[SMORES\.[^\]]+\])(.*)/;
+		const endPattern = /(.*)<\/text>/;
+		for(let i=startPos.line+1; i<this.document.lineCount; i++) {
+			const lineText = this.document.lineAt(i).text;
+			const itemMatch = lineText.match(itemPattern);
+			const endMatch = lineText.match(endPattern);
+			if(itemMatch) {
+				text = text.concat('\n',itemMatch[1]);
+				const textEndPos = new Position(i, itemMatch[1].length);
+				blocks.push({data:text, isText:true, range: new Range(startPos, textEndPos)});
+				startPos = textEndPos;
+				text = itemMatch[2];
+				const itemEndPos = new Position(i, startPos.character + itemMatch[2].length);
+				blocks.push({data:text, isText:false, range: new Range(startPos, itemEndPos)});
+				startPos = itemEndPos;
+				text = itemMatch[3];
+				const endMatchItem = text.match(endPattern);
+				if(endMatchItem) {
+					text = endMatchItem[1];
+					const endEndPos = new Position(i, startPos.character + endMatchItem[1].length);
+					blocks.push({data:text, isText:true, range: new Range(startPos, endEndPos)});
+					return blocks;
+				}
+			} else if(endMatch) {
+				text = text.concat('\n',endMatch[1]);
+				const endEndPos = new Position(i, endMatch[1].length);
+				blocks.push({data:text, isText:true, range: new Range(startPos, endEndPos)});
+				return blocks;
+			} else {
+				text = text.concat('\n',lineText);
+			}
+		}
+		if(text !== "") {
+			window.showErrorMessage("Bad parsing of blocks");
+		}
+		return blocks;
+	}
+	public getDocumentBlocks2():SmoresDocumentBlock[] {
+			this.updateData();
 		if(this.data === undefined) {
 			return [];
 		}
@@ -28,31 +112,30 @@ export class SmoresDocument {
 		const items = text.match(pattern);
 		const sections = text.split(pattern);
 		let blocks:SmoresDocumentBlock[] = [];
+		let textPosition = 0;
 		for(let i=0; i < sections.length; i++) {
 			if(sections[i] && sections[i] !== ""){
-				blocks.push({data:sections[i], isText:true});
+				const sectionLength = sections[i].length;
+				const sectionRange = this.getTextFieldRange(textPosition, textPosition + sectionLength);
+				textPosition += sectionLength;
+					blocks.push({data:sections[i], isText:true, range:sectionRange});
 			}
 			if(items && items[i]) {
-				blocks.push({data:items[i], isText:false});
+				const itemLength = items[i].length;
+				const itemRange = this.getTextFieldRange(textPosition, textPosition + itemLength);
+					blocks.push({data:items[i], isText:false, range:itemRange});
 			}
 		}
 		return blocks;
 	}
-	private getTextFromBlocks(blocks:SmoresDocumentBlock[]) {
-		let t = "";
-		for(let i=0; i<blocks.length; i++) {
-			t = t.concat(blocks[i].data);
-		}
-		return t;
-	}
+
 	public updateBlock(blockNumber:number, edit:any) {
 		var blocks = this.getDocumentBlocks();
 		if(blockNumber < blocks.length) {
-			if(blocks[blockNumber].isText) {
-				if(typeof edit === 'string') {
-					blocks[blockNumber].data = edit;
-					this.data!.content.text = this.getTextFromBlocks(blocks);
-				}
+			if(blocks[blockNumber].isText && typeof edit === 'string') {
+				const change = new WorkspaceEdit();
+				change.replace(this.document.uri, blocks[blockNumber].range, edit);
+				workspace.applyEdit(change);
 			} else {
 				const itemId = this.getIdFromItemText(blocks[blockNumber].data);
 				if(itemId && edit !== undefined) {

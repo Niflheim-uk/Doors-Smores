@@ -5,35 +5,12 @@ import { FileIO } from '../model/fileIO';
 import { getEditorStyleBlock, getMermaidBlock, getScriptBlock } from './resources';
 import { generateTOCxsl, generateUserCss } from './userStyle';
 
-class DocumentEdit  {
-	public block:number|undefined;
-	public edit:any;
-	private _isDirty:boolean;
-	constructor() {
-		this.block = undefined;
-		this.edit = undefined;
-		this._isDirty = false;
-	}
-	storeEdit(newEdit:any) {
-		if(newEdit !== undefined) {
-			this._isDirty = true;
-			this.edit = newEdit;
-		}
-	}
-	isDirty() {
-		if(this.block !== undefined && this._isDirty && this.edit !== undefined) {
-			return true;
-		}
-		return false;
-	}
-	getEdit():any {
-		if(this.isDirty()) {
-			this._isDirty = false;
-			return this.edit;
-		}
-		return undefined;
-	}
-}
+interface Edit {
+	type: string;
+	block: number;
+	data: any;
+};
+
 export class SmoresEditorProvider implements vscode.CustomTextEditorProvider {
 	private static readonly viewType = 'doors-smores.smoresEditor';
 	public static register(context: vscode.ExtensionContext): vscode.Disposable {
@@ -48,7 +25,7 @@ export class SmoresEditorProvider implements vscode.CustomTextEditorProvider {
 		const smoresDocument = new SmoresDocument(document);
 		const projPath = FileIO.getProjectPath(smoresDocument);
 		const dataPath = FileIO.getContentRoot(smoresDocument);
-		let docEdit = new DocumentEdit();
+		let editBlock:number|undefined = undefined;
 		if(projPath === undefined || dataPath === undefined) {return;}
 		const dataUri = vscode.Uri.file(dataPath);
 		generateUserCss(this.context.extensionUri.fsPath, dataUri.fsPath);
@@ -61,12 +38,12 @@ export class SmoresEditorProvider implements vscode.CustomTextEditorProvider {
 				dataUri
 			]
 		};
-		webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview, smoresDocument, dataUri, docEdit.block);
+		webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview, smoresDocument, dataUri, editBlock);
 
 		const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(e => {
 			if (e.document.uri.toString() === document.uri.toString()) {
 				smoresDocument.updateData();
-				webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview, smoresDocument, dataUri, docEdit.block);
+				webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview, smoresDocument, dataUri, editBlock);
 			}
 		});
 
@@ -79,21 +56,29 @@ export class SmoresEditorProvider implements vscode.CustomTextEditorProvider {
 		webviewPanel.webview.onDidReceiveMessage(e => {
 			switch (e.command) {
 				case 'editBlock':
-					if(e.blockNumber !== undefined && e.blockNumber !== docEdit.block) {
-						const edit = docEdit.getEdit();
-						if(edit && docEdit.block !== undefined) {
-							smoresDocument.updateBlock(docEdit.block, edit);
-						}
-						docEdit.block = e.blockNumber;
-						webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview, smoresDocument, dataUri, docEdit.block);
+					if(e.blockNumber !== undefined && e.blockNumber !== editBlock) {
+						editBlock = e.blockNumber;
+						webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview, smoresDocument, dataUri, editBlock);
 					}
 					return;
-				case 'update':
-					docEdit.storeEdit(e.data);
+				case 'updateTextBlockContent':
+					this.addEdit(smoresDocument, {type:e.command, block:e.blockNumber, data:e.blockValue});
 					return;
+				case 'blockLostFocus':
+					editBlock = undefined;
+					webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview, smoresDocument, dataUri, editBlock);
+					break;
 			}
 		});
 
+	}
+
+	private addEdit(document:SmoresDocument, edit:Edit) {
+		switch (edit.type) {
+		case 'updateTextBlockContent':
+			document.updateBlock(edit.block, edit.data);
+			break;
+		}
 	}
 
 	private getHtmlForWebview(webview: vscode.Webview, smoresDocument:SmoresDocument, dataUri:vscode.Uri, editBlock?:number): string {

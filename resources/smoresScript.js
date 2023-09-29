@@ -17,7 +17,8 @@ function addEditorClickHandlers() {
     var textAreas = el.getElementsByTagName('textarea');
     for (let t = 0; t < textAreas.length; t++) {
       var ta = textAreas[t];
-      ta.addEventListener('input', editorAutogrowOnInput);
+      ta.addEventListener('change', editorAutogrowOnChange);
+      ta.addEventListener('focusout', editorAutogrowOnFocusLost);
     }
   }
 }
@@ -44,9 +45,14 @@ function editorBlockOnClick(event) {
   const blockNumber = event.currentTarget.dataset["blockNumber"];
   vscode.postMessage({command: 'editBlock', blockNumber:Number(blockNumber)});
 }
-function editorAutogrowOnInput(event) {
-  const blockNumber = event.currentTarget.parentNode.dataset["blockNumber"];
+function editorAutogrowOnChange(event) {
   const value = event.currentTarget.value;
-  event.currentTarget.parentNode.dataset.replicatedValue = value;
-  vscode.postMessage({command: 'update', blockNumber:Number(blockNumber), data:value});
+  event.currentTarget.parentNode.dataset.replicatedValue = value; // Autogrow
+  const blockNumber = event.currentTarget.parentNode.parentNode.dataset["blockNumber"];
+  vscode.postMessage({command: 'updateTextBlockContent', blockNumber:Number(blockNumber), blockValue:value});
+}
+function editorAutogrowOnFocusLost(event) {
+  const blockNumber = event.currentTarget.parentNode.parentNode.dataset["blockNumber"];
+  vscode.postMessage({command: 'blockLostFocus', blockNumber:Number(blockNumber)});
+  
 }
