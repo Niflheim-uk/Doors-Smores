@@ -1,5 +1,7 @@
 .autogrow {
   display: grid;
+  font-family: var(--vscode-editor-font-family);
+  width: 100%;
 }
 .autogrow::after {
   content: attr(data-replicated-value) " ";

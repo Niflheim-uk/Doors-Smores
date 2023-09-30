@@ -18,7 +18,8 @@ function addEditorClickHandlers() {
     for (let t = 0; t < textAreas.length; t++) {
       var ta = textAreas[t];
       ta.addEventListener('change', editorAutogrowOnChange);
-      ta.addEventListener('focusout', editorAutogrowOnFocusLost);
+//      ta.addEventListener('focusout', editorAutogrowOnFocusLost);
+//      ta.focus();
     }
   }
 }

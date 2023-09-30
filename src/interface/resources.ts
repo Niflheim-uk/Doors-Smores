@@ -48,8 +48,8 @@ export function getEditorStyleBlock(extensionUri:Uri, dataUri:Uri, webview?:Webv
   if(webview) {
     return `
   <link nonce="${nonce}" href="${styleUri.base.toString()}" rel="stylesheet"/>
-  <link nonce="${nonce}" href="${styleUri.autogrow.toString()}" rel="stylesheet"/>
   <link nonce="${nonce}" href="${styleUri.user.toString()}" rel="stylesheet"/>
+  <link nonce="${nonce}" href="${styleUri.autogrow.toString()}" rel="stylesheet"/>
   <link nonce="${nonce}" href="${styleUri.gui.toString()}" rel="stylesheet"/>
   <link nonce="${nonce}" href="${styleUri.icons.toString()}" rel="stylesheet"/>`;
   } else {

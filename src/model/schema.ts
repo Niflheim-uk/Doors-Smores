@@ -63,6 +63,13 @@ export interface SmoresContentData {
     caption: string;
 	}
 }
+export const documentIcon = 'book';
+export const requirementIcon = 'law';
+export const constraintIcon = 'lock';
+export const testIcon = 'beaker';
+export const textIcon = 'selection';
+export const imageIcon = 'symbol-color';
+
 export const unknown = "Unknown";
 
 export const ursDocType = "User Requirements Specification";

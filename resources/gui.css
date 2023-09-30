@@ -1,6 +1,8 @@
 body {
   color: var(--vscode-editor-foreground);
   background: var(--vscode-editor-background);
+  --menu-size:25px;
+  --menu-gap:5px;
 }
 body.projectView {
   color: var(--vscode-sideBar-foreground);
@@ -91,4 +93,60 @@ button.secondary:hover {
 }
 .editBox {
   height: 300px;
+}
+.webviewDiv {
+  margin-left:calc(var(--menu-size) + var(--menu-gap));
+}
+.toolbarDiv {
+  display:flex;
+  flex-direction: column;
+  position:fixed;
+  left:0;
+  top:0;
+  width:var(--menu-size);
+}
+.toolbarButton {
+  color: var(--vscode-editor-foreground);
+  background: var(--vscode-editor-background);
+  border: 1px solid var(--vscode-button-border,transparent);
+  display:flex;
+  width:100%;
+  height: var(--menu-size);
+  box-sizing: border-box;
+  padding: 4px;
+  border-radius: 2px;
+  text-align: center;
+  cursor:crosshair;
+  justify-content: center;
+  align-items: center;
+}
+.ursLevelIconColour {
+  color: var(--vscode-terminal-ansiGreen);
+}
+.srsLevelIconColour {
+  color: var(--vscode-debugConsole-errorForeground);
+}
+.adsLevelIconColour {
+  color: var(--vscode-debugConsole-infoForeground);
+}
+.ddsLevelIconColour {
+  color: var(--vscode-debugConsole-warningForeground);
+}
+.FRIconColour {
+  color: var(--vscode-debugConsole-errorForeground);
+}
+.NFRIconColour {
+  color: var(--vscode-debugConsole-warningForeground);
+}
+.DCIconColour {
+  color: var(--vscode-debugIcon-restartForeground);
+}
+.textIconColour {
+  color: var(--vscode-editor-foreground);
+}
+.imageIconColour {
+  color: var(--vscode-debugConsole-warningForeground);
+}
+.mermaidIconColour {
+  color: var(--vscode-debugIcon-restartForeground);
 }

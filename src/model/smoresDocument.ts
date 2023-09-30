@@ -1,6 +1,6 @@
 import { Position, Range, TextDocument, TextLine, Webview, WorkspaceEdit, window, workspace } from 'vscode';
 import { FileIO } from './fileIO';
-import { SmoresDocumentData, SmoresProjectData } from './schema';
+import * as schema from './schema';
 import { SmoresContent } from './smoresContent';
 import * as markdown from '../interface/markdownConversion';
 
@@ -10,11 +10,11 @@ export interface SmoresDocumentBlock {
 	range:Range
 };
 export class SmoresDocument {
-	public data:SmoresDocumentData|undefined;
+	public data:schema.SmoresDocumentData|undefined;
 	constructor(public document:TextDocument) {
     this.data = this.getData();
 	}
-  private getData():SmoresDocumentData|undefined {
+  private getData():schema.SmoresDocumentData|undefined {
     return FileIO.parseDocumentRawXml(this.document.getText());
   }
   public updateData() {
@@ -49,12 +49,6 @@ export class SmoresDocument {
 		}
 		window.showErrorMessage("Failed to find position within document");
 		return new Position(-1,-1);
-
-	}
-	private getTextFieldRange(startPos:number, endPos:number):Range {
-		const start:Position = this.getPositionFromTextOffset(startPos);
-		const end:Position = this.getPositionFromTextOffset(endPos);
-		return new Range(start, end);
 	}
 	private getTextStart():{text:string, startPos:Position} {
 		const startPos = this.getPositionOfTextField();
@@ -102,32 +96,6 @@ export class SmoresDocument {
 		}
 		return blocks;
 	}
-	public getDocumentBlocks2():SmoresDocumentBlock[] {
-			this.updateData();
-		if(this.data === undefined) {
-			return [];
-		}
-		const text = this.data.content.text;
-		const pattern = /\[SMORES\.[^\]]+\]/g;
-		const items = text.match(pattern);
-		const sections = text.split(pattern);
-		let blocks:SmoresDocumentBlock[] = [];
-		let textPosition = 0;
-		for(let i=0; i < sections.length; i++) {
-			if(sections[i] && sections[i] !== ""){
-				const sectionLength = sections[i].length;
-				const sectionRange = this.getTextFieldRange(textPosition, textPosition + sectionLength);
-				textPosition += sectionLength;
-					blocks.push({data:sections[i], isText:true, range:sectionRange});
-			}
-			if(items && items[i]) {
-				const itemLength = items[i].length;
-				const itemRange = this.getTextFieldRange(textPosition, textPosition + itemLength);
-					blocks.push({data:items[i], isText:false, range:itemRange});
-			}
-		}
-		return blocks;
-	}
 
 	public updateBlock(blockNumber:number, edit:any) {
 		var blocks = this.getDocumentBlocks();
@@ -147,19 +115,27 @@ export class SmoresDocument {
 	private updateItem(itemId:number, edit:any) {
 
 	}
-	public getHtml(webview: Webview, editBlockNumber?:number):string {
+	public getHtml(webview?: Webview, editBlockNumber?:number):string {
 		if(this.data === undefined) {
 			return '<H1>Invalid document</H1>';
 		}
 		markdown.SmoresHeading.clear();
 		const blocks = this.getDocumentBlocks();
 		let divHtml = "";
+		if(webview) {
+			divHtml = divHtml.concat(`
+<div class=webviewDiv>`);
+		}
 		for(let i=0; i < blocks.length; i++) {
 			if(blocks[i].isText) {
 				divHtml = divHtml.concat(this.getTextDivHtml(blocks[i].data, i, editBlockNumber));
 			} else {
-				divHtml = divHtml.concat(this.getItemHtml(blocks[i].data, i, webview));
+				divHtml = divHtml.concat(this.getItemHtml(blocks[i].data, i, webview, editBlockNumber));
 			}
+		}
+		if(webview) {
+			divHtml = divHtml.concat(`
+</div>`);
 		}
 		return divHtml;
 	}
@@ -184,12 +160,17 @@ export class SmoresDocument {
 		</div>`;
 		return this.getBlockDiv(html, blockNumber);
 	}
-	private getItemHtml(itemText:string, blockNumber:number, webview?:Webview) {
+	private getItemHtml(itemText:string, blockNumber:number, webview?:Webview, editBlockNumber?:number) {
 		if(itemText === undefined) {return "<h3>Invalid Doors-Smores node found</h3>";}
 		const itemId = this.getIdFromItemText(itemText);
 		if(itemId === undefined) {return "<h3>Invalid Doors-Smores node found</h3>";}
-		const html = SmoresContent.getHtml(this, itemId, webview);
-		return this.getBlockDiv(html, blockNumber);
+		if(editBlockNumber !== undefined && blockNumber === editBlockNumber) {
+			const html = SmoresContent.getEditHtml(this, itemId, webview);
+			return this.getBlockDiv(html, blockNumber);
+		} else {
+			const html = SmoresContent.getHtml(this, itemId, webview);
+			return this.getBlockDiv(html, blockNumber);
+		}
 	}
 	private getIdFromItemText(itemText:string):number|undefined {
 		const pattern = /\[SMORES\.ID\.(\d+)\]/;
