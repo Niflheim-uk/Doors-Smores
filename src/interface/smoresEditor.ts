@@ -30,7 +30,7 @@ export class SmoresEditorProvider implements vscode.CustomTextEditorProvider {
 		const smoresDocument = new SmoresDocument(document);
 		const projPath = FileIO.getProjectPath(smoresDocument);
 		const dataPath = FileIO.getContentRoot(smoresDocument);
-		let editBlock:number|undefined = undefined;
+		let editBlocks:number[] = [];
 		if(projPath === undefined || dataPath === undefined) {return;}
 		const dataUri = vscode.Uri.file(dataPath);
 		generateUserCss(this.context.extensionUri.fsPath, dataUri.fsPath);
@@ -48,12 +48,12 @@ export class SmoresEditorProvider implements vscode.CustomTextEditorProvider {
 			webview:webviewPanel.webview,
 			dataUri
 		};
-		webviewPanel.webview.html = this.getHtmlForDocument(htmlConstants, false, editBlock);
+		webviewPanel.webview.html = this.getHtmlForDocument(htmlConstants, false, editBlocks);
 
 		const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(e => {
 			if (e.document.uri.toString() === document.uri.toString()) {
 				smoresDocument.updateData();
-				webviewPanel.webview.html = this.getHtmlForDocument(htmlConstants,false, editBlock);
+				webviewPanel.webview.html = this.getHtmlForDocument(htmlConstants,false, editBlocks);
 			}
 		});
 
@@ -65,18 +65,25 @@ export class SmoresEditorProvider implements vscode.CustomTextEditorProvider {
 		// Receive message from the webview.
 		webviewPanel.webview.onDidReceiveMessage(e => {
 			switch (e.command) {
-				case 'editBlock':
-					if(e.blockNumber !== undefined && e.blockNumber !== editBlock) {
-						editBlock = e.blockNumber;
-						webviewPanel.webview.html = this.getHtmlForDocument(htmlConstants, false, editBlock);
+				case 'addEditBlock':
+					if(e.blockNumber !== undefined) {
+						const blockIndex = editBlocks.indexOf(e.blockNumber);
+						// make sure this block number is only listed once, and put that number at the end
+						if(blockIndex !== -1) {
+							editBlocks.splice(blockIndex, 1);
+						}
+						editBlocks.push(e.blockNumber);
+						webviewPanel.webview.html = this.getHtmlForDocument(htmlConstants, false, editBlocks);
 					}
 					return;
 				case 'updateTextBlockContent':
 					this.addEdit(smoresDocument, {type:e.command, block:e.blockNumber, data:e.blockValue});
 					return;
-				case 'blockLostFocus':
-					editBlock = undefined;
-					webviewPanel.webview.html = this.getHtmlForDocument(htmlConstants, false, editBlock);
+				case 'closeEditblock':
+					if(editBlocks.length > 0) {
+						editBlocks.pop();
+						webviewPanel.webview.html = this.getHtmlForDocument(htmlConstants, false, editBlocks);
+					}
 					break;
 			}
 		});
@@ -91,14 +98,14 @@ export class SmoresEditorProvider implements vscode.CustomTextEditorProvider {
 		}
 	}
 
-	private getHtmlForDocument(htmlConstants:HtmlConstants, exporting:boolean, editBlock?:number): string {
+	private getHtmlForDocument(htmlConstants:HtmlConstants, exporting:boolean, editBlocks:number[]): string {
 		const nonce = getNonce();
 		let webview:vscode.Webview|undefined = htmlConstants.webview;
 		if(exporting) {
 			webview = undefined;
 		}
-		const toolbarHtml = this.getToolbarHtml(htmlConstants.smoresDocument, webview);
-		const documentHtml = htmlConstants.smoresDocument.getHtml(webview, editBlock);
+		const toolbarHtml = this.getToolbarHtml(htmlConstants.smoresDocument, editBlocks, webview);
+		const documentHtml = htmlConstants.smoresDocument.getHtml(editBlocks, webview);
 		const styleBlock = getEditorStyleBlock(this.context.extensionUri, htmlConstants.dataUri, webview);
     const scriptBlock = getScriptBlock(this.context.extensionUri, webview);
     const mermaidBlock = getMermaidBlock(this.context.extensionUri, webview);
@@ -127,9 +134,13 @@ ${scriptBlock}
 
 </html>`;
 	}
-	private getToolbarHtml(smoresDocument:SmoresDocument, webview?: vscode.Webview) {
-		if(webview === undefined || smoresDocument.data === undefined) {
+	private getToolbarHtml(smoresDocument:SmoresDocument, editBlocks:number[], webview?: vscode.Webview) {
+		if(webview === undefined || smoresDocument.data === undefined ) {
 			return "";
+		}
+		let hideClass = "";
+		if(editBlocks.length===0) {
+			hideClass = 'hiddenToolbar';
 		}
 		let docColourClass = 'ursLevelIconColour';
 		switch(smoresDocument.data.type) {
@@ -152,10 +163,11 @@ ${scriptBlock}
 		}
 
 
-		const closeIcon:string = "<i class='codicon codicon-close'></i>";
+
+		const closeIcon:string = "<i class='codicon codicon-eye'></i>";
 		const addFRIcon:string = `<i class='codicon codicon-${schema.requirementIcon} FRIconColour'></i>`;
 		const addNFRIcon:string = `<i class='codicon codicon-${schema.requirementIcon} NFRIconColour'></i>`;
-		const addDCIcon:string = `<i class='codicon codicon-${schema.constraintIcon} DCIconColour'></i>`;
+		const addDCIcon:string = `<i disabled class='codicon codicon-${schema.constraintIcon} DCIconColour'></i>`;
 		const addTestIcon:string = `<i class='codicon codicon-${schema.testIcon} ${docColourClass}'></i>`;
 		const addTextIcon:string = `<i class='codicon codicon-${schema.textIcon} textIconColour'></i>`;
 		const addImageIcon:string = `<i class='codicon codicon-${schema.imageIcon} imageIconColour'></i>`;
@@ -181,7 +193,7 @@ ${scriptBlock}
 		}
 
 		return `
-	<div class="toolbarDiv">
+	<div id='editorToolbar' class="toolbarDiv ${hideClass}">
 		<button id=toolbarClose class="toolbarButton">${closeIcon}</Button>${documentButtonHtml}
 		<button id=toolbarAddText class="toolbarButton">${addTextIcon}</Button>
 		<button id=toolbarAddImage class="toolbarButton">${addImageIcon}</Button>

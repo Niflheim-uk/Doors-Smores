@@ -29,12 +29,12 @@ export class SmoresContent {
     const item = new SmoresContent(itemPath);
     return item.getItemHtml(doc, webview);
   }
-  public static getEditHtml(doc:SmoresDocument, id:number, webview?:Webview):string {
+  public static getEditHtml(doc:SmoresDocument, id:number, blockNumber:number, webview?:Webview):string {
     const dataRoot = FileIO.getContentRoot(doc);
     const itemPath = FileIO.getContentFilepath(doc, id);
     if(dataRoot === undefined || itemPath === undefined) { return badHtml; }
     const item = new SmoresContent(itemPath);
-    return item.getEditItemHtml(doc, webview);
+    return item.getEditItemHtml(doc, blockNumber, webview);
   }
   private getItemHtml(doc:SmoresDocument, webview?:Webview):string {
     if(this.data === undefined) { return badHtml; }
@@ -71,7 +71,7 @@ export class SmoresContent {
     }
     return itemText;
   }
-  private getEditItemHtml(doc:SmoresDocument, webview?:Webview):string {
+  private getEditItemHtml(doc:SmoresDocument, blockNumber:number, webview?:Webview):string {
     if(this.data === undefined) { return badHtml; }
     let itemText = badHtml;
     switch(this.data.category) {
@@ -83,19 +83,19 @@ export class SmoresContent {
     case schema.softNFRCategory:
     case schema.archNFRCategory:
     case schema.desNFRCategory:
-      itemText = this.getRequirementEditHtml(doc);
+      itemText = this.getRequirementEditHtml(doc, blockNumber);
       break;
     case schema.userDCCategory:
     case schema.softDCCategory:
     case schema.archDCCategory:
     case schema.desDCCategory:
-      itemText = this.getConstraintEditHtml(doc);
+      itemText = this.getConstraintEditHtml(doc, blockNumber);
       break;
     case schema.userTestCategory:
     case schema.softTestCategory:
     case schema.archTestCategory:
     case schema.desTestCategory:
-      itemText = this.getTestEditHtml(doc);
+      itemText = this.getTestEditHtml(doc, blockNumber);
       break;
     case schema.imageCategory:
       itemText = this.getImageHtml(doc, webview);
@@ -170,17 +170,17 @@ export class SmoresContent {
     const row2 = this.getExpectedResultsRow();
     return this.getTracableItemHtml(doc, row1, row2);
   }
-  private getRequirementEditHtml(doc:SmoresDocument):string {
-    const row1 = this.getFirstEditRow();
-    const row2 = this.getTranslationRationaleEditRow();
+  private getRequirementEditHtml(doc:SmoresDocument, blockNumber:number):string {
+    const row1 = this.getFirstEditRow(blockNumber);
+    const row2 = this.getTranslationRationaleEditRow(blockNumber);
     return this.getTracableItemEditHtml(doc, row1, row2);
   }
-  private getConstraintEditHtml(doc:SmoresDocument):string {
-    return this.getRequirementEditHtml(doc);
+  private getConstraintEditHtml(doc:SmoresDocument, blockNumber:number):string {
+    return this.getRequirementEditHtml(doc, blockNumber);
   }
-  private getTestEditHtml(doc:SmoresDocument):string {
-    const row1 = this.getFirstEditRow();
-    const row2 = this.getExpectedResultsEditRow();
+  private getTestEditHtml(doc:SmoresDocument, blockNumber:number):string {
+    const row1 = this.getFirstEditRow(blockNumber);
+    const row2 = this.getExpectedResultsEditRow(blockNumber);
     return this.getTracableItemEditHtml(doc, row1, row2);
   }
   private getTracableItemHtml(doc:SmoresDocument, row1:string, row2:string):string {
@@ -216,22 +216,16 @@ export class SmoresContent {
       </tbody>
     </table>`;
   }
-  private getTextArea(initialText:string) {
-    return `
-    		<div class="autogrow" data-replicated-value="${initialText}">
-		    	<textarea>${initialText}</textarea>
-		    </div>`;
-  }
   private getFirstRow() {
     if(this.data === undefined) { return badHtml; }
     const c1 = this.getIdLabelHtml();
     const c2 = markdown.getTableTextHtmlFromMd(this.data.content.text);
     return SmoresContent.getTableRowHtml(c1, c2);
   }
-  private getFirstEditRow() {
+  private getFirstEditRow(blockNumber:number) {
     if(this.data === undefined) { return badHtml; }
     const c1 = this.getIdLabelHtml();
-    const c2 = this.getTextArea(this.data.content.text);
+    const c2 = SmoresDocument.getAutogrowDivHtml(this.data.content.text, blockNumber);
     return SmoresContent.getTableRowHtml(c1, c2);
   }
   private getTranslationRationaleRow() {
@@ -242,10 +236,10 @@ export class SmoresContent {
     }
     return SmoresContent.getTableRowHtml("Translation<br/>Rationale", translationRationaleHtml);
   }
-  private getTranslationRationaleEditRow() {
+  private getTranslationRationaleEditRow(blockNumber:number) {
     if(this.data === undefined) { return badHtml; }
     const c1 = "Translation<br/>Rationale";
-    const c2 = this.getTextArea(this.data.content.translationRationale);
+    const c2 = SmoresDocument.getAutogrowDivHtml(this.data.content.translationRationale, blockNumber);
     return SmoresContent.getTableRowHtml(c1, c2);
   }
   private getExpectedResultsRow() {
@@ -256,10 +250,10 @@ export class SmoresContent {
     }
     return SmoresContent.getTableRowHtml("Expected<br/>Results", expectedResultsHtml);
   }
-  private getExpectedResultsEditRow() {
+  private getExpectedResultsEditRow(blockNumber:number) {
     if(this.data === undefined) { return badHtml; }
     const c1 = "Expected<br/>Results";
-    const c2 = this.getTextArea(this.data.content.expectedResults);
+    const c2 = SmoresDocument.getAutogrowDivHtml(this.data.content.expectedResults, blockNumber);
     return SmoresContent.getTableRowHtml(c1, c2);
   }
   public static getTableRowHtml(c1:string, c2:string) {

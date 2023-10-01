@@ -105,6 +105,9 @@ button.secondary:hover {
   top:0;
   width:var(--menu-size);
 }
+.hiddenToolbar {
+  visibility: hidden;
+}
 .toolbarButton {
   color: var(--vscode-editor-foreground);
   background: var(--vscode-editor-background);
@@ -119,6 +122,48 @@ button.secondary:hover {
   cursor:crosshair;
   justify-content: center;
   align-items: center;
+}
+.toolbarButton:enabled:hover {
+  background-color: var(--vscode-toolbar-hoverBackground);
+}
+.toolbarButton:disabled:hover {
+  background-color: var(--vscode-editor-background);
+}
+.tooltip .toolTipText {
+  visibility: hidden;
+  color: var(--vscode-input-foreground);
+  background-color: var(--vscode-input-background);
+  border: solid;
+  border-color: var(--vscode-input-border);
+  text-align: center;
+  padding: 5px 5px;
+  border-radius: 6px;
+  z-index: 1;
+}
+.toolBarTooltip {
+  position: relative;
+  display: inline-block;
+  border-bottom: 1px dotted black;
+}
+
+.toolBarTooltip .toolBarTooltiptext {
+  visibility: hidden;
+  width: auto;
+  background-color: #555;
+  color: #fff;
+  text-align: center;
+  position: absolute;
+  z-index: 1;
+  top: 0px;
+  left: 105%;
+  margin-left: 0px;
+  opacity: 0;
+}
+
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  transition-delay:2s;
 }
 .ursLevelIconColour {
   color: var(--vscode-terminal-ansiGreen);
@@ -149,4 +194,7 @@ button.secondary:hover {
 }
 .mermaidIconColour {
   color: var(--vscode-debugIcon-restartForeground);
+}
+.disabledIconColour {
+  color: var(--vscode-disabledForeground) !important;
 }

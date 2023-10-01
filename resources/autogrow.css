@@ -1,3 +1,6 @@
+.block {
+  cursor: context-menu;
+}
 .autogrow {
   display: grid;
   font-family: var(--vscode-editor-font-family);
@@ -11,11 +14,12 @@
 .autogrow > textarea {
   resize: none;
   overflow: hidden;
+  cursor: text;
 }
   /* Identical styling required!! */
 .autogrow > textarea, .autogrow::after {
   color: var(--vscode-editor-foreground);
-  background: var(--vscode-editor-background);				
+  background: var(--vscode-input-background);				
   border: none;
   padding: 0.5rem;
   font: inherit;

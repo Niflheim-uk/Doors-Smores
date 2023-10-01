@@ -113,9 +113,9 @@ export class SmoresDocument {
 		}
 	}
 	private updateItem(itemId:number, edit:any) {
-
+		window.showInformationMessage("Need to implement updateItem");
 	}
-	public getHtml(webview?: Webview, editBlockNumber?:number):string {
+	public getHtml(editBlocks:number[], webview?: Webview):string {
 		if(this.data === undefined) {
 			return '<H1>Invalid document</H1>';
 		}
@@ -128,9 +128,9 @@ export class SmoresDocument {
 		}
 		for(let i=0; i < blocks.length; i++) {
 			if(blocks[i].isText) {
-				divHtml = divHtml.concat(this.getTextDivHtml(blocks[i].data, i, editBlockNumber));
+				divHtml = divHtml.concat(this.getTextDivHtml(blocks[i].data, i, editBlocks.includes(i)));
 			} else {
-				divHtml = divHtml.concat(this.getItemHtml(blocks[i].data, i, webview, editBlockNumber));
+				divHtml = divHtml.concat(this.getItemHtml(blocks[i].data, i, editBlocks.includes(i), webview));
 			}
 		}
 		if(webview) {
@@ -139,14 +139,21 @@ export class SmoresDocument {
 		}
 		return divHtml;
 	}
+	public static getAutogrowDivHtml(initialText:string, blockNumber:number) {
+		return `
+		<div class="autogrow" data-replicated-value="${initialText}">
+			<textarea data-block-number="${blockNumber}">${initialText}</textarea>
+		</div>`;
+		
+	}
 	private getBlockDiv(inner:string, blockNumber:number) {
 		return `
-		<div class="block" data-block-number="${blockNumber}">
+		<div class="block" data-block-number="${blockNumber}" id="block${blockNumber}">
 			${inner}
 		</div>`;
 	}
-	private getTextDivHtml(divText:string, blockNumber:number, editBlockNumber?:number) {
-		if(editBlockNumber !== undefined && blockNumber === editBlockNumber) {
+	private getTextDivHtml(divText:string, blockNumber:number, editing:boolean) {
+		if(editing) {
 			return this.getEditDivHtml(divText, blockNumber);
 		} else {
 			const html = markdown.getBodyHtmlFromMd(divText);
@@ -154,18 +161,15 @@ export class SmoresDocument {
 		}
 	}
 	private getEditDivHtml(divText:string, blockNumber:number) {
-		const html = `
-		<div class="autogrow" data-replicated-value="${divText}">
-			<textarea>${divText}</textarea>
-		</div>`;
+		const html = SmoresDocument.getAutogrowDivHtml(divText, blockNumber);
 		return this.getBlockDiv(html, blockNumber);
 	}
-	private getItemHtml(itemText:string, blockNumber:number, webview?:Webview, editBlockNumber?:number) {
+	private getItemHtml(itemText:string, blockNumber:number, editing:boolean, webview?:Webview) {
 		if(itemText === undefined) {return "<h3>Invalid Doors-Smores node found</h3>";}
 		const itemId = this.getIdFromItemText(itemText);
 		if(itemId === undefined) {return "<h3>Invalid Doors-Smores node found</h3>";}
-		if(editBlockNumber !== undefined && blockNumber === editBlockNumber) {
-			const html = SmoresContent.getEditHtml(this, itemId, webview);
+		if(editing) {
+			const html = SmoresContent.getEditHtml(this, itemId, blockNumber, webview);
 			return this.getBlockDiv(html, blockNumber);
 		} else {
 			const html = SmoresContent.getHtml(this, itemId, webview);
