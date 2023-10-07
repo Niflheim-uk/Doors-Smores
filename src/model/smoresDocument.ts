@@ -3,6 +3,9 @@ import { FileIO } from './fileIO';
 import * as schema from './schema';
 import { SmoresContent } from './smoresContent';
 import * as markdown from '../interface/markdownConversion';
+import { HTML } from '../interface/html';
+import { dirname, join, relative } from 'path';
+import { existsSync } from 'fs';
 
 export interface SmoresDocumentBlock {
 	data:string,
@@ -20,6 +23,28 @@ export class SmoresDocument {
   public updateData() {
     this.data = this.getData();
   }
+	public static generateNewDocument(docInfo:schema.DocumentInfo, projectFilepath:string) {
+		const projectRoot = dirname(projectFilepath);
+		const docPath = join(projectRoot, docInfo.relativePath);
+		if(existsSync(docPath)) { return false;}
+		const docRoot = dirname(docPath);
+		const relProjPath = relative(docRoot, projectFilepath);
+		const newData:schema.SmoresDocumentData = {
+			relativeProjectPath: relProjPath,
+			type: docInfo.type,
+			name: docInfo.name,
+			history: {
+				document: { revision: [] },
+				traceReport: { revision: [] }
+			},
+			content: {
+				id:[],
+				text: ""
+			}
+		};
+		FileIO.writeXmlFile(docPath, newData, 'document');
+		return true;
+	}
 	public getPositionOfTextField():Position {
 		const nLines = this.document.lineCount;
 		for(let i=0; i<nLines; i++) {
@@ -61,6 +86,13 @@ export class SmoresDocument {
 		let {text, startPos} = this.getTextStart();
 		const itemPattern = /(.*)(\[SMORES\.[^\]]+\])(.*)/;
 		const endPattern = /(.*)<\/text>/;
+		const endMatch = text.match(endPattern);
+		if(endMatch) {
+			text = endMatch[1];
+			const endEndPos = new Position(startPos.line, startPos.character + endMatch[1].length);
+			blocks.push({data:text, isText:true, range: new Range(startPos, endEndPos)});
+			return blocks;
+		}
 		for(let i=startPos.line+1; i<this.document.lineCount; i++) {
 			const lineText = this.document.lineAt(i).text;
 			const itemMatch = lineText.match(itemPattern);
@@ -139,30 +171,17 @@ export class SmoresDocument {
 		}
 		return divHtml;
 	}
-	public static getAutogrowDivHtml(initialText:string, blockNumber:number) {
-		return `
-		<div class="autogrow" data-replicated-value="${initialText}">
-			<textarea data-block-number="${blockNumber}">${initialText}</textarea>
-		</div>`;
-		
-	}
-	private getBlockDiv(inner:string, blockNumber:number) {
-		return `
-		<div class="block" data-block-number="${blockNumber}" id="block${blockNumber}">
-			${inner}
-		</div>`;
-	}
 	private getTextDivHtml(divText:string, blockNumber:number, editing:boolean) {
 		if(editing) {
 			return this.getEditDivHtml(divText, blockNumber);
 		} else {
 			const html = markdown.getBodyHtmlFromMd(divText);
-			return this.getBlockDiv(html, blockNumber);
+			return HTML.getBlockDiv(html, blockNumber);
 		}
 	}
 	private getEditDivHtml(divText:string, blockNumber:number) {
-		const html = SmoresDocument.getAutogrowDivHtml(divText, blockNumber);
-		return this.getBlockDiv(html, blockNumber);
+		const html = HTML.getAutogrowDivHtml(divText, blockNumber);
+		return HTML.getBlockDiv(html, blockNumber);
 	}
 	private getItemHtml(itemText:string, blockNumber:number, editing:boolean, webview?:Webview) {
 		if(itemText === undefined) {return "<h3>Invalid Doors-Smores node found</h3>";}
@@ -170,10 +189,10 @@ export class SmoresDocument {
 		if(itemId === undefined) {return "<h3>Invalid Doors-Smores node found</h3>";}
 		if(editing) {
 			const html = SmoresContent.getEditHtml(this, itemId, blockNumber, webview);
-			return this.getBlockDiv(html, blockNumber);
+			return HTML.getBlockDiv(html, blockNumber);
 		} else {
 			const html = SmoresContent.getHtml(this, itemId, webview);
-			return this.getBlockDiv(html, blockNumber);
+			return HTML.getBlockDiv(html, blockNumber);
 		}
 	}
 	private getIdFromItemText(itemText:string):number|undefined {

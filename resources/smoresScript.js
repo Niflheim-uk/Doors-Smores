@@ -7,6 +7,7 @@ function delayedInit() {
 }
 function initialize() {
   addEditorClickHandlers();
+  addProjectEditorClickHandlers();
   addToolbarHandlers();
   exportMermaidImages();
 }
@@ -22,6 +23,18 @@ function addEditorClickHandlers() {
       ta.addEventListener('focusin', editorAutogrowOnFocusIn);
       ta.addEventListener('focusout', editorAutogrowOnFocusOut);
     }
+  }
+}
+function addProjectEditorClickHandlers() {
+  var elements = document.getElementsByClassName('projectNewDoc');
+  for (let i = 0; i < elements.length; i++) {
+    var el = elements[i];
+    el.addEventListener('click', projectNewDocClick);
+  }
+  var elements = document.getElementsByClassName('projectOpenDoc');
+  for (let i = 0; i < elements.length; i++) {
+    var el = elements[i];
+    el.addEventListener('click', projectOpenDocClick);
   }
 }
 function exportMermaidImages() {
@@ -77,13 +90,34 @@ function editorAutogrowOnFocusOutStage2() {
 
 
 function addToolbarHandlers() {
-  document.getElementById('toolbarClose').addEventListener('click', toolbarCloseOnClick);
-  document.getElementById('toolbarAddText').addEventListener('click', toolbarAddTextOnClick);
-  document.getElementById('toolbarAddImage').addEventListener('click', toolbarAddImageOnClick);
-  document.getElementById('toolbarAddMermaid').addEventListener('click', toolbarAddMermaidOnClick);
-  document.getElementById('toolbarAddFR').addEventListener('click', toolbarAddFROnClick);
-  document.getElementById('toolbarAddNFR').addEventListener('click', toolbarAddNFROnClick);
-  document.getElementById('toolbarAddDC').addEventListener('click', toolbarAddDCOnClick);
+  let el = document.getElementById('toolbarClose');
+  if(el) {
+    el.addEventListener('click', toolbarCloseOnClick);
+  }
+  el = document.getElementById('toolbarAddText');
+  if(el) {
+    el.addEventListener('click', toolbarAddTextOnClick);
+  }
+  el = document.getElementById('toolbarAddImage');
+  if(el) {
+    el.addEventListener('click', toolbarAddImageOnClick);
+  }
+  el = document.getElementById('toolbarAddMermaid');
+  if(el) {
+    el.addEventListener('click', toolbarAddMermaidOnClick);
+  }
+  el = document.getElementById('toolbarAddFR');
+  if(el) {
+    el.addEventListener('click', toolbarAddFROnClick);
+  }
+  el = document.getElementById('toolbarAddNFR');
+  if(el) {
+    el.addEventListener('click', toolbarAddNFROnClick);
+  }
+  el = document.getElementById('toolbarAddDC');
+  if(el) {
+    el.addEventListener('click', toolbarAddDCOnClick);
+  }
 }
 function toolbarCloseOnClick(event) {
   const blockNumber = event.currentTarget.parentNode.dataset["lastBlock"];
@@ -112,4 +146,17 @@ function toolbarAddNFROnClick(event) {
 function toolbarAddDCOnClick(event) {
   const blockNumber = event.currentTarget.parentNode.dataset["lastBlock"];
   vscode.postMessage({command: 'addDCBlock', blockNumber:Number(blockNumber)}); 
+}
+function projectNewDocClick(event) {
+  const docType = event.currentTarget.dataset["documentType"];
+  vscode.postMessage({command: 'newDocument', documentType: docType});
+}
+function projectOpenDocClick(event) {
+  const relPath = event.currentTarget.dataset["relPath"];
+  vscode.postMessage({command: 'openDocument', relativePath: relPath});
+}
+function projectItemClick(event) {
+  const item = event.currentTarget.dataset["item"];
+  vscode.postMessage({command: 'dataClick', item: item});
+
 }

@@ -8,6 +8,7 @@ import { SmoresContentData, imageCategory, isConstraintCategory, isFuncReqCatego
 import * as markdown from '../interface/markdownConversion';
 import * as schema from './schema';
 import { getDownstreamTraceRow, getTestsTraceRow, getUpstreamTraceRow } from "../tracing/traceReportContent";
+import { HTML } from "../interface/html";
 
 const badHtml = '<h3>Failed to parse content node</h3>';
 
@@ -83,19 +84,19 @@ export class SmoresContent {
     case schema.softNFRCategory:
     case schema.archNFRCategory:
     case schema.desNFRCategory:
-      itemText = this.getRequirementEditHtml(doc, blockNumber);
+      itemText = this.getRequirementEditHtml(blockNumber);
       break;
     case schema.userDCCategory:
     case schema.softDCCategory:
     case schema.archDCCategory:
     case schema.desDCCategory:
-      itemText = this.getConstraintEditHtml(doc, blockNumber);
+      itemText = this.getConstraintEditHtml(blockNumber);
       break;
     case schema.userTestCategory:
     case schema.softTestCategory:
     case schema.archTestCategory:
     case schema.desTestCategory:
-      itemText = this.getTestEditHtml(doc, blockNumber);
+      itemText = this.getTestEditHtml(blockNumber);
       break;
     case schema.imageCategory:
       itemText = this.getImageHtml(doc, webview);
@@ -129,10 +130,7 @@ export class SmoresContent {
     if(webview) {
       imageFileUri = webview.asWebviewUri(imageFileUri);
     }
-    return `
-    <div Id='image-${this.data.id}' class='imageHolder'>
-      <img src="${imageFileUri}"/>
-    </div>`;
+    return HTML.getImageHtml(this.data.id, imageFileUri);
   }
   
   private getMermaidHtml(doc:SmoresDocument, webview?:Webview) {
@@ -145,16 +143,10 @@ export class SmoresContent {
       if(webview) {
         imageFileUri = webview.asWebviewUri(imageFileUri);
       }
-      html = `<img src="${imageFileUri}"/>`;
+      return HTML.getImageHtml(this.data.id, imageFileUri);
     } else {
-      html = `<pre class="mermaid" id="mermaid-${this.data.id}">
-        ${this.data.content.text}
-      </pre>`;
+      return HTML.getMermaidHtml(this.data.id, this.data.content.text);
     }
-    return `
-    <div class="imageHolder">
-      ${html}
-    </div>`;
   }
   
   private getRequirementHtml(doc:SmoresDocument):string {
@@ -170,22 +162,21 @@ export class SmoresContent {
     const row2 = this.getExpectedResultsRow();
     return this.getTracableItemHtml(doc, row1, row2);
   }
-  private getRequirementEditHtml(doc:SmoresDocument, blockNumber:number):string {
+  private getRequirementEditHtml(blockNumber:number):string {
     const row1 = this.getFirstEditRow(blockNumber);
     const row2 = this.getTranslationRationaleEditRow(blockNumber);
-    return this.getTracableItemEditHtml(doc, row1, row2);
+    return this.getTracableItemEditHtml(row1, row2);
   }
-  private getConstraintEditHtml(doc:SmoresDocument, blockNumber:number):string {
-    return this.getRequirementEditHtml(doc, blockNumber);
+  private getConstraintEditHtml(blockNumber:number):string {
+    return this.getRequirementEditHtml(blockNumber);
   }
-  private getTestEditHtml(doc:SmoresDocument, blockNumber:number):string {
+  private getTestEditHtml(blockNumber:number):string {
     const row1 = this.getFirstEditRow(blockNumber);
     const row2 = this.getExpectedResultsEditRow(blockNumber);
-    return this.getTracableItemEditHtml(doc, row1, row2);
+    return this.getTracableItemEditHtml(row1, row2);
   }
   private getTracableItemHtml(doc:SmoresDocument, row1:string, row2:string):string {
     if(doc.data === undefined || this.data === undefined) { return badHtml; }
-    const documentType = doc.data.type;
     let upstreamRow:string = "";
     let testTraceRow:string = "";
     let downstreamRow:string = "";
@@ -195,38 +186,22 @@ export class SmoresContent {
       testTraceRow = getTestsTraceRow(doc, this.data);
       downstreamRow = getDownstreamTraceRow(doc, this.data);
     }
-    return `
-    <table class="indented2ColSmall indented">
-      <tbody>
-        ${row1}
-        ${row2}
-        ${upstreamRow}
-        ${testTraceRow}
-        ${downstreamRow}
-      </tbody>
-    </table>`;
+    return HTML.getStandardTableHtml([row1, row2, upstreamRow, testTraceRow, downstreamRow]);
   }
-  private getTracableItemEditHtml(doc:SmoresDocument, row1:string, row2:string):string {
-    if(doc.data === undefined || this.data === undefined) { return badHtml; }
-    return `
-    <table class="indented2ColSmall indented">
-      <tbody>
-        ${row1}
-        ${row2}
-      </tbody>
-    </table>`;
+  private getTracableItemEditHtml(row1:string, row2:string):string {
+    return HTML.getStandardTableHtml([row1, row2]);
   }
   private getFirstRow() {
     if(this.data === undefined) { return badHtml; }
     const c1 = this.getIdLabelHtml();
     const c2 = markdown.getTableTextHtmlFromMd(this.data.content.text);
-    return SmoresContent.getTableRowHtml(c1, c2);
+    return HTML.getStandardTableRowHtml(c1, c2);
   }
   private getFirstEditRow(blockNumber:number) {
     if(this.data === undefined) { return badHtml; }
     const c1 = this.getIdLabelHtml();
-    const c2 = SmoresDocument.getAutogrowDivHtml(this.data.content.text, blockNumber);
-    return SmoresContent.getTableRowHtml(c1, c2);
+    const c2 = HTML.getAutogrowDivHtml(this.data.content.text, blockNumber);
+    return HTML.getStandardTableRowHtml(c1, c2);
   }
   private getTranslationRationaleRow() {
     if(this.data === undefined) { return badHtml; }
@@ -234,13 +209,13 @@ export class SmoresContent {
     if(this.data.content.translationRationale !== "") {
       translationRationaleHtml = markdown.getTableTextHtmlFromMd(this.data.content.translationRationale);
     }
-    return SmoresContent.getTableRowHtml("Translation<br/>Rationale", translationRationaleHtml);
+    return HTML.getStandardTableRowHtml("Translation<br/>Rationale", translationRationaleHtml);
   }
   private getTranslationRationaleEditRow(blockNumber:number) {
     if(this.data === undefined) { return badHtml; }
     const c1 = "Translation<br/>Rationale";
-    const c2 = SmoresDocument.getAutogrowDivHtml(this.data.content.translationRationale, blockNumber);
-    return SmoresContent.getTableRowHtml(c1, c2);
+    const c2 = HTML.getAutogrowDivHtml(this.data.content.translationRationale, blockNumber);
+    return HTML.getStandardTableRowHtml(c1, c2);
   }
   private getExpectedResultsRow() {
     if(this.data === undefined) { return badHtml; }
@@ -248,16 +223,13 @@ export class SmoresContent {
     if(this.data.content.expectedResults !== "") {
       expectedResultsHtml = markdown.getTableTextHtmlFromMd(this.data.content.expectedResults);
     }
-    return SmoresContent.getTableRowHtml("Expected<br/>Results", expectedResultsHtml);
+    return HTML.getStandardTableRowHtml("Expected<br/>Results", expectedResultsHtml);
   }
   private getExpectedResultsEditRow(blockNumber:number) {
     if(this.data === undefined) { return badHtml; }
     const c1 = "Expected<br/>Results";
-    const c2 = SmoresDocument.getAutogrowDivHtml(this.data.content.expectedResults, blockNumber);
-    return SmoresContent.getTableRowHtml(c1, c2);
-  }
-  public static getTableRowHtml(c1:string, c2:string) {
-    return `<tr><td class="tableSmall">${c1}</td><td>${c2}</td></tr>`;
+    const c2 = HTML.getAutogrowDivHtml(this.data.content.expectedResults, blockNumber);
+    return HTML.getStandardTableRowHtml(c1, c2);
   }
   
   

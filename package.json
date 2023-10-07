@@ -37,8 +37,8 @@
         ]
       },
       {
-        "viewType": "doors-smores.smoresConverter",
-        "displayName": "Doors Smores Project Converter",
+        "viewType": "doors-smores.projectEditor",
+        "displayName": "Doors Smores Project Editor",
         "selector": [
           {
             "filenamePattern": "*.smores-project"

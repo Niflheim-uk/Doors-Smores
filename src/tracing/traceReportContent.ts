@@ -17,13 +17,14 @@ import { Settings } from "../interface/settings";
 import { SmoresDocument } from "../model/smoresDocument";
 import { SmoresContent } from "../model/smoresContent";
 import { FileIO } from "../model/fileIO";
+import { HTML } from "../interface/html";
 
 
 export function getUpstreamTraceRow(doc:SmoresDocument, itemData:SmoresContentData) {
   const c1 = "Upstream:";
   const tracingRequired = Settings.getRequireTracing();
   if(isUpstreamTraceMissing(doc, itemData) && tracingRequired) {
-    return SmoresContent.getTableRowHtml(c1, "MISSING TRACE!");
+    return HTML.getStandardTableHtml([c1, "MISSING TRACE!"]);
   }
   const traces = itemData.traceData.traces.id;
   const traceCategoryLabels = getTraceCategoryLabels(doc, traces);
@@ -36,7 +37,7 @@ export function getUpstreamTraceRow(doc:SmoresDocument, itemData:SmoresContentDa
   c2 = addSatisfiesTraces(doc, c2, satisfies);
   c2 = addDetailsTraces(doc, c2, details);
   if(c2 !== "") {
-    return SmoresContent.getTableRowHtml(c1, c2);
+    return HTML.getStandardTableHtml([c1, c2]);
   }
   return "";
 }
@@ -44,7 +45,7 @@ export function getTestsTraceRow(doc:SmoresDocument, itemData:SmoresContentData)
   const c1 = "Tests:";
   const tracingRequired = Settings.getRequireTracing();
   if(isTestTraceMissing(doc, itemData) && tracingRequired) {
-    return SmoresContent.getTableRowHtml(c1, "MISSING TRACE!");
+    return HTML.getStandardTableHtml([c1, "MISSING TRACE!"]);
   }
   const traces = itemData.traceData.traces.id;
   const traceCategoryLabels = getTraceCategoryLabels(doc, traces);
@@ -55,7 +56,7 @@ export function getTestsTraceRow(doc:SmoresDocument, itemData:SmoresContentData)
   c2 = addVerifiesTraces(doc, c2, verifies);
   c2 = addVerifiedByTraces(doc, c2, verifiedBy);
   if(c2 !== "") {
-    return SmoresContent.getTableRowHtml(c1, c2);
+    return HTML.getStandardTableHtml([c1, c2]);
   }
   return "";
 }
@@ -63,7 +64,7 @@ export function getDownstreamTraceRow(doc:SmoresDocument, itemData:SmoresContent
   const c1 = "Downstream:";
   const tracingRequired = Settings.getRequireTracing();
   if(isDownstreamTraceMissing(doc, itemData) && tracingRequired) {
-    return SmoresContent.getTableRowHtml(c1, "MISSING TRACE!");
+    return HTML.getStandardTableHtml([c1, "MISSING TRACE!"]);
   }
   const traces = itemData.traceData.traces.id;
   const originLabel = getLabelPrefix(itemData.category);
@@ -76,7 +77,7 @@ export function getDownstreamTraceRow(doc:SmoresDocument, itemData:SmoresContent
   c2 = addSatisfiedByTraces(doc, c2, satisfiedBy);
   c2 = addDetailedByTraces(doc, c2, detailedBy);
   if(c2 !== "") {
-    return SmoresContent.getTableRowHtml(c1, c2);
+    return HTML.getStandardTableHtml([c1, c2]);
   }
   return "";
 }

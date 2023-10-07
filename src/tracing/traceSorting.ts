@@ -233,9 +233,9 @@ export function isUpstreamTraceMissing(doc:SmoresDocument, itemData:schema.Smore
     window.showErrorMessage("Failed to obtain project filepath");
     return false; 
   }
-  const documentFilepaths = FileIO.getProjectDocumentFilepaths(projectFilepath);
-  if(documentFilepaths === undefined) { 
-    window.showErrorMessage("Failed to obtain document filepaths");
+  const documentInfos = FileIO.getProjectDocumentInfos(projectFilepath);
+  if(documentInfos === undefined) { 
+    window.showErrorMessage("Failed to obtain document infos");
     return false; 
   }
 
@@ -248,7 +248,7 @@ export function isUpstreamTraceMissing(doc:SmoresDocument, itemData:schema.Smore
     return false;
   case schema.srsDocType:
     if(itemData.category === schema.softFRCategory) {
-      if(!SmoresProject.ursExists(documentFilepaths)) {
+      if(!SmoresProject.ursExists(documentInfos)) {
         return false;
       } else if(!traceCategoryLabels.includes(schema.userFRPrefix)) {
         return true;
@@ -257,7 +257,7 @@ export function isUpstreamTraceMissing(doc:SmoresDocument, itemData:schema.Smore
     return false;
   case schema.adsDocType:
     if(itemData.category === schema.archFRCategory) {
-      if(!SmoresProject.srsExists(documentFilepaths)) {
+      if(!SmoresProject.srsExists(documentInfos)) {
         return false;
       } else if(!traceCategoryLabels.includes(schema.softFRPrefix)) {
         return true;
@@ -266,7 +266,7 @@ export function isUpstreamTraceMissing(doc:SmoresDocument, itemData:schema.Smore
     return false;
   case schema.ddsDocType:
     if(itemData.category === schema.desFRCategory) {
-      if(!SmoresProject.srsExists(documentFilepaths) && !SmoresProject.adsExists(documentFilepaths)) {
+      if(!SmoresProject.srsExists(documentInfos) && !SmoresProject.adsExists(documentInfos)) {
         return false;
       } else if(!traceCategoryLabels.includes(schema.softFRPrefix) && !traceCategoryLabels.includes(schema.archFRPrefix)) {
         return true;
@@ -283,8 +283,8 @@ export function isDownstreamTraceMissing(doc:SmoresDocument, itemData:schema.Smo
     window.showErrorMessage("Failed to obtain project filepath");
     return false; 
   }
-  const documentFilepaths = FileIO.getProjectDocumentFilepaths(projectFilepath);
-  if(documentFilepaths === undefined) { 
+  const documentInfos = FileIO.getProjectDocumentInfos(projectFilepath);
+  if(documentInfos === undefined) { 
     window.showErrorMessage("Failed to obtain document filepaths");
     return false; 
   }
@@ -292,7 +292,7 @@ export function isDownstreamTraceMissing(doc:SmoresDocument, itemData:schema.Smo
   switch(doc.data!.type) {
   case schema.ursDocType:
     if(itemData.category === schema.userFRCategory) {
-      if(!SmoresProject.srsExists(documentFilepaths)) {
+      if(!SmoresProject.srsExists(documentInfos)) {
         return false;
       } else if(!traceCategoryLabels.includes(schema.softFRPrefix)) {
         return true;
@@ -301,7 +301,7 @@ export function isDownstreamTraceMissing(doc:SmoresDocument, itemData:schema.Smo
     return false;
   case schema.srsDocType:
     if(itemData.category === schema.softFRCategory) {
-      if(!SmoresProject.adsExists(documentFilepaths) && !SmoresProject.ddsExists(documentFilepaths)) {
+      if(!SmoresProject.adsExists(documentInfos) && !SmoresProject.ddsExists(documentInfos)) {
         return false;
       } else if(!traceCategoryLabels.includes(schema.archFRPrefix) && !traceCategoryLabels.includes(schema.desFRPrefix)) {
         return true;
@@ -310,7 +310,7 @@ export function isDownstreamTraceMissing(doc:SmoresDocument, itemData:schema.Smo
     return false;
   case schema.adsDocType:
     if(itemData.category === schema.archFRCategory) {
-      if(!SmoresProject.ddsExists(documentFilepaths)) {
+      if(!SmoresProject.ddsExists(documentInfos)) {
         return false;
       } else if(!traceCategoryLabels.includes(schema.desFRPrefix)) {
         return true;
@@ -333,8 +333,8 @@ export function isTestTraceMissing(doc:SmoresDocument, itemData:schema.SmoresCon
     window.showErrorMessage("Failed to obtain project filepath");
     return false; 
   }
-  const documentFilepaths = FileIO.getProjectDocumentFilepaths(projectFilepath);
-  if(documentFilepaths === undefined) { 
+  const documentInfos = FileIO.getProjectDocumentInfos(projectFilepath);
+  if(documentInfos === undefined) { 
     window.showErrorMessage("Failed to obtain document filepaths");
     return false; 
   }
@@ -342,7 +342,7 @@ export function isTestTraceMissing(doc:SmoresDocument, itemData:schema.SmoresCon
   switch(doc.data!.type) {
   case schema.ursDocType:
     if(itemData.category === schema.userFRCategory || itemData.category === schema.userNFRCategory) {
-      if(!SmoresProject.atpExists(documentFilepaths)) {
+      if(!SmoresProject.atpExists(documentInfos)) {
         return false;
       } else if(!traceCategoryLabels.includes(schema.userTestPrefix)) {
         return true;
@@ -351,7 +351,7 @@ export function isTestTraceMissing(doc:SmoresDocument, itemData:schema.SmoresCon
     return false;
   case schema.srsDocType:
     if(itemData.category === schema.softFRCategory || itemData.category === schema.softNFRCategory) {
-      if(!SmoresProject.stpExists(documentFilepaths) && !SmoresProject.itpExists(documentFilepaths)) {
+      if(!SmoresProject.stpExists(documentInfos) && !SmoresProject.itpExists(documentInfos)) {
         return false;
       } else if(!traceCategoryLabels.includes(schema.softTestPrefix) && !traceCategoryLabels.includes(schema.archTestPrefix)) {
         return true;
@@ -360,7 +360,7 @@ export function isTestTraceMissing(doc:SmoresDocument, itemData:schema.SmoresCon
     return false;
   case schema.adsDocType:
     if(itemData.category === schema.archFRCategory || itemData.category === schema.archNFRCategory) {
-      if(!SmoresProject.itpExists(documentFilepaths) && !SmoresProject.utpExists(documentFilepaths)) {
+      if(!SmoresProject.itpExists(documentInfos) && !SmoresProject.utpExists(documentInfos)) {
         return false;
       } else if(!traceCategoryLabels.includes(schema.archTestPrefix) && !traceCategoryLabels.includes(schema.desTestPrefix)) {
         return true;
@@ -369,7 +369,7 @@ export function isTestTraceMissing(doc:SmoresDocument, itemData:schema.SmoresCon
     return false;
   case schema.ddsDocType:
     if(itemData.category === schema.desFRCategory || itemData.category === schema.desNFRCategory) {
-      if(!SmoresProject.itpExists(documentFilepaths) && !SmoresProject.utpExists(documentFilepaths)) {
+      if(!SmoresProject.itpExists(documentInfos) && !SmoresProject.utpExists(documentInfos)) {
         return false;
       } else if(!traceCategoryLabels.includes(schema.archTestPrefix) && !traceCategoryLabels.includes(schema.desTestPrefix)) {
         return true;
@@ -378,7 +378,7 @@ export function isTestTraceMissing(doc:SmoresDocument, itemData:schema.SmoresCon
     return false;
   case schema.atpDocType:
     if(itemData.category === schema.userTestCategory) {
-      if(!SmoresProject.ursExists(documentFilepaths)) {
+      if(!SmoresProject.ursExists(documentInfos)) {
         return false;
       } else if(!traceCategoryLabels.includes(schema.userFRPrefix) && !traceCategoryLabels.includes(schema.userNFRPrefix)) {
         return true;
@@ -387,7 +387,7 @@ export function isTestTraceMissing(doc:SmoresDocument, itemData:schema.SmoresCon
     return false;
   case schema.stpDocType:
     if(itemData.category === schema.softTestCategory) {
-      if(!SmoresProject.srsExists(documentFilepaths)) {
+      if(!SmoresProject.srsExists(documentInfos)) {
         return false;
       } else if(!traceCategoryLabels.includes(schema.softFRPrefix) && !traceCategoryLabels.includes(schema.softNFRPrefix)) {
         return true;
@@ -396,7 +396,7 @@ export function isTestTraceMissing(doc:SmoresDocument, itemData:schema.SmoresCon
     return false;
   case schema.itpDocType:
     if(itemData.category === schema.archTestCategory) {
-      if(!SmoresProject.srsExists(documentFilepaths) && !SmoresProject.adsExists(documentFilepaths) && !SmoresProject.ddsExists(documentFilepaths)) {
+      if(!SmoresProject.srsExists(documentInfos) && !SmoresProject.adsExists(documentInfos) && !SmoresProject.ddsExists(documentInfos)) {
         return false;
       } else if(!traceCategoryLabels.includes(schema.softFRPrefix) && 
         !traceCategoryLabels.includes(schema.softNFRPrefix) &&
@@ -410,7 +410,7 @@ export function isTestTraceMissing(doc:SmoresDocument, itemData:schema.SmoresCon
     return false;
   case schema.utpDocType:
     if(itemData.category === schema.desTestCategory) {
-      if(!SmoresProject.adsExists(documentFilepaths) && !SmoresProject.ddsExists(documentFilepaths)) {
+      if(!SmoresProject.adsExists(documentInfos) && !SmoresProject.ddsExists(documentInfos)) {
         return false;
       } else if(!traceCategoryLabels.includes(schema.archFRPrefix) && 
         !traceCategoryLabels.includes(schema.archNFRPrefix) &&

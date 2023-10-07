@@ -514,16 +514,10 @@ ${builder.build([jsObject])}
 		}
 		return undefined;
 	}
-	public static getProjectDocumentFilepaths(projectFilepath:string):string[]|undefined {
+	public static getProjectDocumentInfos(projectFilepath:string):DocumentInfo[]|undefined {
     const projectData = FileIO.readProjectFile(projectFilepath);
     if(projectData) {
-			let documentFilepaths:string[] = [];
-			const projectRoot = dirname(projectFilepath);
-			const documentInfo:DocumentInfo[] = projectData.data.documents.document;
-			for(let i=0; i<documentInfo.length; i++) {
-				documentFilepaths.push(join(projectRoot, documentInfo[i].relativePath));
-			}
-			return documentFilepaths;
+			return projectData.data.documents.document;
 		}
 		return undefined;
 	}

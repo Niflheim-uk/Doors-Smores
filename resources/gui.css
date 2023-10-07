@@ -198,3 +198,45 @@ button.secondary:hover {
 .disabledIconColour {
   color: var(--vscode-disabledForeground) !important;
 }
+
+table.docTable {
+  border:none;
+  table-layout:fixed;
+}
+table.docTable tr>th:first-child {
+  border: none;
+  width: 80px;
+}
+table.docTable tr>td:first-child,
+.projectTableC1 {
+  width: 80px;
+}
+table.docTable td,
+.projectTableC2 {
+  font-family: Arial;
+  font-size: 10pt;
+  font-style: normal;
+  font-weight: normal;
+  margin-top: 0pt;
+  margin-bottom: 0pt;
+  padding-top: 3pt;
+  padding-bottom: 3pt;
+  text-decoration: none;    
+
+}
+table.docTable tr>td:first-child, 
+table.docTable th,
+.projectTableC1 {
+  font-family: Arial;
+  font-size: 10pt;
+  font-style: normal;
+  font-weight: bold;
+  margin-top: 0pt;
+  margin-bottom: 0pt;
+  padding-top: 3pt;
+  padding-bottom: 3pt;
+  text-decoration: none;    
+}
+.projectOpenDoc, .projectItem {
+  justify-content: start;
+}

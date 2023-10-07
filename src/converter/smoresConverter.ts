@@ -42,64 +42,16 @@ export interface OldDocumentNodeData {
   testData?:TestData;
 }
 
-enum SmoresConverterResult {
+export enum SmoresConverterResult {
 	success,
 	failure,
 	noAction
 }
-export class SmoresConverterProvider implements CustomTextEditorProvider {
-	private static readonly viewType = 'doors-smores.smoresConverter';
-
-	public static register(): Disposable {
-		const provider = new SmoresConverterProvider();
-		const providerRegistration = window.registerCustomEditorProvider(SmoresConverterProvider.viewType, provider);
-		return providerRegistration;
-	}
+export class SmoresConverter {
 
 	constructor() {}
 
-	public async resolveCustomTextEditor(document: TextDocument,	webviewPanel: WebviewPanel, _token: CancellationToken): Promise<void> {
-		// Setup initial content for the webview
-		webviewPanel.webview.options = {
-			enableScripts: true,
-		};
-
-		const result:SmoresConverterResult = this.convert(document);
-		webviewPanel.webview.html = this.getHtmlForResult(result);
-
-		const changeDocumentSubscription = workspace.onDidChangeTextDocument(e => {
-			if (e.document.uri.toString() === document.uri.toString()) {
-				const result:SmoresConverterResult = this.convert(document);
-				webviewPanel.webview.html = this.getHtmlForResult(result);
-					}
-		});
-
-		// Make sure we get rid of the listener when our editor is closed.
-		webviewPanel.onDidDispose(() => {
-			changeDocumentSubscription.dispose();
-		});
-	}
-
-	private getHtmlForResult(result: SmoresConverterResult): string {
-		let msg = "Failed to convert file.";
-		if(result === SmoresConverterResult.success) {
-			msg = "Completed conversion of file.";
-		} else if (result === SmoresConverterResult.noAction) {
-			msg = "File was already converted. No action taken";
-		}
-		return `
-			<!DOCTYPE html>
-			<html lang="en">
-			<head>
-				<meta name="viewport" content="width=device-width, initial-scale=1.0">
-				<title>Doors Smores</title>
-			</head>
-			<body>
-				<h1>${msg}</h1>
-			</body>
-			</html>`;
-	}
-	private convert(projectDocument:TextDocument) {
+	public convert(projectDocument:TextDocument) {
 		var result = SmoresConverterResult.noAction;
 		let projectJS = ConverterFileIO.parseProjectRawXml(projectDocument.getText());
 		if(projectJS === undefined) {
@@ -122,11 +74,11 @@ export class SmoresConverterProvider implements CustomTextEditorProvider {
 		var documentInfo:DocumentInfo[] = [];
 		for(let i=0; i<oldData.documentIds.length; i++) {
 			const docId = oldData.documentIds[i];
-			const [docResult, docName, docPath] = this.convertDocument(src.fileName, docId);
+			const [docResult, docInfo] = this.convertDocument(src.fileName, docId);
 			if(docResult === SmoresConverterResult.failure) {
 				return docResult;
 			}
-			documentInfo.push({name:docName, relativePath:docPath});
+			documentInfo.push(docInfo);
 		}
 		var repoRelativeRoot = relative(dirname(src.fileName), oldData.repoRoot);
 		if(repoRelativeRoot === '') {
@@ -155,21 +107,23 @@ export class SmoresConverterProvider implements CustomTextEditorProvider {
 		ConverterFileIO.writeXmlFile(src.fileName, newData, 'project');
 		return result;
 	}
-	private convertDocument(projPath:string, docId:number):[SmoresConverterResult, string, string] {
+	private convertDocument(projPath:string, docId:number):[SmoresConverterResult, DocumentInfo] {
 		let result = SmoresConverterResult.success;
 		const name = ConverterFileIO.getDocumentNameFromText(projPath, docId);
 		const outputFilename = `${name}.smores`;
 		const relPath = `./${outputFilename}`;
+		let docType='unknown';
 		try {
 			const oldData = ConverterFileIO.getDocumentNodeJson(projPath, docId);
 			const outputFilepath = join(dirname(projPath), outputFilename);
+			docType = oldData.documentData!.documentType;
 			var newChildren:number[] = [];
 			var newText:string = "";
 			[newText, newChildren] = this.extractChildrenAndText(projPath, outputFilename, oldData.children, newText, newChildren, 1);
 		
 			const newData:SmoresDocumentData = {
 				relativeProjectPath: `./${basename(projPath)}`,
-				type: oldData.documentData!.documentType,
+				type: docType,
 				name: name,
 				history: {
 					document: {
@@ -190,7 +144,12 @@ export class SmoresConverterProvider implements CustomTextEditorProvider {
 		} catch(err) {
 			result = SmoresConverterResult.failure;	
 		}
-		return [result, name, relPath];
+		const docInfo:DocumentInfo = {
+			name,
+			relativePath:relPath,
+			type: docType
+		};
+		return [result, docInfo];
 	}
 	private convertContent(projPath:string, docFilename:string, itemId:number) {
 		const outputFilename = `${itemId}.smores-item`;

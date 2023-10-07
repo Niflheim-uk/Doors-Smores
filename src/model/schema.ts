@@ -1,6 +1,7 @@
 export interface DocumentInfo {
 	name: string;
 	relativePath: string;
+  type:string;
 }
 export interface SmoresProjectData {
 	dataVersion: number;

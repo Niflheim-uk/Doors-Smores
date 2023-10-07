@@ -1,10 +1,11 @@
 import * as vscode from 'vscode';
-import { getNonce } from './getNonce';
+import { clearNonce, getNonce } from './getNonce';
 import { SmoresDocument } from '../model/smoresDocument';
 import { FileIO } from '../model/fileIO';
 import { getEditorStyleBlock, getMermaidBlock, getScriptBlock } from './resources';
 import { generateTOCxsl, generateUserCss } from './userStyle';
 import * as schema from '../model/schema';
+import { HTML } from './html';
 
 interface Edit {
 	type: string;
@@ -17,7 +18,7 @@ interface HtmlConstants {
 	webview:vscode.Webview;
 };
 export class SmoresEditorProvider implements vscode.CustomTextEditorProvider {
-	private static readonly viewType = 'doors-smores.smoresEditor';
+	public static readonly viewType = 'doors-smores.smoresEditor';
 	public static register(context: vscode.ExtensionContext): vscode.Disposable {
 		const provider = new SmoresEditorProvider(context);
 		const providerRegistration = vscode.window.registerCustomEditorProvider(SmoresEditorProvider.viewType, provider);
@@ -109,6 +110,7 @@ export class SmoresEditorProvider implements vscode.CustomTextEditorProvider {
 		const styleBlock = getEditorStyleBlock(this.context.extensionUri, htmlConstants.dataUri, webview);
     const scriptBlock = getScriptBlock(this.context.extensionUri, webview);
     const mermaidBlock = getMermaidBlock(this.context.extensionUri, webview);
+		clearNonce();
 
 		return `
 <!DOCTYPE html>
@@ -142,36 +144,14 @@ ${scriptBlock}
 		if(editBlocks.length===0) {
 			hideClass = 'hiddenToolbar';
 		}
-		let docColourClass = 'ursLevelIconColour';
-		switch(smoresDocument.data.type) {
-		case schema.ursDocType:
-		case schema.atpDocType:
-			docColourClass = 'ursLevelIconColour';
-			break;
-		case schema.srsDocType:
-		case schema.stpDocType:
-			docColourClass = 'srsLevelIconColour';
-			break;
-		case schema.adsDocType:
-		case schema.itpDocType:
-			docColourClass = 'adsLevelIconColour';
-			break;
-		case schema.ddsDocType:
-		case schema.utpDocType:
-			docColourClass = 'ddsLevelIconColour';
-			break;
-		}
-
-
-
 		const closeIcon:string = "<i class='codicon codicon-eye'></i>";
-		const addFRIcon:string = `<i class='codicon codicon-${schema.requirementIcon} FRIconColour'></i>`;
-		const addNFRIcon:string = `<i class='codicon codicon-${schema.requirementIcon} NFRIconColour'></i>`;
-		const addDCIcon:string = `<i disabled class='codicon codicon-${schema.constraintIcon} DCIconColour'></i>`;
-		const addTestIcon:string = `<i class='codicon codicon-${schema.testIcon} ${docColourClass}'></i>`;
-		const addTextIcon:string = `<i class='codicon codicon-${schema.textIcon} textIconColour'></i>`;
-		const addImageIcon:string = `<i class='codicon codicon-${schema.imageIcon} imageIconColour'></i>`;
-		const addMermaidIcon:string = `<i class='codicon codicon-${schema.imageIcon} mermaidIconColour'></i>`;
+		const addFRIcon:string = HTML.getIcon(smoresDocument.data.type, schema.userFRCategory);
+		const addNFRIcon:string = HTML.getIcon(smoresDocument.data.type, schema.userNFRCategory);
+		const addDCIcon:string = HTML.getIcon(smoresDocument.data.type, schema.userDCCategory);
+		const addTestIcon:string = HTML.getIcon(smoresDocument.data.type, schema.userTestCategory);
+		const addTextIcon:string = HTML.getIcon(smoresDocument.data.type, schema.commentCategory);
+		const addImageIcon:string = HTML.getIcon(smoresDocument.data.type, schema.imageCategory);
+		const addMermaidIcon:string = HTML.getIcon(smoresDocument.data.type, schema.mermaidCategory);
 		let documentButtonHtml = "";
 		switch(smoresDocument.data.type) {
 		case schema.ursDocType:
