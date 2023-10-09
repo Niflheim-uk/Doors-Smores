@@ -26,12 +26,12 @@ export class HTML {
   public static get2ColTableRowHtml(c1:string, c2:string, classes?:{c1?:string, c2?:string}) {
     let class1 = "", class2="";
     if(classes && classes.c1) {
-      class1 = ` class="${classes.c1}`;
+      class1 = ` class="${classes.c1}"`;
     }
     if(classes && classes.c2) {
-      class2 = ` class="${classes.c2}`;
+      class2 = ` class="${classes.c2}"`;
     }
-    return `<tr><td${class1}">${c1}</td><td${class2}">${c2}</td></tr>`;
+    return `<tr><td${class1}>${c1}</td><td${class2}>${c2}</td></tr>`;
   }
   public static getTableHtml(rows:string[], tableClass:string):string {
     return `

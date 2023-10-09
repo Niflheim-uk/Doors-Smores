@@ -1,4 +1,4 @@
-import { copyFileSync, existsSync, readFileSync, writeFileSync } from "fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 import { window } from "vscode";
 
@@ -106,6 +106,10 @@ export function generateUserCss(extensionPath:string, dataPath:string):any {
   const userStylePath = join(dataPath, 'userStyle.json');
   const userCssPath = join(dataPath, 'user.css');
   const defaultUserStylePath = join(extensionPath, 'resources', 'userStyle.json');
+
+  if(!existsSync(dataPath)) {
+    mkdirSync(dataPath, {recursive:true});
+  }
 
   if(!existsSync(userStylePath)) {
     copyFileSync(defaultUserStylePath, userStylePath);

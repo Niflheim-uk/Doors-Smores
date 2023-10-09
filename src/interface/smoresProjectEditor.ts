@@ -27,10 +27,10 @@ interface DocumentationRowConstants {
 export class SmoresProjectEditorProvider implements vscode.CustomTextEditorProvider {
 	private static readonly viewType = 'doors-smores.projectEditor';
 	
-	public static register(context: vscode.ExtensionContext): vscode.Disposable {
+	public static register(context: vscode.ExtensionContext) {
 		const provider = new SmoresProjectEditorProvider(context);
-		const providerRegistration = vscode.window.registerCustomEditorProvider(SmoresProjectEditorProvider.viewType, provider);
-		return providerRegistration;
+		context.subscriptions.push(vscode.window.registerCustomEditorProvider(SmoresProjectEditorProvider.viewType, provider));
+		context.subscriptions.push(vscode.commands.registerCommand('doors-smores.NewProject', provider.newProjectCommand));
 	}
 
 	constructor(private readonly context: vscode.ExtensionContext) { }
@@ -110,6 +110,31 @@ export class SmoresProjectEditorProvider implements vscode.CustomTextEditorProvi
 		});
 
 	}
+
+	public async newProjectCommand() {
+		const options:vscode.SaveDialogOptions = {
+			title: "Select location and filename for new project",
+			saveLabel: "Create",
+			filters: {
+				// eslint-disable-next-line @typescript-eslint/naming-convention
+				'Doors Smores Project': ['smores-project']
+			}
+		};
+		const newProjectUri = await vscode.window.showSaveDialog(options);
+		if(newProjectUri) {
+			SmoresProject.generateNewProject(newProjectUri.fsPath);
+		}
+  }
+
+	
+  private getWorkspaceDirectory() {
+    const rootPath =
+    vscode.workspace.workspaceFolders &&
+    vscode.workspace.workspaceFolders.length > 0
+      ? vscode.workspace.workspaceFolders[0].uri
+      : undefined;
+    return rootPath;
+  }
 
 	private getHtmlForDocument(htmlConstants:HtmlConstants): string {
 		const nonce = getNonce();

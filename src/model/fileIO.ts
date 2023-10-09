@@ -1,5 +1,5 @@
 import { XMLParser, XMLBuilder } from "fast-xml-parser";
-import { readFile, readFileSync, writeFileSync } from 'fs';
+import { existsSync, readFile, readFileSync, writeFileSync } from 'fs';
 import { window } from "vscode";
 import { DocumentInfo, RevisionHistoryData, SmoresContentData, SmoresDocumentData, SmoresProjectData, unknown } from "./schema";
 import { SmoresDocument } from "./smoresDocument";
@@ -461,14 +461,17 @@ export class FileIO {
 		return outputData;
 	}
 	public static readXmlProjectFile(filepath:string, fix:boolean=true) {
+		if(!existsSync(filepath)) {return undefined;}
 		const rawXml = readFileSync(filepath, 'utf-8');
 		return FileIO.parseProjectRawXml(rawXml, fix);
 	}
 	public static readXmlDocumentFile(filepath:string, fix:boolean=true) {
+		if(!existsSync(filepath)) {return undefined;}
 		const rawXml = readFileSync(filepath, 'utf-8');
 		return FileIO.parseDocumentRawXml(rawXml, fix);
 	}
 	public static readXmlContentFile(filepath:string, fix:boolean=true) {
+		if(!existsSync(filepath)) {return undefined;}
 		const rawXml = readFileSync(filepath, 'utf-8');
 		return FileIO.parseContentRawXml(rawXml, fix);
 	}

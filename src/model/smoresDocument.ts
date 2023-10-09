@@ -12,7 +12,15 @@ export interface SmoresDocumentBlock {
 	isText:boolean,
 	range:Range
 };
+interface MatchesResult {
+	blocks:SmoresDocumentBlock[];
+	remainingText:string;
+	newPosition:Position;
+	endDetected:boolean;
+}
 export class SmoresDocument {
+	static readonly itemPattern = /(\n)*(.*)(\[SMORES\.[^\]]+\])(.*)/;
+	static readonly endPattern = /(\n)*(.*)<\/text>/;
 	public data:schema.SmoresDocumentData|undefined;
 	constructor(public document:TextDocument) {
     this.data = this.getData();
@@ -81,44 +89,122 @@ export class SmoresDocument {
 		const text = startLine.slice(startPos.character);
 		return {text, startPos};
 	}
+	private getMatches(testText:string, testStartPos:Position, bufferText:string, bufferStartPos:Position):MatchesResult {
+		const itemMatch = testText.match(SmoresDocument.itemPattern);
+		let blocks:SmoresDocumentBlock[] = [];
+		if(itemMatch) {
+			const preamble = `${itemMatch[1]}${itemMatch[2]}`;
+			const item = itemMatch[3];
+			const epilogue = itemMatch[4];
+			const pos0 = new Position(testStartPos.line, testStartPos.character + preamble.length);
+			if(preamble.length > 0) {
+				const block0:SmoresDocumentBlock = {
+					data:bufferText.concat(preamble),
+					isText:true,
+					range: new Range(bufferStartPos, pos0)
+				};
+				blocks.push(block0);
+			}
+			const pos1 = new Position(pos0.line, pos0.character + item.length);
+			const block1:SmoresDocumentBlock = {
+				data:item,
+				isText:false,
+				range: new Range(pos0, pos1)
+			};
+			blocks.push(block1);
+			if(epilogue.length > 0) {
+				const endBlocks = this.matchesEnd(epilogue, pos1, "", pos1);
+				if(endBlocks) {
+					return {
+						blocks:[...blocks, ...endBlocks.blocks], 
+						remainingText:endBlocks.remainingText, 
+						newPosition:endBlocks.newPosition,
+						endDetected:true
+					};
+				}
+			}
+			return {
+				blocks:[...blocks],
+				remainingText:epilogue,
+				newPosition:pos1,
+				endDetected:false
+			};
+		} 
+
+		const endBlocks = this.matchesEnd(testText, testStartPos, bufferText, bufferStartPos);
+		if(endBlocks) {
+			return {
+				blocks:[...blocks, ...endBlocks.blocks], 
+				remainingText:endBlocks.remainingText, 
+				newPosition:endBlocks.newPosition,
+				endDetected:true
+			};
+		} else {
+			return {
+				blocks:[],
+				remainingText:bufferText.concat(testText),
+				newPosition:bufferStartPos,
+				endDetected:false
+			};
+		}
+	}
+	private matchesEnd(testText:string, testStartPos:Position, bufferText:string, bufferStartPos:Position):MatchesResult|undefined {
+		const endMatch = testText.match(SmoresDocument.endPattern);
+		if(endMatch) {
+			if(endMatch[1].length > 0) {
+				let result = this.getMatches(endMatch[1], testStartPos, bufferText, bufferStartPos);
+				let endBlocks:SmoresDocumentBlock[] = result.blocks;
+				let endPos = result.newPosition;
+				if(result.remainingText) {
+					endPos = new Position(result.newPosition.line, result.newPosition.character + result.remainingText.length);
+					const endBlock:SmoresDocumentBlock = {
+						data:result.remainingText,
+						isText:true,
+						range: new Range(result.newPosition, endPos)
+					};
+					endBlocks.push(endBlock);
+				}
+				return {
+					blocks: endBlocks,
+					remainingText: "",
+					newPosition: endPos,
+					endDetected: true
+				};
+			} else {
+				return {
+					blocks: [],
+					remainingText: "",
+					newPosition: testStartPos,
+					endDetected: true				
+				};
+			}
+		}
+		return undefined;
+	}
 	public getDocumentBlocks():SmoresDocumentBlock[] {
 		let blocks:SmoresDocumentBlock[] = [];
 		let {text, startPos} = this.getTextStart();
-		const itemPattern = /(.*)(\[SMORES\.[^\]]+\])(.*)/;
-		const endPattern = /(.*)<\/text>/;
-		const endMatch = text.match(endPattern);
-		if(endMatch) {
-			text = endMatch[1];
-			const endEndPos = new Position(startPos.line, startPos.character + endMatch[1].length);
-			blocks.push({data:text, isText:true, range: new Range(startPos, endEndPos)});
-			return blocks;
+		let result = this.matchesEnd(text, startPos, "", startPos);
+		if(result !== undefined) {
+			if(result.blocks[0].data === "") {
+				result.blocks[0].data = "Empty document";
+				const endLine = result.blocks[0].range.end.line;
+				const endCharacter = result.blocks[0].range.end.character + result.blocks[0].data.length;
+				result.blocks[0].range = new Range(result.blocks[0].range.start, new Position(endLine, endCharacter));
+			}
+			return result.blocks;
 		}
 		for(let i=startPos.line+1; i<this.document.lineCount; i++) {
-			const lineText = this.document.lineAt(i).text;
-			const itemMatch = lineText.match(itemPattern);
-			const endMatch = lineText.match(endPattern);
-			if(itemMatch) {
-				text = text.concat('\n',itemMatch[1]);
-				const textEndPos = new Position(i, itemMatch[1].length);
-				blocks.push({data:text, isText:true, range: new Range(startPos, textEndPos)});
-				startPos = textEndPos;
-				text = itemMatch[2];
-				const itemEndPos = new Position(i, startPos.character + itemMatch[2].length);
-				blocks.push({data:text, isText:false, range: new Range(startPos, itemEndPos)});
-				startPos = itemEndPos;
-				text = itemMatch[3];
-				const endMatchItem = text.match(endPattern);
-				if(endMatchItem) {
-					text = endMatchItem[1];
-					const endEndPos = new Position(i, startPos.character + endMatchItem[1].length);
-					blocks.push({data:text, isText:true, range: new Range(startPos, endEndPos)});
+			const lineText = `\n${this.document.lineAt(i).text}`;
+			const linePosition = new Position(i, 0);
+			let result = this.getMatches(lineText, linePosition, text, startPos);
+			if(result) {
+				blocks.push(...result.blocks);
+				text = result.remainingText;
+				startPos = result.newPosition;
+				if(result.endDetected) {
 					return blocks;
 				}
-			} else if(endMatch) {
-				text = text.concat('\n',endMatch[1]);
-				const endEndPos = new Position(i, endMatch[1].length);
-				blocks.push({data:text, isText:true, range: new Range(startPos, endEndPos)});
-				return blocks;
 			} else {
 				text = text.concat('\n',lineText);
 			}
@@ -156,7 +242,7 @@ export class SmoresDocument {
 		let divHtml = "";
 		if(webview) {
 			divHtml = divHtml.concat(`
-<div class=webviewDiv>`);
+<div id="webviewDiv" class="webviewDiv">`);
 		}
 		for(let i=0; i < blocks.length; i++) {
 			if(blocks[i].isText) {

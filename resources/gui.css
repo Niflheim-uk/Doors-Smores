@@ -96,6 +96,7 @@ button.secondary:hover {
 }
 .webviewDiv {
   margin-left:calc(var(--menu-size) + var(--menu-gap));
+  cursor:vertical-text;
 }
 .toolbarDiv {
   display:flex;

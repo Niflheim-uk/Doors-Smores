@@ -5,10 +5,17 @@ import * as schema from './schema';
 import { HTML } from '../interface/html';
 import { basename, dirname, extname, join } from 'path';
 import { SmoresDocument } from './smoresDocument';
+import { existsSync, mkdirSync } from 'fs';
 
 const badHtml = '<h1>Invalid projecct document</h1>';
 
 export class SmoresProject {
+  static readonly dataVersion = 1;
+  static readonly defaultMaxContributors = 100;
+  static readonly defaultRelativeDataPath = ".smoresData";
+  static readonly defaultRelativeRepoRoot = "./";
+  static readonly defaultRepoPathspec = ".";
+  static readonly defaultIdBase = 10000;
 	public data:SmoresProjectData|undefined;
 	constructor(public document:TextDocument) {
     this.data = this.getData();
@@ -19,6 +26,43 @@ export class SmoresProject {
   public updateData() {
     this.data = this.getData();
   }
+  public static generateNewProject(projectFilepath:string) {
+		const newData:schema.SmoresProjectData = {
+      dataVersion: SmoresProject.dataVersion,
+      repository: {
+        relativeRoot: SmoresProject.defaultRelativeRepoRoot,
+        pathspec: SmoresProject.defaultRepoPathspec,
+        remote: "",
+      },
+      contributors: {
+        max: SmoresProject.defaultMaxContributors,
+        id: [],
+      },
+      data: {
+        relativeRoot: SmoresProject.getNewRelativeDataPath(projectFilepath),
+        documents: { document: [] },
+        uniqueIds: {
+          idBase: SmoresProject.defaultIdBase,
+          id: []
+        }
+      }
+    };
+		FileIO.writeXmlFile(projectFilepath, newData, 'project');
+		return true;
+	}
+  private static getNewRelativeDataPath(projectFilepath:string) {
+    const projectRoot = dirname(projectFilepath);
+    let relativeDataPath = SmoresProject.defaultRelativeDataPath;
+    let testPath = join(projectRoot, relativeDataPath);
+    let index = 2;
+    while(existsSync(testPath)) {
+      relativeDataPath = `${SmoresProject.defaultRelativeDataPath}_${index}`;
+      testPath = join(projectRoot, relativeDataPath);
+    }
+    mkdirSync(testPath, {recursive:true});
+    return relativeDataPath;  
+  }
+
 	public static ursExists (documentInfos:schema.DocumentInfo[]):boolean {
     return SmoresProject.docTypeExists(documentInfos, schema.ursDocType);
   }

@@ -19,10 +19,10 @@ interface HtmlConstants {
 };
 export class SmoresEditorProvider implements vscode.CustomTextEditorProvider {
 	public static readonly viewType = 'doors-smores.smoresEditor';
-	public static register(context: vscode.ExtensionContext): vscode.Disposable {
+	public static register(context: vscode.ExtensionContext) {
 		const provider = new SmoresEditorProvider(context);
 		const providerRegistration = vscode.window.registerCustomEditorProvider(SmoresEditorProvider.viewType, provider);
-		return providerRegistration;
+		context.subscriptions.push(providerRegistration);
 	}
 
 	constructor(private readonly context: vscode.ExtensionContext) { }
@@ -30,9 +30,16 @@ export class SmoresEditorProvider implements vscode.CustomTextEditorProvider {
 	public async resolveCustomTextEditor(document: vscode.TextDocument,	webviewPanel: vscode.WebviewPanel, _token: vscode.CancellationToken): Promise<void> {
 		const smoresDocument = new SmoresDocument(document);
 		const projPath = FileIO.getProjectPath(smoresDocument);
+		if(projPath === undefined) {
+			vscode.window.showErrorMessage("Could not read document file");
+			return;
+		}
 		const dataPath = FileIO.getContentRoot(smoresDocument);
+		if(dataPath === undefined) {
+			vscode.window.showErrorMessage(`Could not read project file referenced by this document: ${projPath}`);
+			return;
+		}
 		let editBlocks:number[] = [];
-		if(projPath === undefined || dataPath === undefined) {return;}
 		const dataUri = vscode.Uri.file(dataPath);
 		generateUserCss(this.context.extensionUri.fsPath, dataUri.fsPath);
 //    generateTOCxsl(dataUri.toString());
@@ -67,12 +74,7 @@ export class SmoresEditorProvider implements vscode.CustomTextEditorProvider {
 		webviewPanel.webview.onDidReceiveMessage(e => {
 			switch (e.command) {
 				case 'addEditBlock':
-					if(e.blockNumber !== undefined) {
-						const blockIndex = editBlocks.indexOf(e.blockNumber);
-						// make sure this block number is only listed once, and put that number at the end
-						if(blockIndex !== -1) {
-							editBlocks.splice(blockIndex, 1);
-						}
+					if(e.blockNumber !== undefined && !editBlocks.includes(e.blockNumber)) {
 						editBlocks.push(e.blockNumber);
 						webviewPanel.webview.html = this.getHtmlForDocument(htmlConstants, false, editBlocks);
 					}
@@ -81,8 +83,9 @@ export class SmoresEditorProvider implements vscode.CustomTextEditorProvider {
 					this.addEdit(smoresDocument, {type:e.command, block:e.blockNumber, data:e.blockValue});
 					return;
 				case 'closeEditblock':
-					if(editBlocks.length > 0) {
-						editBlocks.pop();
+					if(e.blockNumber !== undefined && editBlocks.includes(e.blockNumber)) {
+						const blockIndex = editBlocks.indexOf(e.blockNumber);
+						editBlocks.splice(blockIndex, 1);
 						webviewPanel.webview.html = this.getHtmlForDocument(htmlConstants, false, editBlocks);
 					}
 					break;

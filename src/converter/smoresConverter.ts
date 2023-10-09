@@ -4,6 +4,7 @@ import { basename, dirname, join, relative } from 'path';
 import * as schema from '../model/schema';
 import { RevisionHistoryData, DocumentInfo, SmoresProjectData, SmoresDocumentData, SmoresContentData } from '../model/schema';
 import { FileIO } from '../model/fileIO';
+import { SmoresProject } from '../model/smoresProject';
 
 interface OldProjectDataModel {
   idBase: number;
@@ -85,7 +86,7 @@ export class SmoresConverter {
 			repoRelativeRoot = './';
 		}
 		const newData:SmoresProjectData = {
-			dataVersion: 1,
+			dataVersion: SmoresProject.dataVersion,
 			repository: {
 				relativeRoot: repoRelativeRoot,
 				remote: oldData.repoRemote,

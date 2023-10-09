@@ -45,6 +45,14 @@
           }
         ]
       }
+    ],
+    "commands": [
+      {
+        "command": "doors-smores.NewProject",
+        "category": "Smores",
+        "title": "New Project",
+        "icon": "$(new-folder)"
+      }
     ]
   },
   "scripts": {
