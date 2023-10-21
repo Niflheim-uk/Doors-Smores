@@ -72,34 +72,70 @@ export class SmoresEditorProvider implements vscode.CustomTextEditorProvider {
 
 		// Receive message from the webview.
 		webviewPanel.webview.onDidReceiveMessage(e => {
-			switch (e.command) {
+			if(e.command !== undefined && e.blockNumber !== undefined) {
+				switch (e.command) {
 				case 'addEditBlock':
-					if(e.blockNumber !== undefined && !editBlocks.includes(e.blockNumber)) {
-						editBlocks.push(e.blockNumber);
-						webviewPanel.webview.html = this.getHtmlForDocument(htmlConstants, false, editBlocks);
-					}
-					return;
-				case 'updateTextBlockContent':
-					this.addEdit(smoresDocument, {type:e.command, block:e.blockNumber, data:e.blockValue});
-					return;
-				case 'closeEditblock':
-					if(e.blockNumber !== undefined && editBlocks.includes(e.blockNumber)) {
-						const blockIndex = editBlocks.indexOf(e.blockNumber);
-						editBlocks.splice(blockIndex, 1);
-						webviewPanel.webview.html = this.getHtmlForDocument(htmlConstants, false, editBlocks);
-					}
+					editBlocks = this.addEditBlock(e.blockNumber, editBlocks);
 					break;
+				case 'closeEditblock':
+					editBlocks = this.closeEditBlock(e.blockNumber, editBlocks);
+					break;
+				case 'addNewTextBlock':
+					editBlocks = this.addEdit(smoresDocument, {type:'addTextBlock', block:e.blockNumber, data:"New text section"}, editBlocks);
+					break;
+				case 'updateTextBlockContent':
+					editBlocks = this.addEdit(smoresDocument, {type:e.command, block:e.blockNumber, data:e.blockValue}, editBlocks);
+					break;
+				case 'addFRBlock':
+					editBlocks = this.addEdit(smoresDocument, {type:'addFRBlock', block:e.blockNumber, data:'huh'}, editBlocks);
+					break;
+				}
+				webviewPanel.webview.html = this.getHtmlForDocument(htmlConstants, false, editBlocks);
 			}
 		});
 
 	}
-
-	private addEdit(document:SmoresDocument, edit:Edit) {
+	private addEditBlock(blockNumber:number, editBlocks:number[]):number[] {
+		if(!editBlocks.includes(blockNumber)) {
+			editBlocks.push(blockNumber);
+		}
+		return editBlocks;
+	}
+	private closeEditBlock(blockNumber:number, editBlocks:number[]):number[] {
+		if(editBlocks.includes(blockNumber)) {
+			const blockIndex = editBlocks.indexOf(blockNumber);
+			editBlocks.splice(blockIndex, 1);
+		}
+		return editBlocks;
+	}
+	private insertEditBlock(blockNumber:number, editBlocks:number[]):number[] {
+		let newBlocks:number[] = [];
+		for(let i=0; i<editBlocks.length; i++) {
+			if(editBlocks[i] < blockNumber) {
+				newBlocks.push(editBlocks[i]);
+			} else {
+				newBlocks.push(editBlocks[i]+1);
+			}
+		}
+		newBlocks.push(blockNumber);
+		return newBlocks;
+	}
+	private addEdit(document:SmoresDocument, edit:Edit, editBlocks:number[]):number[] {
 		switch (edit.type) {
 		case 'updateTextBlockContent':
-			document.updateBlock(edit.block, edit.data);
+			if(document.updateBlock(edit.block, edit.data)) {
+				return this.closeEditBlock(edit.block, editBlocks);
+			}
 			break;
+		case 'addTextBlock':
+			if(document.addTextBeforeBlock(edit.block, edit.data)) {
+				return this.insertEditBlock(edit.block, editBlocks);
+			}
+			break;
+		case 'addFRBlock':
+			
 		}
+		return editBlocks;
 	}
 
 	private getHtmlForDocument(htmlConstants:HtmlConstants, exporting:boolean, editBlocks:number[]): string {

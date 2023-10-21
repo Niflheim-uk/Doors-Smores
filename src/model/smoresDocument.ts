@@ -12,18 +12,30 @@ export interface SmoresDocumentBlock {
 	isText:boolean,
 	range:Range
 };
+enum LineMatch {
+	text=-1,
+	startText=-2,
+	endText=-3,
+};
 interface MatchesResult {
 	blocks:SmoresDocumentBlock[];
-	remainingText:string;
-	newPosition:Position;
 	endDetected:boolean;
 }
 export class SmoresDocument {
-	static readonly itemPattern = /(\n)*(.*)(\[SMORES\.[^\]]+\])(.*)/;
-	static readonly endPattern = /(\n)*(.*)<\/text>/;
+	static readonly itemPattern = /\[SMORES\.ID\.(\d+)\]/;
+	static readonly itemPatternKnownLength = 12;
+	static readonly endPattern = /<\/text>/;
+	static readonly endPatternLength = 7;
+	static readonly startPattern = /<text>/;
+	static readonly startPatternLength = 6;
+	private startFound = false;
+	private unmatchedLinesOfText:string[] = [];
+	private unmatchedStartPosition:Position;
+
 	public data:schema.SmoresDocumentData|undefined;
 	constructor(public document:TextDocument) {
     this.data = this.getData();
+		this.unmatchedStartPosition = new Position(0,0);
 	}
   private getData():schema.SmoresDocumentData|undefined {
     return FileIO.parseDocumentRawXml(this.document.getText());
@@ -53,175 +65,165 @@ export class SmoresDocument {
 		FileIO.writeXmlFile(docPath, newData, 'document');
 		return true;
 	}
-	public getPositionOfTextField():Position {
-		const nLines = this.document.lineCount;
-		for(let i=0; i<nLines; i++) {
-			const line:TextLine = this.document.lineAt(i);
-			const m = line.text.match(/\s*<text>/);
-			if(m) {
-				const c = m[0].length;
-				return new Position(i,c);
+	private getUnmatchedText(newText:string):string {
+		let unmatchedText = "";
+		let i = 0;
+		for(;i<this.unmatchedLinesOfText.length; i++) {
+			if(i > 0) {
+				unmatchedText += "\n";
 			}
+			unmatchedText += this.unmatchedLinesOfText[i];
 		}
-		window.showErrorMessage("Failed to find start of text field");
-		return new Position(-1,-1);
-	}
-	public getPositionFromTextOffset(offsetIntoText:number):Position {
-		const startOfText = this.getPositionOfTextField();
-		let charactersLeft = offsetIntoText;
-		for(let i=startOfText.line; i<this.document.lineCount; i++) {
-			let charactersInLine = this.document.lineAt(i).text.length;
-			if(i === startOfText.line) {
-				charactersInLine -= startOfText.character;
-			}
-			if(charactersLeft < charactersInLine) {
-				return new Position(i, charactersLeft);
-			} else {
-				charactersLeft -= charactersInLine;
-			}
+		this.unmatchedLinesOfText = [];
+		if(i > 0 && newText.length > 0) {
+			unmatchedText += "\n";
 		}
-		window.showErrorMessage("Failed to find position within document");
-		return new Position(-1,-1);
+		unmatchedText += newText;
+		return unmatchedText;
 	}
-	private getTextStart():{text:string, startPos:Position} {
-		const startPos = this.getPositionOfTextField();
-		const startLine = this.document.lineAt(startPos.line).text;
-		const text = startLine.slice(startPos.character);
-		return {text, startPos};
-	}
-	private getMatches(testText:string, testStartPos:Position, bufferText:string, bufferStartPos:Position):MatchesResult {
-		const itemMatch = testText.match(SmoresDocument.itemPattern);
-		let blocks:SmoresDocumentBlock[] = [];
-		if(itemMatch) {
-			const preamble = `${itemMatch[1]}${itemMatch[2]}`;
-			const item = itemMatch[3];
-			const epilogue = itemMatch[4];
-			const pos0 = new Position(testStartPos.line, testStartPos.character + preamble.length);
-			if(preamble.length > 0) {
-				const block0:SmoresDocumentBlock = {
-					data:bufferText.concat(preamble),
-					isText:true,
-					range: new Range(bufferStartPos, pos0)
-				};
-				blocks.push(block0);
-			}
-			const pos1 = new Position(pos0.line, pos0.character + item.length);
-			const block1:SmoresDocumentBlock = {
-				data:item,
-				isText:false,
-				range: new Range(pos0, pos1)
-			};
-			blocks.push(block1);
-			if(epilogue.length > 0) {
-				const endBlocks = this.matchesEnd(epilogue, pos1, "", pos1);
-				if(endBlocks) {
-					return {
-						blocks:[...blocks, ...endBlocks.blocks], 
-						remainingText:endBlocks.remainingText, 
-						newPosition:endBlocks.newPosition,
-						endDetected:true
-					};
-				}
-			}
-			return {
-				blocks:[...blocks],
-				remainingText:epilogue,
-				newPosition:pos1,
-				endDetected:false
-			};
-		} 
-
-		const endBlocks = this.matchesEnd(testText, testStartPos, bufferText, bufferStartPos);
-		if(endBlocks) {
-			return {
-				blocks:[...blocks, ...endBlocks.blocks], 
-				remainingText:endBlocks.remainingText, 
-				newPosition:endBlocks.newPosition,
-				endDetected:true
-			};
+	private matchLineSection(text:string):LineMatch|number {
+		if(text.match(SmoresDocument.startPattern)) {
+			return LineMatch.startText;
+		} else if(text.match(SmoresDocument.endPattern)) {
+			return LineMatch.endText;
 		} else {
-			return {
-				blocks:[],
-				remainingText:bufferText.concat(testText),
-				newPosition:bufferStartPos,
-				endDetected:false
-			};
+			const match = text.match(SmoresDocument.itemPattern);
+			if(match) {
+				return Number(match[1]);
+			} else {
+				return LineMatch.text;
+			}
 		}
 	}
-	private matchesEnd(testText:string, testStartPos:Position, bufferText:string, bufferStartPos:Position):MatchesResult|undefined {
-		const endMatch = testText.match(SmoresDocument.endPattern);
-		if(endMatch) {
-			if(endMatch[1].length > 0) {
-				let result = this.getMatches(endMatch[1], testStartPos, bufferText, bufferStartPos);
-				let endBlocks:SmoresDocumentBlock[] = result.blocks;
-				let endPos = result.newPosition;
-				if(result.remainingText) {
-					endPos = new Position(result.newPosition.line, result.newPosition.character + result.remainingText.length);
-					const endBlock:SmoresDocumentBlock = {
-						data:result.remainingText,
-						isText:true,
-						range: new Range(result.newPosition, endPos)
-					};
-					endBlocks.push(endBlock);
+
+	private getEndBlock(testText:string, textLine:number, textChar:number) {
+		let preEndText = "";
+		if(testText.length - SmoresDocument.endPatternLength > 0) {
+			preEndText = testText.slice(0, testText.length - SmoresDocument.endPatternLength);
+		}
+		const textBeforeEnd = this.getUnmatchedText(preEndText);
+		if(textBeforeEnd.length === 0) {
+			return undefined;
+		}
+		const endTextStartPos = new Position(textLine, textChar - SmoresDocument.endPatternLength+1);
+		const block0:SmoresDocumentBlock = {
+			data:textBeforeEnd,
+			isText:true,
+			range: new Range(this.unmatchedStartPosition, endTextStartPos)
+		};
+		return block0;
+	}
+	private getTextBlockBeforeItem(testText:string, id:number, line:number, lastItemChar:number, previousLineLength:number) {
+		const idText = SmoresContent.getLinkText(id);
+		const preItemTextLength = testText.length - idText.length;
+		const preItemText = testText.slice(0, preItemTextLength);
+		const textBeforeItem = this.getUnmatchedText(preItemText);
+		let textEndPosition = new Position(line-1, previousLineLength);
+		if(lastItemChar >= idText.length) {
+			textEndPosition = new Position(line, lastItemChar - idText.length +1);
+		}
+		const block0:SmoresDocumentBlock = {
+			data:textBeforeItem,
+			isText:true,
+			range: new Range(this.unmatchedStartPosition, textEndPosition)
+		};
+		return block0;
+	}
+	private getItemBlock(id:number, line:number, endChar:number, lineLength:number) {
+		const idText = SmoresContent.getLinkText(id);
+		const itemStartPosition = new Position(line, endChar - idText.length + 1);
+		const itemEndPosition = new Position(itemStartPosition.line, itemStartPosition.character + idText.length);
+		let newTextPosition = new Position(itemEndPosition.line, itemEndPosition.character + 1);
+		if(newTextPosition.character >= lineLength) {
+			newTextPosition = new Position(itemEndPosition.line+1, 0);
+		}
+		const block0:SmoresDocumentBlock = {
+			data:`${id}`,
+			isText:false,
+			range: new Range(itemStartPosition, itemEndPosition)
+		};
+		this.unmatchedStartPosition = newTextPosition;
+		return block0;
+	}
+	private getMatches(inputText:string, inputTextLine:number, lineLength:number, previousLineLength:number):MatchesResult {
+		let testText = "";
+		let blocks:SmoresDocumentBlock[] = [];
+		for(let i=0; i<inputText.length; i++) {
+			testText += inputText[i];
+			const result = this.matchLineSection(testText);
+			switch(result) {
+			case LineMatch.endText:
+				const blockEnd = this.getEndBlock(testText, inputTextLine, i);
+				if(blockEnd !== undefined && blockEnd.data.length > 0 && this.startFound) {
+					blocks.push(blockEnd);
 				}
 				return {
-					blocks: endBlocks,
-					remainingText: "",
-					newPosition: endPos,
+					blocks,
 					endDetected: true
 				};
-			} else {
-				return {
-					blocks: [],
-					remainingText: "",
-					newPosition: testStartPos,
-					endDetected: true				
-				};
+			case LineMatch.startText:
+				this.startFound = true;
+				this.unmatchedLinesOfText = [];
+				this.unmatchedStartPosition = new Position(inputTextLine, i+1);
+				testText = "";
+				break;
+			case LineMatch.text:
+				break;
+			default: // returned an item id number
+				const blockText = this.getTextBlockBeforeItem(testText, result, inputTextLine, i, previousLineLength);
+				if(blockText.data.length > 0 && this.startFound) {
+					blocks.push(blockText);
+				}
+				const blockItem = this.getItemBlock(result, inputTextLine, i, lineLength);
+				if(blockItem.data.length > 0 && this.startFound) {
+					blocks.push(blockItem);
+				}
+				testText = "";
+				break;
 			}
 		}
-		return undefined;
+		if(testText.length) {
+			this.unmatchedLinesOfText.push(testText);
+		}
+		return {
+			blocks,
+			endDetected:false
+		};
 	}
+
 	public getDocumentBlocks():SmoresDocumentBlock[] {
 		let blocks:SmoresDocumentBlock[] = [];
-		let {text, startPos} = this.getTextStart();
-		let result = this.matchesEnd(text, startPos, "", startPos);
-		if(result !== undefined) {
-			if(result.blocks[0].data === "") {
-				result.blocks[0].data = "Empty document";
-				const endLine = result.blocks[0].range.end.line;
-				const endCharacter = result.blocks[0].range.end.character + result.blocks[0].data.length;
-				result.blocks[0].range = new Range(result.blocks[0].range.start, new Position(endLine, endCharacter));
-			}
-			return result.blocks;
-		}
-		for(let i=startPos.line+1; i<this.document.lineCount; i++) {
-			const lineText = `\n${this.document.lineAt(i).text}`;
-			const linePosition = new Position(i, 0);
-			let result = this.getMatches(lineText, linePosition, text, startPos);
-			if(result) {
-				blocks.push(...result.blocks);
-				text = result.remainingText;
-				startPos = result.newPosition;
-				if(result.endDetected) {
-					return blocks;
-				}
-			} else {
-				text = text.concat('\n',lineText);
+		this.startFound = false;
+		let previousLineLength = 0;
+		for(let i=0; i<this.document.lineCount; i++) {
+			const lineText = `${this.document.lineAt(i).text}`;
+			let result = this.getMatches(lineText, i, lineText.length, previousLineLength);
+			previousLineLength = lineText.length;
+			blocks.push(...result.blocks);
+			if(result.endDetected) {
+				console.log(blocks);
+				return blocks;
 			}
 		}
-		if(text !== "") {
+		if(this.unmatchedLinesOfText.length !== 0) {
 			window.showErrorMessage("Bad parsing of blocks");
 		}
 		return blocks;
 	}
 
-	public updateBlock(blockNumber:number, edit:any) {
+	public updateBlock(blockNumber:number, edit:any):boolean {
+		var closeEditblock = false;
 		var blocks = this.getDocumentBlocks();
-		if(blockNumber < blocks.length) {
+		const nBlocksBeforeEdit = blocks.length;
+		if(blockNumber < blocks.length && blockNumber >= 0) {
 			if(blocks[blockNumber].isText && typeof edit === 'string') {
 				const change = new WorkspaceEdit();
 				change.replace(this.document.uri, blocks[blockNumber].range, edit);
 				workspace.applyEdit(change);
+				blocks = this.getDocumentBlocks();
+				if(blocks.length < nBlocksBeforeEdit) {
+					closeEditblock = true;
+				}
 			} else {
 				const itemId = this.getIdFromItemText(blocks[blockNumber].data);
 				if(itemId && edit !== undefined) {
@@ -229,6 +231,20 @@ export class SmoresDocument {
 				}
 			}
 		}
+		return closeEditblock;
+	}
+	public addTextBeforeBlock(blockNumber:number, newText:string) {
+		var addEditblock = false;
+		var blocks = this.getDocumentBlocks();
+		if(blockNumber < blocks.length && blockNumber >= 0) {
+			if(blocks[blockNumber].isText === false && blocks[blockNumber-1].isText === false) {
+				const change = new WorkspaceEdit();
+				change.insert(this.document.uri, blocks[blockNumber].range.start, newText);
+				addEditblock = true;
+				workspace.applyEdit(change);
+			}
+		}
+		return addEditblock;
 	}
 	private updateItem(itemId:number, edit:any) {
 		window.showInformationMessage("Need to implement updateItem");
@@ -281,15 +297,14 @@ export class SmoresDocument {
 			return HTML.getBlockDiv(html, blockNumber);
 		}
 	}
-	private getIdFromItemText(itemText:string):number|undefined {
-		const pattern = /\[SMORES\.ID\.(\d+)\]/;
-		const mat = itemText.match(pattern);
-		if(mat !== null) {
-			const convNumber = Number(mat[1]);
-			if(!Number.isNaN(convNumber) && typeof convNumber === 'number') {
-				return convNumber;
-			}
+	private getIdFromItemText(itemNumber:string):number|undefined {
+		const convNumber = Number(itemNumber);
+		if(!Number.isNaN(convNumber) && typeof convNumber === 'number') {
+			return convNumber;
 		}
 		return undefined;
+	}
+	private addItemToTextBlock(item:SmoresContent, blockNumber:number) {
+
 	}
 }

@@ -63,7 +63,7 @@ function editorAddBlock(event) {
   for(let i=0; i<event.currentTarget.children.length; i++) {
     const rect = event.currentTarget.children[i].getBoundingClientRect();
     if(rect.y > event.clientY) {
-      vscode.postMessage({command: 'addEditBlock', blockNumber:i});
+      vscode.postMessage({command: 'addNewTextBlock', blockNumber:i});
       return;    
     }
   }  

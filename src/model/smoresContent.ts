@@ -23,6 +23,9 @@ export class SmoresContent {
   public updateData() {
     this.data = this.getData();
   }
+  public static getLinkText(id:number) {
+    return `[SMORES.ID.${id}]`;
+  }
   public static getHtml(doc:SmoresDocument, id:number, webview?:Webview):string {
     const dataRoot = FileIO.getContentRoot(doc);
     const itemPath = FileIO.getContentFilepath(doc, id);
